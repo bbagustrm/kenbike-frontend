@@ -1,8 +1,7 @@
 node_modules
 npm-debug.log
 Dockerfile
-docker-compose.yml
 .dockerignore
 .git
-.gitignore
-.next
+.github
+.next/cache
