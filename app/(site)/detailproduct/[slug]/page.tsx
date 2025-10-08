@@ -335,15 +335,11 @@ export default function DetailProductPage() {
               </div>
 
               <div className="space-y-2">
-                {(Object.keys(product.ratingBreakdown) as Array<keyof ProductDetail["ratingBreakdown"]>)
-                  .sort((a, b) => Number(b) - Number(a))
-                  .map((rating) => (
-                    <RatingBar
-                      key={rating}
-                      label={Number(rating)}
-                      value={product.ratingBreakdown[rating]}
-                      total={totalReviews}
-                    />
+                {Object.entries(product.ratingBreakdown)
+                  .map(([rating, value]) => [Number(rating), value] as [number, number])
+                  .sort(([a], [b]) => b - a)
+                  .map(([rating, value]) => (
+                    <RatingBar key={rating} label={rating} value={value} total={totalReviews} />
                   ))}
               </div>
             </div>
