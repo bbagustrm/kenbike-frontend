@@ -1,50 +1,99 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+// middleware.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
-  // Ambil token dari cookie (nanti bisa JWT / session)
-  const token = req.cookies.get("token")?.value
+  const { pathname } = req.nextUrl;
 
-  // Case: belum login → biarkan akses (kosong dulu)
-  if (!token) {
-    return NextResponse.next()
+  // Get tokens from cookies
+  const accessToken = req.cookies.get("access_token")?.value;
+  const userCookie = req.cookies.get("user")?.value;
+
+  // Define route types
+  const isAuthRoute = pathname.startsWith("/login") ||
+      pathname.startsWith("/register") ||
+      pathname.startsWith("/forgot-password") ||
+      pathname.startsWith("/reset-password");
+
+  const isPublicRoute = pathname === "/" ||
+      pathname.startsWith("/about") ||
+      pathname.startsWith("/products") ||
+      pathname.startsWith("/contact") ||
+      pathname.startsWith("/search");
+
+  const isDashboardRoute = pathname.startsWith("/admin") ||
+      pathname.startsWith("/owner") ||
+      pathname.startsWith("/user");
+
+  // If user is on auth route and already authenticated, redirect to appropriate dashboard
+  if (isAuthRoute && accessToken && userCookie) {
+    try {
+      const user = JSON.parse(userCookie);
+
+      if (user.role === "ADMIN") {
+        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+      } else if (user.role === "OWNER") {
+        return NextResponse.redirect(new URL("/owner/dashboard", req.url));
+      } else {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+    } catch (error) {
+      console.error("Error parsing user cookie:", error);
+    }
   }
 
-  // Decode JWT sederhana (anggap payload JSON di middle part)
-  try {
-    const payload = JSON.parse(
-      Buffer.from(token.split(".")[1], "base64").toString()
-    )
-    const role = payload.role
-
-    // Dapatkan path yg sedang diakses
-    const { pathname } = req.nextUrl
-
-    // Cek role vs route
-    if (pathname.startsWith("/(admin)") && role !== "admin") {
-      return NextResponse.redirect(new URL("/not-authorized", req.url))
-    }
-
-    if (pathname.startsWith("/(owner)") && role !== "owner") {
-      return NextResponse.redirect(new URL("/not-authorized", req.url))
-    }
-
-    if (pathname.startsWith("/(user)") && role !== "user") {
-      return NextResponse.redirect(new URL("/not-authorized", req.url))
-    }
-  } catch (err) {
-    console.error("Token invalid:", err)
-    return NextResponse.next()
+  // Public routes - allow everyone
+  if (isPublicRoute) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next()
+  // Dashboard routes - require authentication
+  if (isDashboardRoute) {
+    // Check if user is authenticated
+    if (!accessToken || !userCookie) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check role-based access
+    try {
+      const user = JSON.parse(userCookie);
+      const role = user.role;
+
+      // Admin routes - only ADMIN can access
+      if (pathname.startsWith("/admin") && role !== "ADMIN") {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+
+      // Owner routes - only OWNER can access
+      if (pathname.startsWith("/owner") && role !== "OWNER") {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+
+      // User routes - only USER can access (optional based on your needs)
+      if (pathname.startsWith("/user") && role !== "USER") {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
+      }
+    } catch (error) {
+      console.error("Error checking user role:", error);
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
-// Tentukan route mana saja yg dilindungi middleware
+// Configure which routes to protect
 export const config = {
   matcher: [
-    "/(user)/:path*",
-    "/(admin)/:path*",
-    "/(owner)/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
-}
+};
