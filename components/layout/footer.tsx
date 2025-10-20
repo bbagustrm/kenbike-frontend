@@ -2,28 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
-import { useState } from "react";
+import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 
 export default function Footer() {
-  const { t, locale } = useTranslation(); // Mengambil locale langsung dari hook
-  const [email, setEmail] = useState("");
-  const [isSubscribing, setIsSubscribing] = useState(false);
+  const { t, locale } = useTranslation();
 
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubscribing(true);
-
-    // TODO: Implement newsletter subscription
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    alert("Thanks for subscribing!");
-    setEmail("");
-    setIsSubscribing(false);
-  };
 
   const productCategories = [
     { name: "Stang", href: "/products/stang" },

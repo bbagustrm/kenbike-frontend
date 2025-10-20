@@ -15,7 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, X, CheckCircle2 } from "lucide-react";
+import { Loader2, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { getImageUrl, validateImageFile, formatFileSize } from "@/lib/image-utils";
 
 export default function ProfilePage() {
   const { user, isLoading, updateProfile, updatePassword, deleteProfileImage } = useAuth();
@@ -49,26 +50,46 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      setError("Only JPG, JPEG, PNG, and WEBP formats are allowed");
-      return;
-    }
-
-    // Validate file size (2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setError("File size must not exceed 2MB");
-      return;
-    }
-
-    setSelectedImage(file);
-    setPreviewUrl(URL.createObjectURL(file));
     setError(null);
+
+    // Validate file
+    const validation = validateImageFile(file, 2);
+    if (!validation.valid) {
+      setError(validation.error || "Invalid file");
+      return;
+    }
+
+    console.log("📷 Image selected:", {
+      name: file.name,
+      size: formatFileSize(file.size),
+      type: file.type,
+    });
+
+    // Set file
+    setSelectedImage(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCancelImage = () => {
+    setSelectedImage(null);
+    setPreviewUrl(null);
+    setError(null);
+
+    // Reset file input
+    const fileInput = document.getElementById("profile_image") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
   };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -78,14 +99,24 @@ export default function ProfilePage() {
     setIsSubmitting(true);
 
     try {
+      console.log("📤 Submitting profile update...");
+
       await updateProfile({
         ...profileData,
         profile_image: selectedImage || undefined,
       });
+
       setSuccess("Profile updated successfully!");
       setSelectedImage(null);
       setPreviewUrl(null);
+
+      // Reset file input
+      const fileInput = document.getElementById("profile_image") as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = "";
+      }
     } catch (err) {
+      console.error("❌ Profile update failed:", err);
       setError(err instanceof Error ? err.message : "Failed to update profile");
     } finally {
       setIsSubmitting(false);
@@ -93,6 +124,10 @@ export default function ProfilePage() {
   };
 
   const handleDeleteImage = async () => {
+    if (!confirm("Are you sure you want to delete your profile image?")) {
+      return;
+    }
+
     setError(null);
     setSuccess(null);
     setIsSubmitting(true);
@@ -138,8 +173,14 @@ export default function ProfilePage() {
     return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
   };
 
+  // Get display image URL (preview or user's current image)
+  const getDisplayImage = () => {
+    if (previewUrl) return previewUrl;
+    return getImageUrl(user.profile_image);
+  };
+
   return (
-      <div className="container max-w-4xl mx-auto py-8 px-4">
+      <div className="container max-w-5xl mx-auto py-8 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Profile Settings</h1>
           <p className="text-muted-foreground">
@@ -148,7 +189,7 @@ export default function ProfilePage() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full md:w-fit grid-cols-2">
             <TabsTrigger value="profile">Profile Information</TabsTrigger>
             <TabsTrigger value="password">Change Password</TabsTrigger>
           </TabsList>
@@ -164,23 +205,34 @@ export default function ProfilePage() {
               <CardContent>
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
                   {/* Profile Image Section */}
-                  <div className="flex flex-col items-center space-y-4">
-                    <Avatar className="h-32 w-32">
-                      <AvatarImage
-                          src={previewUrl || user.profile_image}
-                          alt={user.username}
-                      />
-                      <AvatarFallback className="text-2xl">
-                        {getInitials()}
-                      </AvatarFallback>
-                    </Avatar>
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24 border-2 border-gray-200">
+                        <AvatarImage
+                            src={getDisplayImage()}
+                            alt={user.username}
+                        />
+                        <AvatarFallback className="text-2xl">
+                          {getInitials()}
+                        </AvatarFallback>
+                      </Avatar>
 
-                    <div className="flex gap-2">
-                      <Label htmlFor="profile_image" className="cursor-pointer">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                          <Upload className="h-4 w-4" />
-                          Upload Photo
-                        </div>
+                      {/* Show indicator if new image selected */}
+                      {selectedImage && (
+                          <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-1">
+                            <CheckCircle2 className="h-4 w-4" />
+                          </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Label htmlFor="profile_image" className="cursor-pointer">
+                          <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                            <Upload className="h-4 w-4" />
+                            {selectedImage ? "Change Photo" : "Upload Photo"}
+                          </div>
+                        </Label>
                         <Input
                             id="profile_image"
                             type="file"
@@ -189,47 +241,71 @@ export default function ProfilePage() {
                             className="hidden"
                             disabled={isSubmitting}
                         />
-                      </Label>
 
-                      {user.profile_image && (
-                          <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={handleDeleteImage}
-                              disabled={isSubmitting}
-                          >
-                            <X className="h-4 w-4 mr-2" />
-                            Remove
-                          </Button>
+                        {selectedImage && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelImage}
+                                disabled={isSubmitting}
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Cancel
+                            </Button>
+                        )}
+
+                        {user.profile_image && !selectedImage && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleDeleteImage}
+                                disabled={isSubmitting}
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Remove
+                            </Button>
+                        )}
+                      </div>
+
+                      {selectedImage && (
+                          <Alert className="bg-blue-50 border-blue-200">
+                            <AlertCircle className="h-4 w-4 text-blue-600" />
+                            <AlertDescription className="text-blue-800 text-sm">
+                              New image selected: <strong>{selectedImage.name}</strong> ({formatFileSize(selectedImage.size)})
+                              <br />
+                              Click Update Profile to save changes.
+                            </AlertDescription>
+                          </Alert>
                       )}
-                    </div>
 
-                    <p className="text-xs text-muted-foreground text-center">
-                      JPG, JPEG, PNG or WEBP. Max 2MB. Recommended 400x400px
-                    </p>
+                      <p className="text-xs text-muted-foreground">
+                        JPG, JPEG, PNG or WEBP. Max 2MB. Recommended 400x400px
+                      </p>
+                    </div>
                   </div>
 
                   {/* Read-only fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>First Name</Label>
-                      <Input value={user.first_name} disabled />
+                      <Input value={user.first_name} disabled className="bg-gray-50" />
                     </div>
                     <div className="space-y-2">
                       <Label>Last Name</Label>
-                      <Input value={user.last_name} disabled />
+                      <Input value={user.last_name} disabled className="bg-gray-50" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Username</Label>
-                      <Input value={user.username} disabled />
+                      <Input value={user.username} disabled className="bg-gray-50" />
                     </div>
                     <div className="space-y-2">
                       <Label>Email</Label>
-                      <Input value={user.email} disabled />
+                      <Input value={user.email} disabled className="bg-gray-50" />
                     </div>
                   </div>
 
@@ -322,7 +398,7 @@ export default function ProfilePage() {
                         type="password"
                         value={passwordData.old_password}
                         onChange={(e) =>
-                            setPasswordData({ ...passwordData, old_password: e.target.value })
+                            setPasswordData({confirm_password: "", new_password: "", ...profileData, old_password: e.target.value })
                         }
                         disabled={isSubmitting}
                         required

@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { User, Settings, LogOut, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getUserInitials, getUserFullName } from "@/lib/auth-utils";
+import { getImageUrl } from "@/lib/image-utils";
+
 
 export function UserAvatar() {
     const { user, logout } = useAuth();
@@ -39,9 +41,12 @@ export function UserAvatar() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <button className="pr-8 flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <Avatar className="h-9 w-9 cursor-pointer">
-                        <AvatarImage src={user.profile_image} alt={user.username} />
+                        <AvatarImage
+                            src={getImageUrl(user?.profile_image)}
+                            alt={user?.username}
+                        />
                         <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">

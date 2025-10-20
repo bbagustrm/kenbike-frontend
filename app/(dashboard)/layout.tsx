@@ -1,4 +1,3 @@
-// app/(dashboard)/layout.tsx
 "use client";
 
 import { ReactNode } from "react";
@@ -17,13 +16,11 @@ import {
   Settings,
   Menu,
   User,
-  Heart,
-  MapPin,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-// Navigation for different roles
 const adminNavigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Users", href: "/admin/users", icon: Users },
@@ -43,17 +40,13 @@ const ownerNavigation = [
 
 const userNavigation = [
   { name: "Profile", href: "/user/profile", icon: User },
-  { name: "My Orders", href: "/user/orders", icon: ShoppingCart },
-  { name: "Wishlist", href: "/user/wishlist", icon: Heart },
-  { name: "Addresses", href: "/user/addresses", icon: MapPin },
-  { name: "Settings", href: "/user/settings", icon: Settings },
+  { name: "My Orders", href: "/user/orders", icon: ShoppingCart }
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  // Get navigation based on role
   const getNavigation = () => {
     if (user?.role === "ADMIN") return adminNavigation;
     if (user?.role === "OWNER") return ownerNavigation;
@@ -68,7 +61,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return "My Account";
   };
 
-  // Sidebar component
   const Sidebar = () => (
       <>
         <div className="flex h-16 items-center gap-2 border-b px-6">
@@ -81,8 +73,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <span className="font-semibold text-lg">{getDashboardTitle()}</span>
           </div>
         </div>
-
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <div className="border-b px-3 py-2">
+          <Link
+              href="/"
+              className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "text-muted-foreground hover:bg-gray-100 hover:text-gray-900"
+              )}
+          >
+            <Home className="h-5 w-5" />
+            Back to Home
+          </Link>
+        </div>
+        <nav className="flex-1 space-y-2 px-3 py-4">
           {navigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
@@ -130,11 +133,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   </SheetContent>
                 </Sheet>
 
-                <h1 className="text-xl font-semibold">
-                  {navigation.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))?.name || "Dashboard"}
-                </h1>
               </div>
-
               <UserAvatar />
             </header>
 

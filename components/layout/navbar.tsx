@@ -23,15 +23,12 @@ import {
   Bell,
   ShoppingCart,
   User,
-  LogIn,
   Menu,
   X,
   Package,
   Heart,
   LogOut,
-  Settings,
   ShoppingBag,
-  FileText,
   Home,
   Info,
   Phone,
@@ -336,12 +333,12 @@ export default function Navbar() {
                     </DropdownMenu>
                 ) : (
                     <div className="flex items-center gap-2">
-                      <Button size="sm" className="min-w-20 px-4" asChild>
+                      <Button size="sm" className="min-w-20 px-4 font-medium" asChild>
                         <Link href="/login">
                           {t.auth.login}
                         </Link>
                       </Button>
-                      <Button size="sm" asChild variant="outline" className="min-w-20 px-4">
+                      <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-medium">
                         <Link href="/register">{t.auth.register}</Link>
                       </Button>
                     </div>
@@ -474,7 +471,7 @@ export default function Navbar() {
                       <Link
                           key={item.name}
                           href={item.href}
-                          className="block py-2 text-sm font-medium hover:text-primary transition-colors"
+                          className="block py-2 text-sm font-normal hover:text-primary transition-colors"
                           onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.name}
@@ -497,11 +494,42 @@ export default function Navbar() {
                 <div className="pt-4 border-t">
                   <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
                     <SelectTrigger className="w-full">
-                      <SelectValue />
+                      <div className="flex items-center gap-3">
+                        <Image
+                            src={locale === "id" ? "/ic-flag-id.svg" : "/ic-flag-uk.svg"}
+                            alt={locale === "id" ? "Indonesia" : "English"}
+                            width={20}
+                            height={20}
+                            className="rounded-sm"
+                        />
+                        <span>{locale === "id" ? "Indonesia" : "English"}</span>
+                      </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="id">🇮🇩 Bahasa Indonesia</SelectItem>
-                      <SelectItem value="en">🇬🇧 English</SelectItem>
+                      <SelectItem value="id">
+                        <div className="flex items-center gap-3">
+                          <Image
+                              src="/ic-flag-id.svg"
+                              alt="Indonesia"
+                              width={20}
+                              height={20}
+                              className="rounded-sm"
+                          />
+                          <span>Indonesia</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="en">
+                        <div className="flex items-center gap-3">
+                          <Image
+                              src="/ic-flag-uk.svg"
+                              alt="English"
+                              width={20}
+                              height={20}
+                              className="rounded-sm"
+                          />
+                          <span>English</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
