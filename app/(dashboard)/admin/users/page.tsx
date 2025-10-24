@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, roleFilter, search]);
+    }, [page, roleFilter, search, limit]);
 
     useEffect(() => {
         fetchUsers();
