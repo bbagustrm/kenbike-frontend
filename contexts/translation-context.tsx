@@ -53,21 +53,6 @@ function detectLocale(): Locale {
     return "id";
 }
 
-/**
- * Get user's country from geolocation API (optional)
- * You can use this to auto-detect country and set language accordingly
- */
-async function detectCountry(): Promise<string | null> {
-    try {
-        const response = await fetch("https://ipapi.co/json/");
-        const data = await response.json();
-        return data.country_code; // Returns "ID", "US", etc.
-    } catch (error) {
-        console.error("Failed to detect country:", error);
-        return null;
-    }
-}
-
 export function TranslationProvider({ children }: { children: ReactNode }) {
     const [locale, setLocaleState] = useState<Locale>("id");
     const [isInitialized, setIsInitialized] = useState(false);

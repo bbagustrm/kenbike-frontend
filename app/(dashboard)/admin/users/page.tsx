@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UserService } from "@/services/user.service";
 import { handleApiError } from "@/lib/api-client";
-import { User, UserRole } from "@/types/auth";
+import { User, UserRole, GetUsersParams } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,12 +31,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
     Search,
     Loader2,
     UserPlus,
-    Edit,
     Trash2,
     Shield,
     Ban,
@@ -46,14 +44,16 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { getUserInitials } from "@/lib/auth-utils";
+import { toast } from "sonner";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function AdminUsersPage() {
+    const { t } = useTranslation();
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
-    // Pagination & Filters
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
     const [total, setTotal] = useState(0);
@@ -61,29 +61,21 @@ export default function AdminUsersPage() {
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
 
-    // Dialog states
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRoleDialog, setShowRoleDialog] = useState(false);
     const [showStatusDialog, setShowStatusDialog] = useState(false);
     const [newRole, setNewRole] = useState<UserRole>("USER");
     const [statusReason, setStatusReason] = useState("");
-    const [isActionLoading, setIsActionLoading] = useState(false);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [page, roleFilter]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setIsLoading(true);
-        setError(null);
-
         try {
-            const params: any = {
+            const params: GetUsersParams = {
                 page,
                 limit,
                 sort_by: "created_at",
-                order: "desc" as const,
+                order: "desc",
             };
 
             if (search) params.search = search;
@@ -94,11 +86,15 @@ export default function AdminUsersPage() {
             setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (err) {
-            setError(handleApiError(err));
+            toast.error(handleApiError(err));
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page, roleFilter, search]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -108,17 +104,14 @@ export default function AdminUsersPage() {
 
     const handleDeleteUser = async () => {
         if (!selectedUser) return;
-
         setIsActionLoading(true);
-        setError(null);
-
         try {
             await UserService.deleteUser(selectedUser.id, false);
-            setSuccess(`User ${selectedUser.username} deleted successfully`);
+            toast.success(t.adminUsers.successMessages.deleted.replace("{username}", selectedUser.username));
             setShowDeleteDialog(false);
             fetchUsers();
         } catch (err) {
-            setError(handleApiError(err));
+            toast.error(handleApiError(err));
         } finally {
             setIsActionLoading(false);
         }
@@ -126,17 +119,14 @@ export default function AdminUsersPage() {
 
     const handleChangeRole = async () => {
         if (!selectedUser) return;
-
         setIsActionLoading(true);
-        setError(null);
-
         try {
             await UserService.changeUserRole(selectedUser.id, { role: newRole });
-            setSuccess(`User role changed to ${newRole} successfully`);
+            toast.success(t.adminUsers.successMessages.roleChanged.replace("{username}", selectedUser.username).replace("{role}", newRole));
             setShowRoleDialog(false);
             fetchUsers();
         } catch (err) {
-            setError(handleApiError(err));
+            toast.error(handleApiError(err));
         } finally {
             setIsActionLoading(false);
         }
@@ -144,107 +134,70 @@ export default function AdminUsersPage() {
 
     const handleChangeStatus = async () => {
         if (!selectedUser) return;
-
         setIsActionLoading(true);
-        setError(null);
-
         try {
             const newStatus = !selectedUser.is_active;
             await UserService.changeUserStatus(selectedUser.id, {
                 is_active: newStatus,
                 reason: newStatus ? undefined : statusReason,
             });
-            setSuccess(
-                `User ${newStatus ? "activated" : "suspended"} successfully`
-            );
+            const messageKey = newStatus ? "activated" : "suspended";
+            toast.success(t.adminUsers.successMessages[messageKey].replace("{username}", selectedUser.username));
             setShowStatusDialog(false);
             setStatusReason("");
             fetchUsers();
         } catch (err) {
-            setError(handleApiError(err));
+            toast.error(handleApiError(err));
         } finally {
             setIsActionLoading(false);
         }
     };
 
     const handleForceLogout = async (user: User) => {
-        if (!confirm(`Force logout ${user.username}?`)) return;
-
-        setError(null);
+        if (!confirm(t.adminUsers.confirmForceLogout.replace("{username}", user.username))) return;
         try {
             await UserService.forceLogoutUser(user.id);
-            setSuccess(`User ${user.username} logged out from all devices`);
+            toast.success(t.adminUsers.successMessages.forceLogout.replace("{username}", user.username));
         } catch (err) {
-            setError(handleApiError(err));
+            toast.error(handleApiError(err));
         }
     };
 
     const getRoleBadgeVariant = (role: UserRole) => {
         switch (role) {
-            case "ADMIN":
-                return "default";
-            case "OWNER":
-                return "secondary";
-            default:
-                return "outline";
+            case "ADMIN": return "default";
+            case "OWNER": return "secondary";
+            default: return "outline";
         }
-    };
-
-    const getInitials = (user: User) => {
-        return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
     };
 
     return (
         <div className="container mx-auto py-8 px-4">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">User Management</h1>
-                <p className="text-muted-foreground">
-                    Manage users, roles, and permissions
-                </p>
+                <h1 className="text-3xl font-bold mb-2">{t.adminUsers.title}</h1>
+                <p className="text-muted-foreground">{t.adminUsers.description}</p>
             </div>
 
-            {success && (
-                <Alert className="mb-6 bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                        {success}
-                    </AlertDescription>
-                </Alert>
-            )}
-
-            {error && (
-                <Alert variant="destructive" className="mb-6">
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-
-            {/* Filters & Search */}
             <div className="mb-6 flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex-1 flex gap-2">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search by name, email, or username..."
+                            placeholder={t.adminUsers.searchPlaceholder}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-10"
                         />
                     </div>
-                    <Button type="submit">Search</Button>
+                    <Button type="submit">{t.adminUsers.searchButton}</Button>
                 </form>
 
-                <Select
-                    value={roleFilter}
-                    onValueChange={(value) => {
-                        setRoleFilter(value as UserRole | "ALL");
-                        setPage(1);
-                    }}
-                >
+                <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value as UserRole | "ALL"); setPage(1); }}>
                     <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by role" />
+                        <SelectValue placeholder={t.adminUsers.filterByRole} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="ALL">All Roles</SelectItem>
+                        <SelectItem value="ALL">{t.adminUsers.allRoles}</SelectItem>
                         <SelectItem value="USER">User</SelectItem>
                         <SelectItem value="ADMIN">Admin</SelectItem>
                         <SelectItem value="OWNER">Owner</SelectItem>
@@ -253,21 +206,20 @@ export default function AdminUsersPage() {
 
                 <Button>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Add User
+                    {t.adminUsers.addUser}
                 </Button>
             </div>
 
-            {/* Users Table */}
             <div className="border rounded-lg">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Created</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead>{t.adminUsers.tableHeaders.user}</TableHead>
+                            <TableHead>{t.adminUsers.tableHeaders.email}</TableHead>
+                            <TableHead>{t.adminUsers.tableHeaders.role}</TableHead>
+                            <TableHead>{t.adminUsers.tableHeaders.status}</TableHead>
+                            <TableHead>{t.adminUsers.tableHeaders.created}</TableHead>
+                            <TableHead className="text-right">{t.adminUsers.tableHeaders.actions}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -280,7 +232,7 @@ export default function AdminUsersPage() {
                         ) : users.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center py-8">
-                                    No users found
+                                    {t.adminUsers.noUsersFound}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -290,80 +242,42 @@ export default function AdminUsersPage() {
                                         <div className="flex items-center gap-3">
                                             <Avatar>
                                                 <AvatarImage src={user.profile_image} />
-                                                <AvatarFallback>{getInitials(user)}</AvatarFallback>
+                                                <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <p className="font-medium">
-                                                    {user.first_name} {user.last_name}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    @{user.username}
-                                                </p>
+                                                <p className="font-medium">{user.first_name} {user.last_name}</p>
+                                                <p className="text-sm text-muted-foreground">@{user.username}</p>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>
-                                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                                            {user.role}
-                                        </Badge>
+                                        <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
                                     </TableCell>
                                     <TableCell>
                                         {user.is_active ? (
                                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                                Active
+                                                {t.adminUsers.active}
                                             </Badge>
                                         ) : (
                                             <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                                                Suspended
+                                                {t.adminUsers.suspended}
                                             </Badge>
                                         )}
                                     </TableCell>
-                                    <TableCell>
-                                        {new Date(user.created_at).toLocaleDateString()}
-                                    </TableCell>
+                                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedUser(user);
-                                                    setNewRole(user.role);
-                                                    setShowRoleDialog(true);
-                                                }}
-                                            >
+                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setNewRole(user.role); setShowRoleDialog(true); }}>
                                                 <Shield className="h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedUser(user);
-                                                    setShowStatusDialog(true);
-                                                }}
-                                            >
-                                                {user.is_active ? (
-                                                    <Ban className="h-4 w-4" />
-                                                ) : (
-                                                    <CheckCircle className="h-4 w-4" />
-                                                )}
+                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowStatusDialog(true); }}>
+                                                {user.is_active ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleForceLogout(user)}
-                                            >
+                                            <Button variant="ghost" size="sm" onClick={() => handleForceLogout(user)}>
                                                 <LogOut className="h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedUser(user);
-                                                    setShowDeleteDialog(true);
-                                                }}
-                                            >
+                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDeleteDialog(true); }}>
                                                 <Trash2 className="h-4 w-4 text-red-500" />
                                             </Button>
                                         </div>
@@ -375,88 +289,56 @@ export default function AdminUsersPage() {
                 </Table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
-                        Showing {(page - 1) * limit + 1} to{" "}
-                        {Math.min(page * limit, total)} of {total} users
+                        {t.adminUsers.pagination.showing} {(page - 1) * limit + 1} to {Math.min(page * limit, total)} {t.adminUsers.pagination.of} {total} {t.adminUsers.pagination.users}
                     </p>
                     <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPage(page - 1)}
-                            disabled={page === 1}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>
                             <ChevronLeft className="h-4 w-4 mr-1" />
-                            Previous
+                            {t.adminUsers.pagination.previous}
                         </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPage(page + 1)}
-                            disabled={page === totalPages}
-                        >
-                            Next
+                        <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page === totalPages}>
+                            {t.adminUsers.pagination.next}
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                     </div>
                 </div>
             )}
 
-            {/* Delete Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Delete User</DialogTitle>
+                        <DialogTitle>{t.adminUsers.confirmDelete}</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete {selectedUser?.username}? This
-                            action can be undone (soft delete).
+                            {t.adminUsers.confirmDeleteDesc.replace("{username}", selectedUser?.username || "")}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowDeleteDialog(false)}
-                            disabled={isActionLoading}
-                        >
+                        <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isActionLoading}>
                             Cancel
                         </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleDeleteUser}
-                            disabled={isActionLoading}
-                        >
-                            {isActionLoading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Deleting...
-                                </>
-                            ) : (
-                                "Delete"
-                            )}
+                        <Button variant="destructive" onClick={handleDeleteUser} disabled={isActionLoading}>
+                            {isActionLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.adminUsers.deleting}</> : t.adminUsers.deleteButton}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Change Role Dialog */}
             <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Change User Role</DialogTitle>
+                        <DialogTitle>{t.adminUsers.changeRoleTitle}</DialogTitle>
                         <DialogDescription>
-                            Change the role for {selectedUser?.username}
+                            {t.adminUsers.changeRoleDesc.replace("{username}", selectedUser?.username || "")}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label>Select Role</Label>
+                            <Label>{t.adminUsers.selectRole}</Label>
                             <Select value={newRole} onValueChange={(value) => setNewRole(value as UserRole)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="USER">User</SelectItem>
                                     <SelectItem value="ADMIN">Admin</SelectItem>
@@ -466,77 +348,36 @@ export default function AdminUsersPage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setShowRoleDialog(false)}
-                            disabled={isActionLoading}
-                        >
-                            Cancel
-                        </Button>
+                        <Button variant="outline" onClick={() => setShowRoleDialog(false)} disabled={isActionLoading}>Cancel</Button>
                         <Button onClick={handleChangeRole} disabled={isActionLoading}>
-                            {isActionLoading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Changing...
-                                </>
-                            ) : (
-                                "Change Role"
-                            )}
+                            {isActionLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.adminUsers.changing}</> : t.adminUsers.changeRoleButton}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
-            {/* Change Status Dialog */}
             <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
-                            {selectedUser?.is_active ? "Suspend" : "Activate"} User
-                        </DialogTitle>
+                        <DialogTitle>{selectedUser?.is_active ? t.adminUsers.suspendTitle : t.adminUsers.activateTitle}</DialogTitle>
                         <DialogDescription>
                             {selectedUser?.is_active
-                                ? `Suspend ${selectedUser?.username}? They won't be able to login.`
-                                : `Activate ${selectedUser?.username}? They will be able to login again.`}
+                                ? t.adminUsers.suspendDesc.replace("{username}", selectedUser?.username || "")
+                                : t.adminUsers.activateDesc.replace("{username}", selectedUser?.username || "")}
                         </DialogDescription>
                     </DialogHeader>
                     {selectedUser?.is_active && (
                         <div className="space-y-2 py-4">
-                            <Label htmlFor="reason">Reason (optional)</Label>
-                            <Input
-                                id="reason"
-                                placeholder="Enter reason for suspension..."
-                                value={statusReason}
-                                onChange={(e) => setStatusReason(e.target.value)}
-                            />
+                            <Label htmlFor="reason">{t.adminUsers.reasonLabel}</Label>
+                            <Input id="reason" placeholder={t.adminUsers.reasonPlaceholder} value={statusReason} onChange={(e) => setStatusReason(e.target.value)} />
                         </div>
                     )}
                     <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                setShowStatusDialog(false);
-                                setStatusReason("");
-                            }}
-                            disabled={isActionLoading}
-                        >
+                        <Button variant="outline" onClick={() => { setShowStatusDialog(false); setStatusReason(""); }} disabled={isActionLoading}>
                             Cancel
                         </Button>
-                        <Button
-                            variant={selectedUser?.is_active ? "destructive" : "default"}
-                            onClick={handleChangeStatus}
-                            disabled={isActionLoading}
-                        >
-                            {isActionLoading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Processing...
-                                </>
-                            ) : selectedUser?.is_active ? (
-                                "Suspend"
-                            ) : (
-                                "Activate"
-                            )}
+                        <Button variant={selectedUser?.is_active ? "destructive" : "default"} onClick={handleChangeStatus} disabled={isActionLoading}>
+                            {isActionLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.adminUsers.processing}</> : (selectedUser?.is_active ? t.adminUsers.suspendButton : t.adminUsers.activateButton)}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

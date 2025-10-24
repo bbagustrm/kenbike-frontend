@@ -1,4 +1,3 @@
-// types/auth.ts
 export type UserRole = "USER" | "ADMIN" | "OWNER";
 
 export interface User {
@@ -72,7 +71,7 @@ export interface ResetPasswordData {
     confirm_password: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     status: "success" | "error";
     code: number;
     message: string;
