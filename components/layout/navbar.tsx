@@ -60,7 +60,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import CheckoutCard from "../checkout-card";
@@ -74,7 +73,6 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [scrollDirection, setScrollDirection] = useState("up");
 
   // Mock data - replace dengan real data
   const cartItemsCount = 3;
@@ -99,14 +97,10 @@ export default function Navbar() {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY) {
-        // Scrolling down
-        setScrollDirection("down");
         if (currentScrollY > 100) {
           setIsBottomNavVisible(false);
         }
       } else {
-        // Scrolling up
-        setScrollDirection("up");
         setIsBottomNavVisible(true);
       }
 

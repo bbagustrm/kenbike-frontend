@@ -77,7 +77,7 @@ export default function RegisterForm() {
         setIsSubmitting(true);
 
         try {
-            const { confirm_password, ...registerData } = formData;
+            const { confirm_password: _, ...registerData } = formData;
             await register(registerData);
             toast.success(t.auth.register.accountCreated);
         } catch (err) {

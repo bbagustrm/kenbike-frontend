@@ -230,4 +230,59 @@ export interface Translation {
         };
         imageInfo: string;
     };
+
+    adminUsers: {
+        title: string;
+        description: string;
+        searchPlaceholder: string;
+        searchButton: string;
+        filterByRole: string;
+        allRoles: string;
+        addUser: string;
+        tableHeaders: {
+            user: string;
+            email: string;
+            role: string;
+            status: string;
+            created: string;
+            actions: string;
+        };
+        noUsersFound: string;
+        loading: string;
+        active: string;
+        suspended: string;
+        confirmDelete: string;
+        confirmDeleteDesc: string;
+        deleteButton: string;
+        deleting: string;
+        changeRoleTitle: string;
+        changeRoleDesc: string;
+        selectRole: string;
+        changeRoleButton: string;
+        changing: string;
+        suspendTitle: string;
+        activateTitle: string;
+        suspendDesc: string;
+        activateDesc: string;
+        reasonLabel: string;
+        reasonPlaceholder: string;
+        suspendButton: string;
+        activateButton: string;
+        processing: string;
+        confirmForceLogout: string;
+        successMessages: {
+            deleted: string;
+            roleChanged: string;
+            suspended: string;
+            activated: string;
+            forceLogout: string;
+        };
+        pagination: {
+            showing: string;
+            of: string;
+            users: string;
+            previous: string;
+            next: string;
+        };
+    };
 }
