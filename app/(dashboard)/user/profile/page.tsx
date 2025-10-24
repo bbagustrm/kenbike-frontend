@@ -13,18 +13,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
 import { getImageUrl, validateImageFile, formatFileSize } from "@/lib/image-utils";
+import { getUserInitials } from "@/lib/auth-utils";
+import { toast } from "sonner";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function ProfilePage() {
   const { user, isLoading, updateProfile, updatePassword, deleteProfileImage } = useAuth();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  // Profile form state
   const [profileData, setProfileData] = useState({
     phone_number: user?.phone_number || "",
     country: user?.country || "",
@@ -33,7 +33,6 @@ export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Password form state
   const [passwordData, setPasswordData] = useState({
     old_password: "",
     new_password: "",
@@ -54,25 +53,14 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setError(null);
-
-    // Validate file
     const validation = validateImageFile(file, 2);
     if (!validation.valid) {
-      setError(validation.error || "Invalid file");
+      toast.error(validation.error || "Invalid file");
       return;
     }
 
-    console.log("📷 Image selected:", {
-      name: file.name,
-      size: formatFileSize(file.size),
-      type: file.type,
-    });
-
-    // Set file
     setSelectedImage(file);
 
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewUrl(reader.result as string);
@@ -83,9 +71,6 @@ export default function ProfilePage() {
   const handleCancelImage = () => {
     setSelectedImage(null);
     setPreviewUrl(null);
-    setError(null);
-
-    // Reset file input
     const fileInput = document.getElementById("profile_image") as HTMLInputElement;
     if (fileInput) {
       fileInput.value = "";
@@ -94,49 +79,42 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     setIsSubmitting(true);
 
     try {
-      console.log("📤 Submitting profile update...");
-
       await updateProfile({
         ...profileData,
         profile_image: selectedImage || undefined,
       });
 
-      setSuccess("Profile updated successfully!");
+      toast.success(t.profile.messages.updateSuccess);
       setSelectedImage(null);
       setPreviewUrl(null);
 
-      // Reset file input
       const fileInput = document.getElementById("profile_image") as HTMLInputElement;
       if (fileInput) {
         fileInput.value = "";
       }
     } catch (err) {
       console.error("❌ Profile update failed:", err);
-      setError(err instanceof Error ? err.message : "Failed to update profile");
+      toast.error(err instanceof Error ? err.message : t.profile.messages.updateError);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteImage = async () => {
-    if (!confirm("Are you sure you want to delete your profile image?")) {
+    if (!confirm(t.profile.messages.confirmDeleteImage)) {
       return;
     }
 
-    setError(null);
-    setSuccess(null);
     setIsSubmitting(true);
 
     try {
       await deleteProfileImage();
-      setSuccess("Profile image deleted successfully!");
+      toast.success(t.profile.messages.deleteImageSuccess);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete profile image");
+      toast.error(err instanceof Error ? err.message : t.profile.messages.deleteImageError);
     } finally {
       setIsSubmitting(false);
     }
@@ -144,11 +122,9 @@ export default function ProfilePage() {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
 
     if (passwordData.new_password !== passwordData.confirm_password) {
-      setError("New passwords do not match");
+      toast.error(t.profile.messages.passwordsDoNotMatch);
       return;
     }
 
@@ -156,24 +132,19 @@ export default function ProfilePage() {
 
     try {
       await updatePassword(passwordData);
-      setSuccess("Password updated successfully!");
+      toast.success(t.profile.messages.updatePasswordSuccess);
       setPasswordData({
         old_password: "",
         new_password: "",
         confirm_password: "",
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update password");
+      toast.error(err instanceof Error ? err.message : t.profile.messages.updatePasswordError);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getInitials = () => {
-    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
-  };
-
-  // Get display image URL (preview or user's current image)
   const getDisplayImage = () => {
     if (previewUrl) return previewUrl;
     return getImageUrl(user.profile_image);
@@ -182,29 +153,28 @@ export default function ProfilePage() {
   return (
       <div className="container max-w-5xl mx-auto py-8 px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Profile Settings</h1>
+          <h1 className="text-3xl font-bold">{t.profile.title}</h1>
           <p className="text-muted-foreground">
-            Manage your account settings and preferences
+            {t.profile.description}
           </p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full md:w-fit grid-cols-2">
-            <TabsTrigger value="profile">Profile Information</TabsTrigger>
-            <TabsTrigger value="password">Change Password</TabsTrigger>
+            <TabsTrigger value="profile">{t.profile.tabs.profile.title}</TabsTrigger>
+            <TabsTrigger value="password">{t.profile.tabs.password.title}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+                <CardTitle>{t.profile.tabs.profile.title}</CardTitle>
                 <CardDescription>
-                  Update your profile information and photo
+                  {t.profile.tabs.profile.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
-                  {/* Profile Image Section */}
                   <div className="flex items-center gap-6">
                     <div className="relative">
                       <Avatar className="h-24 w-24 border-2 border-gray-200">
@@ -213,11 +183,9 @@ export default function ProfilePage() {
                             alt={user.username}
                         />
                         <AvatarFallback className="text-2xl">
-                          {getInitials()}
+                          {getUserInitials(user)}
                         </AvatarFallback>
                       </Avatar>
-
-                      {/* Show indicator if new image selected */}
                       {selectedImage && (
                           <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-1">
                             <CheckCircle2 className="h-4 w-4" />
@@ -230,7 +198,7 @@ export default function ProfilePage() {
                         <Label htmlFor="profile_image" className="cursor-pointer">
                           <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
                             <Upload className="h-4 w-4" />
-                            {selectedImage ? "Change Photo" : "Upload Photo"}
+                            {selectedImage ? t.profile.buttons.changePhoto : t.profile.buttons.uploadPhoto}
                           </div>
                         </Label>
                         <Input
@@ -251,7 +219,7 @@ export default function ProfilePage() {
                                 disabled={isSubmitting}
                             >
                               <X className="h-4 w-4 mr-2" />
-                              Cancel
+                              {t.profile.buttons.cancel}
                             </Button>
                         )}
 
@@ -264,59 +232,59 @@ export default function ProfilePage() {
                                 disabled={isSubmitting}
                             >
                               <X className="h-4 w-4 mr-2" />
-                              Remove
+                              {t.profile.buttons.remove}
                             </Button>
                         )}
                       </div>
 
                       {selectedImage && (
-                          <Alert className="bg-blue-50 border-blue-200">
-                            <AlertCircle className="h-4 w-4 text-blue-600" />
-                            <AlertDescription className="text-blue-800 text-sm">
-                              New image selected: <strong>{selectedImage.name}</strong> ({formatFileSize(selectedImage.size)})
-                              <br />
-                              Click Update Profile to save changes.
-                            </AlertDescription>
-                          </Alert>
+                          <div className="bg-blue-50 border-blue-200 p-3 rounded-md">
+                            <div className="flex">
+                              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
+                              <p className="text-blue-800 text-sm ml-2">
+                                {t.profile.messages.imageSelected} <strong>{selectedImage.name}</strong> ({formatFileSize(selectedImage.size)})
+                                <br />
+                                {t.profile.messages.clickToSave}
+                              </p>
+                            </div>
+                          </div>
                       )}
 
                       <p className="text-xs text-muted-foreground">
-                        JPG, JPEG, PNG or WEBP. Max 2MB. Recommended 400x400px
+                        {t.profile.imageInfo}
                       </p>
                     </div>
                   </div>
 
-                  {/* Read-only fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>First Name</Label>
+                      <Label>{t.profile.fields.firstName}</Label>
                       <Input value={user.first_name} disabled className="bg-gray-50" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Last Name</Label>
+                      <Label>{t.profile.fields.lastName}</Label>
                       <Input value={user.last_name} disabled className="bg-gray-50" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Username</Label>
+                      <Label>{t.profile.fields.username}</Label>
                       <Input value={user.username} disabled className="bg-gray-50" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Email</Label>
+                      <Label>{t.profile.fields.email}</Label>
                       <Input value={user.email} disabled className="bg-gray-50" />
                     </div>
                   </div>
 
-                  {/* Editable fields */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone_number">Phone Number</Label>
+                      <Label htmlFor="phone_number">{t.profile.fields.phone}</Label>
                       <Input
                           id="phone_number"
                           type="tel"
-                          placeholder="+628123456789"
+                          placeholder={t.profile.placeholders.phone}
                           value={profileData.phone_number}
                           onChange={(e) =>
                               setProfileData({ ...profileData, phone_number: e.target.value })
@@ -325,10 +293,10 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
+                      <Label htmlFor="country">{t.profile.fields.country}</Label>
                       <Input
                           id="country"
-                          placeholder="Indonesia"
+                          placeholder={t.profile.placeholders.country}
                           value={profileData.country}
                           onChange={(e) =>
                               setProfileData({ ...profileData, country: e.target.value })
@@ -339,10 +307,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">{t.profile.fields.address}</Label>
                     <Input
                         id="address"
-                        placeholder="Jl. Example No. 123"
+                        placeholder={t.profile.placeholders.address}
                         value={profileData.address}
                         onChange={(e) =>
                             setProfileData({ ...profileData, address: e.target.value })
@@ -351,29 +319,14 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {success && (
-                      <Alert className="bg-green-50 border-green-200">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <AlertDescription className="text-green-800">
-                          {success}
-                        </AlertDescription>
-                      </Alert>
-                  )}
-
-                  {error && (
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                  )}
-
                   <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
                     {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Updating...
+                          {t.profile.buttons.updating}
                         </>
                     ) : (
-                        "Update Profile"
+                        t.profile.buttons.updateProfile
                     )}
                   </Button>
                 </form>
@@ -384,21 +337,22 @@ export default function ProfilePage() {
           <TabsContent value="password">
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
+                <CardTitle>{t.profile.tabs.password.title}</CardTitle>
                 <CardDescription>
-                  Update your password to keep your account secure
+                  {t.profile.tabs.password.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="old_password">Current Password</Label>
+                    <Label htmlFor="old_password">{t.profile.fields.currentPassword}</Label>
                     <Input
                         id="old_password"
                         type="password"
+                        placeholder={t.profile.placeholders.currentPassword}
                         value={passwordData.old_password}
                         onChange={(e) =>
-                            setPasswordData({confirm_password: "", new_password: "", ...profileData, old_password: e.target.value })
+                            setPasswordData({ ...passwordData, old_password: e.target.value })
                         }
                         disabled={isSubmitting}
                         required
@@ -406,10 +360,11 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="new_password">New Password</Label>
+                    <Label htmlFor="new_password">{t.profile.fields.newPassword}</Label>
                     <Input
                         id="new_password"
                         type="password"
+                        placeholder={t.profile.placeholders.newPassword}
                         value={passwordData.new_password}
                         onChange={(e) =>
                             setPasswordData({ ...passwordData, new_password: e.target.value })
@@ -420,10 +375,11 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirm_password">Confirm New Password</Label>
+                    <Label htmlFor="confirm_password">{t.profile.fields.confirmNewPassword}</Label>
                     <Input
                         id="confirm_password"
                         type="password"
+                        placeholder={t.profile.placeholders.confirmNewPassword}
                         value={passwordData.confirm_password}
                         onChange={(e) =>
                             setPasswordData({
@@ -437,39 +393,24 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="text-xs text-muted-foreground space-y-1">
-                    <p>Password must contain:</p>
+                    <p>{t.profile.passwordRequirements.title}</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-2">
-                      <li>At least 8 characters</li>
-                      <li>One uppercase letter (A-Z)</li>
-                      <li>One lowercase letter (a-z)</li>
-                      <li>One number (0-9)</li>
-                      <li>One special character (!@#$%^&*)</li>
+                      <li>{t.profile.passwordRequirements.length}</li>
+                      <li>{t.profile.passwordRequirements.uppercase}</li>
+                      <li>{t.profile.passwordRequirements.lowercase}</li>
+                      <li>{t.profile.passwordRequirements.number}</li>
+                      <li>{t.profile.passwordRequirements.special}</li>
                     </ul>
                   </div>
-
-                  {success && (
-                      <Alert className="bg-green-50 border-green-200">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <AlertDescription className="text-green-800">
-                          {success}
-                        </AlertDescription>
-                      </Alert>
-                  )}
-
-                  {error && (
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                  )}
 
                   <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
                     {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Updating...
+                          {t.profile.buttons.updating}
                         </>
                     ) : (
-                        "Update Password"
+                        t.profile.buttons.updatePassword
                     )}
                   </Button>
                 </form>

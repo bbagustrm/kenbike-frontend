@@ -64,6 +64,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import CheckoutCard from "../checkout-card";
+import { getUserInitials } from "@/lib/auth-utils";
 
 export default function Navbar() {
   const router = useRouter();
@@ -93,7 +94,6 @@ export default function Navbar() {
     { name: t.nav.contact, href: "/contact", icon: Phone },
   ];
 
-  // Handle sticky navigation on scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -117,7 +117,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // Command shortcuts
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -132,11 +131,6 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-  };
-
-  const getUserInitials = () => {
-    if (!user) return "U";
-    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
   };
 
   const navigation = [
@@ -281,7 +275,7 @@ export default function Navbar() {
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={user?.profile_image} alt={user?.username} />
-                            <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                            <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
                           </Avatar>
                         </Button>
                       </DropdownMenuTrigger>
@@ -335,11 +329,11 @@ export default function Navbar() {
                     <div className="flex items-center gap-2">
                       <Button size="sm" className="min-w-20 px-4 font-medium" asChild>
                         <Link href="/login">
-                          {t.auth.login}
+                          {t.auth.titleLogin}
                         </Link>
                       </Button>
                       <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-medium">
-                        <Link href="/register">{t.auth.register}</Link>
+                        <Link href="/register">{t.auth.titleRegister}</Link>
                       </Button>
                     </div>
                 )}
@@ -446,7 +440,7 @@ export default function Navbar() {
                     <div className="flex items-center gap-3 pb-4 border-b">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user?.profile_image} />
-                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                        <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <p className="text-sm font-medium">
@@ -458,7 +452,7 @@ export default function Navbar() {
                 ) : (
                     <div className="flex gap-2 pb-4 border-b">
                       <Button variant="outline" className="flex-1" asChild>
-                        <Link href="/login">{t.auth.login}</Link>
+                        <Link href="/login">{t.auth.titleLogin}</Link>
                       </Button>
                       <Button className="flex-1" asChild>
                         <Link href="/register">{t.auth.signUp}</Link>

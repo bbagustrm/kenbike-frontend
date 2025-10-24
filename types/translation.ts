@@ -1,4 +1,3 @@
-// types/translation.ts
 export type Locale = "id" | "en";
 
 export interface Translation {
@@ -41,10 +40,10 @@ export interface Translation {
 
     // Auth
     auth: {
-        login: string;
+        titleLogin: string;
         signUp: string;
         logout: string;
-        register: string;
+        titleRegister: string;
         forgotPassword: string;
         resetPassword: string;
         email: string;
@@ -53,6 +52,61 @@ export interface Translation {
         firstName: string;
         lastName: string;
         username: string;
+        login: {
+            title: string;
+            description: string;
+            emailLabel: string;
+            emailPlaceholder: string;
+            passwordLabel: string;
+            passwordPlaceholder: string;
+            forgotPassword: string;
+            signingIn: string;
+            signInButton: string;
+            noAccount: string;
+            signUpLink: string;
+            registrationSuccess: string;
+            redirectMessage: string;
+            loginSuccess: string;
+            loginFailed: string;
+        };
+        register: {
+            title: string;
+            description: string;
+            firstNameLabel: string;
+            lastNameLabel: string;
+            usernameLabel: string;
+            emailLabel: string;
+            phoneLabel: string;
+            countryLabel: string;
+            addressLabel: string;
+            passwordLabel: string;
+            confirmPasswordLabel: string;
+            creatingAccount: string;
+            createAccountButton: string;
+            hasAccount: string;
+            signInLink: string;
+            passwordsDoNotMatch: string;
+            accountCreated: string;
+            registrationFailed: string;
+            passwordRequirements: {
+                title: string;
+                length: string;
+                uppercase: string;
+                lowercase: string;
+                number: string;
+                special: string;
+            };
+            placeholders: {
+                firstName: string;
+                lastName: string;
+                username: string;
+                email: string;
+                phone: string;
+                country: string;
+                address: string;
+                password: string;
+            };
+        };
     };
 
     // User Menu
@@ -110,5 +164,70 @@ export interface Translation {
         officialStores: string;
         paymentMethods: string;
         copyright: string;
+    };
+
+    profile: {
+        title: string;
+        description: string;
+        tabs: {
+            profile: {
+                title: string;
+                description: string;
+            };
+            password: {
+                title: string;
+                description: string;
+            };
+        };
+        fields: {
+            firstName: string;
+            lastName: string;
+            username: string;
+            email: string;
+            phone: string;
+            country: string;
+            address: string;
+            currentPassword: string;
+            newPassword: string;
+            confirmNewPassword: string;
+        };
+        placeholders: {
+            phone: string;
+            country: string;
+            address: string;
+            currentPassword: string;
+            newPassword: string;
+            confirmNewPassword: string;
+        };
+        buttons: {
+            changePhoto: string;
+            uploadPhoto: string;
+            cancel: string;
+            remove: string;
+            updateProfile: string;
+            updating: string;
+            updatePassword: string;
+        };
+        messages: {
+            confirmDeleteImage: string;
+            imageSelected: string;
+            clickToSave: string;
+            updateSuccess: string;
+            updateError: string;
+            deleteImageSuccess: string;
+            deleteImageError: string;
+            passwordsDoNotMatch: string;
+            updatePasswordSuccess: string;
+            updatePasswordError: string;
+        };
+        passwordRequirements: {
+            title: string;
+            length: string;
+            uppercase: string;
+            lowercase: string;
+            number: string;
+            special: string;
+        };
+        imageInfo: string;
     };
 }

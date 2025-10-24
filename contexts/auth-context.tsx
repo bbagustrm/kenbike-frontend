@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else if (userData.role === "OWNER") {
                 router.push("/owner/dashboard");
             } else {
-                router.push("/user/profile");
+                router.push("/");
             }
         } catch (error) {
             throw new Error(handleApiError(error));

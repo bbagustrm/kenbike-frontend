@@ -63,8 +63,15 @@ export function isUser(): boolean {
 /**
  * Get user initials from name
  */
-export function getUserInitials(user: User): string {
-    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+export function getUserInitials(user: User | null | undefined): string {
+    if (!user) {
+        return ""; // Bisa juga "?" atau "U" sebagai fallback
+    }
+
+    const firstInitial = user.first_name?.[0] ?? '';
+    const lastInitial = user.last_name?.[0] ?? '';
+
+    return (firstInitial + lastInitial).toUpperCase();
 }
 
 /**
