@@ -67,7 +67,6 @@ export default function RegisterForm() {
             return;
         }
 
-        // Panggil fungsi validasi tanpa parameter 't'
         const passwordError = validatePassword(formData.password);
         if (passwordError) {
             toast.error(passwordError);
@@ -77,6 +76,7 @@ export default function RegisterForm() {
         setIsSubmitting(true);
 
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { confirm_password: _, ...registerData } = formData;
             await register(registerData);
             toast.success(t.auth.register.accountCreated);
