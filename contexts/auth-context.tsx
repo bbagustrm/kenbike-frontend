@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 router.push("/");
             }
         } catch (error) {
-            throw new Error(handleApiError(error));
+            throw new Error(handleApiError(error).message);
         }
     }
 
@@ -177,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await AuthService.register(data);
             router.push("/login?registered=true");
         } catch (error) {
-            throw new Error(handleApiError(error));
+            throw new Error(handleApiError(error).message);
         }
     }
 
@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
             }
         } catch (error) {
-            throw new Error(handleApiError(error));
+            throw new Error(handleApiError(error).message);
         }
     }
 
@@ -227,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await AuthService.updatePassword(data);
         } catch (error) {
-            throw new Error(handleApiError(error));
+            throw new Error(handleApiError(error).message);
         }
     }
 
@@ -245,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
             }
         } catch (error) {
-            throw new Error(handleApiError(error));
+            throw new Error(handleApiError(error).message);
         }
     }
 
@@ -262,7 +262,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
             }
         } catch (error) {
-            throw new Error(handleApiError(error));
+            throw new Error(handleApiError(error).message);
         }
     }
 
