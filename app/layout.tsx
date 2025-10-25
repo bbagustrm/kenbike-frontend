@@ -30,7 +30,7 @@ export default function RootLayout({ children, }: Readonly<{
         <TranslationProvider>
             <AuthProvider>
                 {children}
-                <Toaster />
+                <Toaster position="top-right" />
             </AuthProvider>
         </TranslationProvider>
         </body>

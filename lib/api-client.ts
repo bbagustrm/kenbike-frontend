@@ -1,4 +1,3 @@
-// lib/api-client.ts
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 import { ApiResponse } from "@/types/auth";
@@ -170,24 +169,34 @@ function handleLogout() {
 }
 
 // Helper function to handle API errors
-export function handleApiError(error: unknown): string {
+export function handleApiError(error: unknown): { message: string; fieldErrors?: Record<string, string> } {
     if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ApiResponse>;
 
+        // Default message
+        let message = "An unexpected error occurred";
+        const fieldErrors: Record<string, string> = {};
+
+        // Get general message
         if (axiosError.response?.data?.message) {
-            return axiosError.response.data.message;
+            message = axiosError.response.data.message;
+        } else if (axiosError.message) {
+            message = axiosError.message;
         }
 
-        if (axiosError.response?.data?.errors && axiosError.response.data.errors.length > 0) {
-            return axiosError.response.data.errors.map(err => err.message).join(", ");
+        // Get field-specific errors
+        if (axiosError.response?.data?.errors && Array.isArray(axiosError.response.data.errors)) {
+            axiosError.response.data.errors.forEach(err => {
+                if (err.field && err.message) {
+                    fieldErrors[err.field] = err.message;
+                }
+            });
         }
 
-        if (axiosError.message) {
-            return axiosError.message;
-        }
+        return { message, fieldErrors };
     }
 
-    return "An unexpected error occurred";
+    return { message: "An unexpected error occurred" };
 }
 
 export default apiClient;
