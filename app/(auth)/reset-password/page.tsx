@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
                 router.push("/login");
             }, 3000);
         } catch (err) {
-            setError(handleApiError(err));
+            setError(handleApiError(err).message);
         } finally {
             setIsSubmitting(false);
         }
