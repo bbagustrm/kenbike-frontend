@@ -22,13 +22,10 @@ import {
   Search,
   Bell,
   ShoppingCart,
-  User,
   Menu,
   X,
   Package,
-  Heart,
   LogOut,
-  ShoppingBag,
   Home,
   Info,
   Phone,
@@ -48,14 +45,6 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -64,7 +53,7 @@ import {
 import { cn } from "@/lib/utils";
 import CheckoutCard from "../checkout-card";
 import { getUserInitials } from "@/lib/auth-utils";
-
+import { UserAvatar } from "@/components/auth/user-avatar";
 export default function Navbar() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
@@ -215,7 +204,7 @@ export default function Navbar() {
                         className="relative"
                         aria-label="Cart"
                     >
-                      <ShoppingCart className="w-5 h-5"/>
+                      <ShoppingCart className="w-5 h-5" />
                       {cartItemsCount > 0 && (
                           <Badge
                               variant="destructive"
@@ -264,61 +253,7 @@ export default function Navbar() {
 
                 {/* User Menu */}
                 {isAuthenticated ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                          <Avatar className="h-9 w-9">
-                            <AvatarImage src={user?.profile_image} alt={user?.username} />
-                            <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
-                          </Avatar>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56" align="end">
-                        <DropdownMenuLabel>
-                          <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium">
-                              {user?.first_name} {user?.last_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{user?.email}</p>
-                          </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href="/user/profile" className="cursor-pointer">
-                            <User className="mr-2 h-4 w-4" />
-                            {t.user.profile}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/user/orders" className="cursor-pointer">
-                            <Package className="mr-2 h-4 w-4" />
-                            {t.user.myOrders}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/user/wishlist" className="cursor-pointer">
-                            <Heart className="mr-2 h-4 w-4" />
-                            {t.user.wishlist}
-                          </Link>
-                        </DropdownMenuItem>
-                        {(user?.role === "ADMIN" || user?.role === "OWNER") && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem asChild>
-                                <Link href="/admin/dashboard" className="cursor-pointer">
-                                  <ShoppingBag className="mr-2 h-4 w-4" />
-                                  {t.user.adminDashboard}
-                                </Link>
-                              </DropdownMenuItem>
-                            </>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-                          <LogOut className="mr-2 h-4 w-4" />
-                          {t.user.logout}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <UserAvatar />
                 ) : (
                     <div className="flex items-center gap-2">
                       <Button size="sm" className="min-w-20 px-4 font-medium" asChild>

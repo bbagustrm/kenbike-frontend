@@ -17,6 +17,7 @@ import {
   Menu,
   User,
   Home,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -26,21 +27,22 @@ const adminNavigation = [
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const ownerNavigation = [
   { name: "Dashboard", href: "/owner/dashboard", icon: LayoutDashboard },
-  { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
-  { name: "Reports", href: "/owner/reports", icon: Package },
-  { name: "Financial", href: "/owner/financial", icon: ShoppingCart },
+  { name: "Users", href: "/owner/users", icon: Users },
+  { name: "Products", href: "/owner/products", icon: Package },
+  { name: "Orders", href: "/owner/orders", icon: ShoppingCart },
   { name: "Settings", href: "/owner/settings", icon: Settings },
+  { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
+  { name: "Promotions", href: "/owner/promotions", icon: Tag },
 ];
 
 const userNavigation = [
   { name: "Profile", href: "/user/profile", icon: User },
-  { name: "My Orders", href: "/user/orders", icon: ShoppingCart }
+  { name: "Orders", href: "/user/orders", icon: ShoppingCart },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -110,7 +112,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
       <ProtectedRoute>
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-neutral-50 ">
           {/* Desktop Sidebar */}
           <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-white">
             <Sidebar />
@@ -138,7 +140,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </header>
 
             {/* Page Content */}
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto md:px-8">
               {children}
             </main>
           </div>
