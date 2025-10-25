@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
             await AuthService.forgotPassword({ email });
             setSuccess(true);
         } catch (err) {
-            setError(handleApiError(err));
+            setError(handleApiError(err).message);
         } finally {
             setIsSubmitting(false);
         }
