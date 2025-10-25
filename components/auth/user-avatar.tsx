@@ -64,13 +64,6 @@ export function UserAvatar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                {/* Menu untuk semua role */}
-                <DropdownMenuItem asChild>
-                    <Link href="/user/profile" className="cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                    </Link>
-                </DropdownMenuItem>
 
                 {/* Menu khusus untuk user biasa */}
                 {user.role === "USER" && (
@@ -79,6 +72,12 @@ export function UserAvatar() {
                             <Link href="/user/orders" className="cursor-pointer">
                                 <ShoppingCart className="mr-2 h-4 w-4" />
                                 Orders
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/user/profile" className="cursor-pointer">
+                                <User className="mr-2 h-4 w-4" />
+                                Profile
                             </Link>
                         </DropdownMenuItem>
                     </>

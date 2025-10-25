@@ -15,6 +15,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -67,6 +73,18 @@ export default function AdminUsersPage() {
     const [showStatusDialog, setShowStatusDialog] = useState(false);
     const [newRole, setNewRole] = useState<UserRole>("USER");
     const [statusReason, setStatusReason] = useState("");
+
+    // Fungsi getRoleColor yang diperbaiki dengan parameter role
+    const getRoleColor = (role: string) => {
+        switch (role) {
+            case "ADMIN":
+                return "bg-blue-100 text-blue-700 border-blue-200";
+            case "OWNER":
+                return "bg-purple-100 text-purple-700 border-purple-200";
+            default:
+                return "bg-gray-100 text-gray-700 border-gray-200";
+        }
+    };
 
     const fetchUsers = useCallback(async () => {
         setIsLoading(true);
@@ -163,14 +181,6 @@ export default function AdminUsersPage() {
         }
     };
 
-    const getRoleBadgeVariant = (role: UserRole) => {
-        switch (role) {
-            case "ADMIN": return "default";
-            case "OWNER": return "secondary";
-            default: return "outline";
-        }
-    };
-
     return (
         <div className="container mx-auto py-8 px-4">
             <div className="mb-8">
@@ -210,84 +220,120 @@ export default function AdminUsersPage() {
                 </Button>
             </div>
 
-            <div className="border rounded-lg">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>{t.adminUsers.tableHeaders.user}</TableHead>
-                            <TableHead>{t.adminUsers.tableHeaders.email}</TableHead>
-                            <TableHead>{t.adminUsers.tableHeaders.role}</TableHead>
-                            <TableHead>{t.adminUsers.tableHeaders.status}</TableHead>
-                            <TableHead>{t.adminUsers.tableHeaders.created}</TableHead>
-                            <TableHead className="text-right">{t.adminUsers.tableHeaders.actions}</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
+            {/* Wrap the table with TooltipProvider */}
+            <TooltipProvider>
+                <div className="border rounded-md ">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8">
-                                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                                </TableCell>
+                                <TableHead className="px-13">{t.adminUsers.tableHeaders.user}</TableHead>
+                                <TableHead>{t.adminUsers.tableHeaders.email}</TableHead>
+                                <TableHead>{t.adminUsers.tableHeaders.role}</TableHead>
+                                <TableHead>{t.adminUsers.tableHeaders.status}</TableHead>
+                                <TableHead>{t.adminUsers.tableHeaders.created}</TableHead>
+                                <TableHead className="text-center">{t.adminUsers.tableHeaders.actions}</TableHead>
                             </TableRow>
-                        ) : users.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8">
-                                    {t.adminUsers.noUsersFound}
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar>
-                                                <AvatarImage src={user.profile_image} />
-                                                <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium">{user.first_name} {user.last_name}</p>
-                                                <p className="text-sm text-muted-foreground">@{user.username}</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {user.is_active ? (
-                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                                {t.adminUsers.active}
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                                                {t.adminUsers.suspended}
-                                            </Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setNewRole(user.role); setShowRoleDialog(true); }}>
-                                                <Shield className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowStatusDialog(true); }}>
-                                                {user.is_active ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
-                                            </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => handleForceLogout(user)}>
-                                                <LogOut className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDeleteDialog(true); }}>
-                                                <Trash2 className="h-4 w-4 text-red-500" />
-                                            </Button>
-                                        </div>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-8">
+                                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            ) : users.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center py-8">
+                                        {t.adminUsers.noUsersFound}
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                users.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarImage src={user.profile_image} />
+                                                    <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium">{user.first_name} {user.last_name}</p>
+                                                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={`mt-2 w-fit ${getRoleColor(user.role)}`}>
+                                                {user.role}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.is_active ? (
+                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                                    {t.adminUsers.active}
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                                    {t.adminUsers.suspended}
+                                                </Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setNewRole(user.role); setShowRoleDialog(true); }}>
+                                                            <Shield className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Change Role</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowStatusDialog(true); }}>
+                                                            {user.is_active ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{user.is_active ? "Suspend User" : "Activate User"}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="ghost" size="sm" onClick={() => handleForceLogout(user)}>
+                                                            <LogOut className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Force Logout</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(user); setShowDeleteDialog(true); }}>
+                                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Delete User</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </TooltipProvider>
 
             {totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-between">

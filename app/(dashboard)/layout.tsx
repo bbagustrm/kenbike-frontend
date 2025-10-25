@@ -63,12 +63,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return "My Account";
   };
 
-  const getDashboardPath = () => {
-    if (user?.role === "ADMIN") return "/admin/dashboard";
-    if (user?.role === "OWNER") return "/owner/dashboard";
-    return "/user/profile";
-  };
-
   const Sidebar = () => (
       <>
         <div className="flex h-16 items-center gap-2 border-b px-6">
@@ -118,7 +112,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
       <ProtectedRoute>
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-neutral-50 ">
           {/* Desktop Sidebar */}
           <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-white">
             <Sidebar />
@@ -146,7 +140,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </header>
 
             {/* Page Content */}
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto md:px-8">
               {children}
             </main>
           </div>
