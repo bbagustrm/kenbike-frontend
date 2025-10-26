@@ -18,6 +18,7 @@ import {
   User,
   Home,
   Tag,
+  Folder,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -26,6 +27,8 @@ const adminNavigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Users", href: "/admin/users", icon: Users },
   { name: "Products", href: "/admin/products", icon: Package },
+  { name: "Categories", href: "/admin/categories", icon: Folder },
+  { name: "Tags", href: "/admin/tags", icon: Tag },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
@@ -34,6 +37,8 @@ const ownerNavigation = [
   { name: "Dashboard", href: "/owner/dashboard", icon: LayoutDashboard },
   { name: "Users", href: "/owner/users", icon: Users },
   { name: "Products", href: "/owner/products", icon: Package },
+  { name: "Categories", href: "/owner/categories", icon: Folder },
+  { name: "Tags", href: "/owner/tags", icon: Tag },
   { name: "Orders", href: "/owner/orders", icon: ShoppingCart },
   { name: "Settings", href: "/owner/settings", icon: Settings },
   { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },

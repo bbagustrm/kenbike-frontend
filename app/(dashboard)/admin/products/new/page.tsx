@@ -272,7 +272,7 @@ export default function NewProductPage() {
                         </div>
 
                         {/* Product Image */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 ">
                             <ImageUpload
                                 label="Product Image"
                                 description="Upload main product image"
@@ -413,14 +413,14 @@ export default function NewProductPage() {
                         <div className="space-y-2">
                             <Label htmlFor="categoryId">Category</Label>
                             <Select
-                                value={formData.categoryId || ""}
-                                onValueChange={(value) => handleChange("categoryId", value || undefined)}
+                                value={formData.categoryId || "none"}
+                                onValueChange={(value) => handleChange("categoryId", value === "none" ? undefined : value)}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">No Category</SelectItem>
+                                    <SelectItem value="none">No Category</SelectItem>
                                     {categories.map((cat) => (
                                         <SelectItem key={cat.id} value={cat.id}>
                                             {cat.name}
