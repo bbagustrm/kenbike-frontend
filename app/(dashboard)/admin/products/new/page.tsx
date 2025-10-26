@@ -272,14 +272,15 @@ export default function NewProductPage() {
                         </div>
 
                         {/* Product Image */}
-                        <div className="space-y-2 ">
+                        <div className="space-y-2">
                             <ImageUpload
                                 label="Product Image"
                                 description="Upload main product image"
                                 value={formData.imageUrl}
                                 onChange={(url) => handleChange("imageUrl", url)}
                                 folder="products"
-                                aspectRatio="1/1"
+                                aspectRatio="4/3"
+                                className="max-w-sm"
                             />
                         </div>
                     </CardContent>
@@ -303,8 +304,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="25000000"
-                                    value={formData.idPrice}
-                                    onChange={(e) => handleChange("idPrice", parseInt(e.target.value) || 0)}
+                                    value={formData.idPrice || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("idPrice", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("idPrice", parseInt(value) || 0);
+                                        }
+                                    }}
                                     required
                                 />
                             </div>
@@ -319,8 +328,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="1700"
-                                    value={formData.enPrice}
-                                    onChange={(e) => handleChange("enPrice", parseInt(e.target.value) || 0)}
+                                    value={formData.enPrice || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("enPrice", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("enPrice", parseInt(value) || 0);
+                                        }
+                                    }}
                                     required
                                 />
                             </div>
@@ -335,8 +352,16 @@ export default function NewProductPage() {
                                     min="0"
                                     max="1"
                                     placeholder="0.11"
-                                    value={formData.taxRate}
-                                    onChange={(e) => handleChange("taxRate", parseFloat(e.target.value) || 0)}
+                                    value={formData.taxRate || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("taxRate", parseFloat(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("taxRate", parseFloat(value) || 0);
+                                        }
+                                    }}
                                 />
                                 <p className="text-xs text-muted-foreground">
                                     Default: 0.11 (11%)
@@ -361,8 +386,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="1600"
-                                    value={formData.weight}
-                                    onChange={(e) => handleChange("weight", parseInt(e.target.value) || 0)}
+                                    value={formData.weight || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("weight", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("weight", parseInt(value) || 0);
+                                        }
+                                    }}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -372,8 +405,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="30"
-                                    value={formData.length}
-                                    onChange={(e) => handleChange("length", parseInt(e.target.value) || 0)}
+                                    value={formData.length || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("length", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("length", parseInt(value) || 0);
+                                        }
+                                    }}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -383,8 +424,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="21"
-                                    value={formData.width}
-                                    onChange={(e) => handleChange("width", parseInt(e.target.value) || 0)}
+                                    value={formData.width || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("width", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("width", parseInt(value) || 0);
+                                        }
+                                    }}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -394,8 +443,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="2"
-                                    value={formData.height}
-                                    onChange={(e) => handleChange("height", parseInt(e.target.value) || 0)}
+                                    value={formData.height || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("height", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("height", parseInt(value) || 0);
+                                        }
+                                    }}
                                 />
                             </div>
                         </div>
@@ -446,14 +503,14 @@ export default function NewProductPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
                                 <Select
-                                    value={formData.promotionId || ""}
-                                    onValueChange={(value) => handleChange("promotionId", value || undefined)}
+                                    value={formData.promotionId || "none"}
+                                    onValueChange={(value) => handleChange("promotionId", value === "none" ? undefined : value)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select promotion" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">No Promotion</SelectItem>
+                                        <SelectItem value="none">No Promotion</SelectItem>
                                         {promotions.map((promo) => (
                                             <SelectItem key={promo.id} value={promo.id}>
                                                 {promo.name} (-{(promo.discount * 100).toFixed(0)}%)
@@ -525,10 +582,16 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="7"
-                                    value={formData.preOrderDays}
-                                    onChange={(e) =>
-                                        handleChange("preOrderDays", parseInt(e.target.value) || 0)
-                                    }
+                                    value={formData.preOrderDays || ""} // Gunakan string kosong jika nilai 0
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Pastikan nilai tidak dimulai dengan 0
+                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
+                                            handleChange("preOrderDays", parseInt(value.substring(1)) || 0);
+                                        } else {
+                                            handleChange("preOrderDays", parseInt(value) || 0);
+                                        }
+                                    }}
                                 />
                                 <p className="text-xs text-muted-foreground">
                                     Number of days until product is available

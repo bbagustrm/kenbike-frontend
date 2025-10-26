@@ -211,6 +211,7 @@ export interface GetProductsParams {
     sortBy?: 'name' | 'idPrice' | 'enPrice' | 'totalSold' | 'totalView' | 'avgRating' | 'createdAt';
     order?: 'asc' | 'desc';
     includeDeleted?: boolean;
+    onlyDeleted?: boolean;
     isActive?: boolean;
 }
 

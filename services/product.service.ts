@@ -74,7 +74,7 @@ export class ProductService {
     /**
      * Get all products (admin) - includes deleted and inactive
      */
-    static async getAdminProducts(params?: GetProductsParams): Promise<ProductsResponse> {
+    static async getAdminProducts(params?: GetProductsParams & { onlyDeleted?: boolean }): Promise<ProductsResponse> {
         const response = await apiClient.get<ProductsResponse>("/admin/products", { params });
         return response.data;
     }

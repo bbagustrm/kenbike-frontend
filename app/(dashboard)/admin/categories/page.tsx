@@ -44,6 +44,7 @@ import {
     EyeOff,
     ChevronLeft,
     ChevronRight,
+    AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -87,6 +88,12 @@ export default function AdminCategoriesPage() {
         id: null,
     });
 
+    // Tambahkan state untuk hard delete dialog
+    const [hardDeleteDialog, setHardDeleteDialog] = useState<{ open: boolean; id: string | null }>({
+        open: false,
+        id: null,
+    });
+
     const fetchCategories = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -95,10 +102,18 @@ export default function AdminCategoriesPage() {
                 limit,
                 search: search || undefined,
                 includeDeleted: activeTab === "deleted",
-                isActive: activeTab === "active" ? true : undefined,
+                onlyDeleted: activeTab === "deleted",
             });
 
-            setCategories(response.data || []);
+            // Filter data based on activeTab (client-side)
+            let filteredCategories = response.data || [];
+            if (activeTab === "deleted") {
+                filteredCategories = filteredCategories.filter(c => c.deletedAt !== null);
+            } else {
+                filteredCategories = filteredCategories.filter(c => c.deletedAt === null);
+            }
+
+            setCategories(filteredCategories);
             if (response.meta) {
                 setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);
@@ -173,6 +188,19 @@ export default function AdminCategoriesPage() {
             await CategoryService.deleteCategory(id);
             toast.success("Category deleted successfully");
             setDeleteDialog({ open: false, id: null });
+            fetchCategories();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        }
+    };
+
+    // Tambahkan fungsi handleHardDelete
+    const handleHardDelete = async (id: string) => {
+        try {
+            await CategoryService.hardDeleteCategory(id);
+            toast.success("Category permanently deleted");
+            setHardDeleteDialog({ open: false, id: null });
             fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -380,10 +408,19 @@ export default function AdminCategoriesPage() {
                                                                 </DropdownMenuItem>
                                                             </>
                                                         ) : (
-                                                            <DropdownMenuItem onClick={() => handleRestore(category.id)}>
-                                                                <RotateCcw className="h-4 w-4 mr-2" />
-                                                                Restore
-                                                            </DropdownMenuItem>
+                                                            <>
+                                                                <DropdownMenuItem onClick={() => handleRestore(category.id)}>
+                                                                    <RotateCcw className="h-4 w-4 mr-2" />
+                                                                    Restore
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    className="text-destructive"
+                                                                    onClick={() => setHardDeleteDialog({ open: true, id: category.id })}
+                                                                >
+                                                                    <AlertTriangle className="h-4 w-4 mr-2" />
+                                                                    Delete Permanently
+                                                                </DropdownMenuItem>
+                                                            </>
                                                         )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -543,6 +580,31 @@ export default function AdminCategoriesPage() {
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Hard Delete Confirmation Dialog */}
+            <AlertDialog
+                open={hardDeleteDialog.open}
+                onOpenChange={(open) => setHardDeleteDialog({ open, id: null })}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Permanently Delete Category</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete this category? This action cannot be undone and
+                            will remove all data associated with this category.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => hardDeleteDialog.id && handleHardDelete(hardDeleteDialog.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete Permanently
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

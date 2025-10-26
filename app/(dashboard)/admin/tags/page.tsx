@@ -95,10 +95,17 @@ export default function AdminTagsPage() {
                 limit,
                 search: search || undefined,
                 includeDeleted: activeTab === "deleted",
-                isActive: activeTab === "active" ? true : undefined,
             });
 
-            setTags(response.data || []);
+            // Filter data based on activeTab
+            let filteredTags = response.data || [];
+            if (activeTab === "deleted") {
+                filteredTags = filteredTags.filter(t => t.deletedAt !== null);
+            } else {
+                filteredTags = filteredTags.filter(t => t.deletedAt === null);
+            }
+
+            setTags(filteredTags);
             if (response.meta) {
                 setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);
@@ -156,7 +163,7 @@ export default function AdminTagsPage() {
             }
 
             setFormDialog({ open: false, mode: "create", tag: null });
-            fetchTags();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -170,7 +177,7 @@ export default function AdminTagsPage() {
             await TagService.deleteTag(id);
             toast.success("Tag deleted successfully");
             setDeleteDialog({ open: false, id: null });
-            fetchTags();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -181,7 +188,22 @@ export default function AdminTagsPage() {
         try {
             await TagService.restoreTag(id);
             toast.success("Tag restored successfully");
-            fetchTags();
+            await fetchTags();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        }
+    };
+
+    const handleHardDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to permanently delete this tag? This action cannot be undone!")) {
+            return;
+        }
+
+        try {
+            await TagService.hardDeleteTag(id);
+            toast.success("Tag permanently deleted");
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -192,7 +214,7 @@ export default function AdminTagsPage() {
         try {
             await TagService.toggleTagActive(id);
             toast.success("Tag status updated");
-            fetchTags();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -222,7 +244,7 @@ export default function AdminTagsPage() {
             await TagService.bulkDeleteTags(selectedIds);
             toast.success(`${selectedIds.length} tags deleted successfully`);
             setSelectedIds([]);
-            fetchTags();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -236,7 +258,7 @@ export default function AdminTagsPage() {
             await TagService.bulkRestoreTags(selectedIds);
             toast.success(`${selectedIds.length} tags restored successfully`);
             setSelectedIds([]);
-            fetchTags();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -381,10 +403,19 @@ export default function AdminTagsPage() {
                                                                 </DropdownMenuItem>
                                                             </>
                                                         ) : (
-                                                            <DropdownMenuItem onClick={() => handleRestore(tag.id)}>
-                                                                <RotateCcw className="h-4 w-4 mr-2" />
-                                                                Restore
-                                                            </DropdownMenuItem>
+                                                            <>
+                                                                <DropdownMenuItem onClick={() => handleRestore(tag.id)}>
+                                                                    <RotateCcw className="h-4 w-4 mr-2" />
+                                                                    Restore
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    className="text-destructive"
+                                                                    onClick={() => handleHardDelete(tag.id)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 mr-2" />
+                                                                    Delete Permanently
+                                                                </DropdownMenuItem>
+                                                            </>
                                                         )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>

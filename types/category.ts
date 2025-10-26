@@ -31,6 +31,7 @@ export interface GetCategoriesParams {
     sortBy?: 'name' | 'productCount' | 'createdAt';
     order?: 'asc' | 'desc';
     includeDeleted?: boolean;
+    onlyDeleted?: boolean;
 }
 
 // API Response types
@@ -54,7 +55,7 @@ export interface CategoryActionResponse {
     message: string;
     data: {
         id: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 }
 

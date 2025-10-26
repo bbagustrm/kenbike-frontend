@@ -75,12 +75,25 @@ export default function OwnerPromotionsPage() {
                 page,
                 limit,
                 search: search || undefined,
-                isActive: activeTab === "active" ? true : activeTab === "expired" ? false : undefined,
-                includeExpired: activeTab === "expired",
                 includeDeleted: activeTab === "deleted",
             });
 
-            setPromotions(response.data || []);
+            // Filter data based on activeTab
+            let filteredPromotions = response.data || [];
+            if (activeTab === "deleted") {
+                filteredPromotions = filteredPromotions.filter(p => p.deletedAt !== null);
+            } else if (activeTab === "expired") {
+                filteredPromotions = filteredPromotions.filter(p =>
+                    p.deletedAt === null && new Date(p.endDate) < new Date()
+                );
+            } else {
+                // active
+                filteredPromotions = filteredPromotions.filter(p =>
+                    p.deletedAt === null && new Date(p.endDate) >= new Date()
+                );
+            }
+
+            setPromotions(filteredPromotions);
             if (response.meta) {
                 setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);

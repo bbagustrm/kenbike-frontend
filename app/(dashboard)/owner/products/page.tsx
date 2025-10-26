@@ -1,3 +1,4 @@
+// Owner products page - Same as admin but with owner path
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -72,11 +73,9 @@ export default function OwnerProductsPage() {
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
-
     type ProductSortBy = "createdAt" | "name" | "idPrice" | "totalSold" | "avgRating";
 
     const [sortBy, setSortBy] = useState<ProductSortBy>("createdAt");
-
     const [order, setOrder] = useState<"asc" | "desc">("desc");
     const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
 
@@ -92,13 +91,21 @@ export default function OwnerProductsPage() {
                 page,
                 limit,
                 search: search || undefined,
-                sortBy,
+                sortBy: sortBy,
                 order,
                 includeDeleted: activeTab === "deleted",
-                isActive: activeTab === "active" ? true : undefined,
+                isActive: activeTab === "deleted" ? undefined : true,
             });
 
-            setProducts(response.data || []);
+            // Filter data based on activeTab
+            let filteredProducts = response.data || [];
+            if (activeTab === "deleted") {
+                filteredProducts = filteredProducts.filter(p => p.deletedAt !== null);
+            } else {
+                filteredProducts = filteredProducts.filter(p => p.deletedAt === null);
+            }
+
+            setProducts(filteredProducts);
             setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (err) {
@@ -142,7 +149,7 @@ export default function OwnerProductsPage() {
             await ProductService.bulkDeleteProducts(selectedIds);
             toast.success(`${selectedIds.length} products deleted successfully`);
             setSelectedIds([]);
-            await fetchProducts();
+            fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -156,7 +163,7 @@ export default function OwnerProductsPage() {
             await ProductService.bulkRestoreProducts(selectedIds);
             toast.success(`${selectedIds.length} products restored successfully`);
             setSelectedIds([]);
-            await fetchProducts();
+            fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -168,7 +175,7 @@ export default function OwnerProductsPage() {
             await ProductService.deleteProduct(id);
             toast.success("Product deleted successfully");
             setDeleteDialog({ open: false, id: null });
-            await fetchProducts();
+            fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -179,7 +186,7 @@ export default function OwnerProductsPage() {
         try {
             await ProductService.restoreProduct(id);
             toast.success("Product restored successfully");
-            await fetchProducts();
+            fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -190,7 +197,7 @@ export default function OwnerProductsPage() {
         try {
             await ProductService.toggleProductActive(id);
             toast.success("Product status updated");
-            await fetchProducts();
+            fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -201,7 +208,7 @@ export default function OwnerProductsPage() {
         try {
             await ProductService.toggleProductFeatured(id);
             toast.success("Product featured status updated");
-            await fetchProducts();
+            fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);

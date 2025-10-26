@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { handleApiError } from "@/lib/api-client";
@@ -45,6 +45,7 @@ import {
     StarOff,
     ChevronLeft,
     ChevronRight,
+    AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -72,7 +73,6 @@ export default function AdminProductsPage() {
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
-
     type ProductSortBy = "createdAt" | "name" | "idPrice" | "totalSold" | "avgRating";
 
     const [sortBy, setSortBy] = useState<ProductSortBy>("createdAt");
@@ -85,6 +85,11 @@ export default function AdminProductsPage() {
         id: null,
     });
 
+    const [hardDeleteDialog, setHardDeleteDialog] = useState<{ open: boolean; id: string | null }>({
+        open: false,
+        id: null,
+    });
+
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -92,13 +97,19 @@ export default function AdminProductsPage() {
                 page,
                 limit,
                 search: search || undefined,
-                sortBy,
+                sortBy: sortBy,
                 order,
                 includeDeleted: activeTab === "deleted",
-                isActive: activeTab === "active" ? true : undefined,
             });
 
-            setProducts(response.data || []);
+            let filteredProducts = response.data || [];
+            if (activeTab === "deleted") {
+                filteredProducts = filteredProducts.filter(p => p.deletedAt !== null);
+            } else {
+                filteredProducts = filteredProducts.filter(p => p.deletedAt === null);
+            }
+
+            setProducts(filteredProducts);
             setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (err) {
@@ -168,6 +179,18 @@ export default function AdminProductsPage() {
             await ProductService.deleteProduct(id);
             toast.success("Product deleted successfully");
             setDeleteDialog({ open: false, id: null });
+            await fetchProducts();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        }
+    };
+
+    const handleHardDelete = async (id: string) => {
+        try {
+            await ProductService.hardDeleteProduct(id);
+            toast.success("Product permanently deleted");
+            setHardDeleteDialog({ open: false, id: null });
             await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -277,7 +300,7 @@ export default function AdminProductsPage() {
                                     <TableHead>Price (IDR)</TableHead>
                                     <TableHead>Stock</TableHead>
                                     <TableHead>Sold</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead>Status & Tags</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -365,6 +388,18 @@ export default function AdminProductsPage() {
                                                                         Featured
                                                                     </Badge>
                                                                 )}
+                                                                {/* Display tags */}
+                                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                                    {product.tags && product.tags.length > 0 ? (
+                                                                        product.tags.map((tag) => (
+                                                                            <Badge key={tag.id} variant="secondary" className="text-xs">
+                                                                                {tag.name}
+                                                                            </Badge>
+                                                                        ))
+                                                                    ) : (
+                                                                        <span className="text-xs text-muted-foreground"></span>
+                                                                    )}
+                                                                </div>
                                                             </>
                                                         ) : (
                                                             <Badge variant="destructive" className="w-fit">
@@ -418,6 +453,13 @@ export default function AdminProductsPage() {
                                                                     <DropdownMenuItem onClick={() => handleRestore(product.id)}>
                                                                         <RotateCcw className="h-4 w-4 mr-2" />
                                                                         Restore
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        className="text-destructive"
+                                                                        onClick={() => setHardDeleteDialog({ open: true, id: product.id })}
+                                                                    >
+                                                                        <AlertTriangle className="h-4 w-4 mr-2" />
+                                                                        Hard Delete
                                                                     </DropdownMenuItem>
                                                                 </>
                                                             )}
@@ -493,6 +535,30 @@ export default function AdminProductsPage() {
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Hard Delete Confirmation Dialog */}
+            <AlertDialog
+                open={hardDeleteDialog.open}
+                onOpenChange={(open) => setHardDeleteDialog({ open, id: null })}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Permanently Delete Product</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete this product? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => hardDeleteDialog.id && handleHardDelete(hardDeleteDialog.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete Permanently
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

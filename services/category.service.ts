@@ -38,7 +38,7 @@ export class CategoryService {
     /**
      * Get all categories (admin)
      */
-    static async getAdminCategories(params?: GetCategoriesParams): Promise<CategoriesResponse> {
+    static async getAdminCategories(params?: GetCategoriesParams & { onlyDeleted?: boolean }): Promise<CategoriesResponse> {
         const response = await apiClient.get<CategoriesResponse>("/admin/categories", { params });
         return response.data;
     }
