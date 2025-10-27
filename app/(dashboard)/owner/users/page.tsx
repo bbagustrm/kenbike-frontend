@@ -72,7 +72,7 @@ export default function OwnerUsersPage() {
 
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
-    const [total, setTotal] = useState(0);
+    // const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
@@ -113,7 +113,7 @@ export default function OwnerUsersPage() {
 
             const response = await UserService.getUsers(params);
             setUsers(response.data || []);
-            setTotal(response.meta.total);
+            // setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -148,7 +148,7 @@ export default function OwnerUsersPage() {
         setIsActionLoading(true);
         try {
             await UserService.deleteUser(selectedUser.id, false);
-            const errorResult = handleApiError(null);
+            // const errorResult = handleApiError(null);
             toast.success(`User ${selectedUser.username} deleted successfully`);
             setShowDeleteDialog(false);
             fetchUsers();

@@ -1,7 +1,5 @@
 import apiClient from "@/lib/api-client";
 import {
-    Promotion,
-    PromotionDetail,
     CreatePromotionData,
     UpdatePromotionData,
     GetPromotionsParams,

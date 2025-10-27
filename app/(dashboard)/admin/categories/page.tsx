@@ -40,8 +40,6 @@ import {
     Edit,
     Trash2,
     RotateCcw,
-    Eye,
-    EyeOff,
     AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -73,7 +71,6 @@ export default function AdminCategoriesPage() {
 
     const [page, setPage] = useState(1);
     const [limit] = useState(20);
-    const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
@@ -122,7 +119,6 @@ export default function AdminCategoriesPage() {
 
             setCategories(filteredCategories);
             if (response.meta) {
-                setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);
             }
         } catch (err) {
@@ -219,17 +215,6 @@ export default function AdminCategoriesPage() {
         try {
             await CategoryService.restoreCategory(id);
             toast.success("Category restored successfully");
-            await fetchCategories();
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-        }
-    };
-
-    const handleToggleActive = async (id: string) => {
-        try {
-            await CategoryService.toggleCategoryActive(id);
-            toast.success("Category status updated");
             await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);

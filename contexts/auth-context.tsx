@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { AuthService } from "@/services/auth.service";
@@ -36,8 +36,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const isAuthenticated = !!user;
 
+    // Wrap logout in useCallback to prevent recreation on every render
+    const logout = useCallback(async () => {
+        try {
+            // Try to logout from backend (blacklist token)
+            await AuthService.logout();
+        } catch (error) {
+            console.error("Logout error:", error);
+            // Continue with logout even if API call fails
+        } finally {
+            // Clear cookies and state
+            Cookies.remove("access_token");
+            Cookies.remove("refresh_token");
+            Cookies.remove("user");
+            setUser(null);
+
+            console.log("👋 Logged out successfully");
+
+            // Redirect to login with current path
+            const currentPath = pathname || "/";
+            if (!currentPath.startsWith("/login")) {
+                router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+            }
+        }
+    }, [pathname, router]);
+
     // Load user on mount
     useEffect(() => {
+        async function loadUser() {
+            try {
+                const accessToken = Cookies.get("access_token");
+                const userCookie = Cookies.get("user");
+
+                if (!accessToken) {
+                    setIsLoading(false);
+                    return;
+                }
+
+                // First, try to load from cookie (faster)
+                if (userCookie) {
+                    try {
+                        const cachedUser = JSON.parse(userCookie);
+                        setUser(cachedUser);
+                    } catch (error) {
+                        console.error("Error parsing user cookie:", error);
+                    }
+                }
+
+                // Then, fetch fresh data from API
+                const response = await AuthService.getCurrentUser();
+                const freshUser = response.data;
+
+                if (freshUser) {
+                    setUser(freshUser);
+
+                    // Update cookie with fresh data
+                    Cookies.set("user", JSON.stringify(freshUser), {
+                        expires: 7,
+                        sameSite: "lax",
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to load user:", error);
+
+                // Clear invalid tokens
+                Cookies.remove("access_token");
+                Cookies.remove("refresh_token");
+                Cookies.remove("user");
+                setUser(null);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
         loadUser();
     }, []);
 
@@ -45,84 +116,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (!isAuthenticated) return;
 
+        async function checkTokenValidity() {
+            const accessToken = Cookies.get("access_token");
+
+            if (!accessToken) {
+                console.log("⚠️ No access token found, logging out...");
+                await logout();
+                return;
+            }
+
+            try {
+                // Try to decode and check expiry
+                const payload = JSON.parse(atob(accessToken.split(".")[1]));
+                const expiresAt = payload.exp * 1000; // Convert to milliseconds
+                const now = Date.now();
+
+                // If token expires in less than 2 minutes, try to refresh
+                if (expiresAt - now < 2 * 60 * 1000) {
+                    console.log("⏰ Token expiring soon, will be auto-refreshed on next request");
+                }
+            } catch (error) {
+                console.error("❌ Error checking token validity:", error);
+            }
+        }
+
         const interval = setInterval(() => {
             checkTokenValidity();
         }, 5 * 60 * 1000); // Check every 5 minutes
 
         return () => clearInterval(interval);
-    }, [isAuthenticated]);
+    }, [isAuthenticated, logout]);
 
-    async function checkTokenValidity() {
-        const accessToken = Cookies.get("access_token");
-
-        if (!accessToken) {
-            console.log("⚠️ No access token found, logging out...");
-            await logout();
-            return;
-        }
-
-        try {
-            // Try to decode and check expiry
-            const payload = JSON.parse(atob(accessToken.split(".")[1]));
-            const expiresAt = payload.exp * 1000; // Convert to milliseconds
-            const now = Date.now();
-
-            // If token expires in less than 2 minutes, try to refresh
-            if (expiresAt - now < 2 * 60 * 1000) {
-                console.log("⏰ Token expiring soon, will be auto-refreshed on next request");
-            }
-        } catch (error) {
-            console.error("❌ Error checking token validity:", error);
-        }
-    }
-
-    async function loadUser() {
-        try {
-            const accessToken = Cookies.get("access_token");
-            const userCookie = Cookies.get("user");
-
-            if (!accessToken) {
-                setIsLoading(false);
-                return;
-            }
-
-            // First, try to load from cookie (faster)
-            if (userCookie) {
-                try {
-                    const cachedUser = JSON.parse(userCookie);
-                    setUser(cachedUser);
-                } catch (error) {
-                    console.error("Error parsing user cookie:", error);
-                }
-            }
-
-            // Then, fetch fresh data from API
-            const response = await AuthService.getCurrentUser();
-            const freshUser = response.data;
-
-            if (freshUser) {
-                setUser(freshUser);
-
-                // Update cookie with fresh data
-                Cookies.set("user", JSON.stringify(freshUser), {
-                    expires: 7,
-                    sameSite: "lax",
-                });
-            }
-        } catch (error) {
-            console.error("Failed to load user:", error);
-
-            // Clear invalid tokens
-            Cookies.remove("access_token");
-            Cookies.remove("refresh_token");
-            Cookies.remove("user");
-            setUser(null);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    async function login(credentials: LoginCredentials) {
+    const login = useCallback(async (credentials: LoginCredentials) => {
         try {
             const response = await AuthService.login(credentials);
             const { access_token, refresh_token, expires_in, user: userData } = response.data!;
@@ -170,86 +195,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             throw new Error(handleApiError(error).message);
         }
-    }
+    }, [router]);
 
-    async function register(data: RegisterData) {
+    const register = useCallback(async (data: RegisterData) => {
         try {
             await AuthService.register(data);
             router.push("/login?registered=true");
         } catch (error) {
             throw new Error(handleApiError(error).message);
         }
-    }
+    }, [router]);
 
-    async function logout() {
-        try {
-            // Try to logout from backend (blacklist token)
-            await AuthService.logout();
-        } catch (error) {
-            console.error("Logout error:", error);
-            // Continue with logout even if API call fails
-        } finally {
-            // Clear cookies and state
-            Cookies.remove("access_token");
-            Cookies.remove("refresh_token");
-            Cookies.remove("user");
-            setUser(null);
-
-            console.log("👋 Logged out successfully");
-
-            // Redirect to login with current path
-            const currentPath = pathname || "/";
-            if (!currentPath.startsWith("/login")) {
-                router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
-            }
-        }
-    }
-
-    async function updateProfile(data: UpdateProfileData) {
+    const updateProfile = useCallback(async (data: UpdateProfileData) => {
         try {
             const response = await AuthService.updateProfile(data);
 
             // Update user state with new data
-            if (user && response.data) {
-                const updatedUser = { ...user, ...response.data };
-                setUser(updatedUser);
+            setUser((prevUser) => {
+                if (!prevUser || !response.data) return prevUser;
+
+                const updatedUser = { ...prevUser, ...response.data };
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
                 });
-            }
+                return updatedUser;
+            });
         } catch (error) {
             throw new Error(handleApiError(error).message);
         }
-    }
+    }, []);
 
-    async function updatePassword(data: UpdatePasswordData) {
+    const updatePassword = useCallback(async (data: UpdatePasswordData) => {
         try {
             await AuthService.updatePassword(data);
         } catch (error) {
             throw new Error(handleApiError(error).message);
         }
-    }
+    }, []);
 
-    async function deleteProfileImage() {
+    const deleteProfileImage = useCallback(async () => {
         try {
             await AuthService.deleteProfileImage();
 
             // Update user state
-            if (user) {
-                const updatedUser = { ...user, profile_image: undefined };
-                setUser(updatedUser);
+            setUser((prevUser) => {
+                if (!prevUser) return prevUser;
+
+                const updatedUser = { ...prevUser, profile_image: undefined };
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
                 });
-            }
+                return updatedUser;
+            });
         } catch (error) {
             throw new Error(handleApiError(error).message);
         }
-    }
+    }, []);
 
-    async function refreshUser() {
+    const refreshUser = useCallback(async () => {
         try {
             const response = await AuthService.getCurrentUser();
             const updatedUser = response.data;
@@ -264,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             throw new Error(handleApiError(error).message);
         }
-    }
+    }, []);
 
     return (
         <AuthContext.Provider

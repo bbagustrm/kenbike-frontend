@@ -77,14 +77,15 @@ export default function AdminProductsPage() {
 
     const [page, setPage] = useState(1);
     const [limit] = useState(20);
-    const [total, setTotal] = useState(0);
+    // const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
     type ProductSortBy = "createdAt" | "name" | "idPrice" | "totalSold" | "avgRating";
 
     const [sortBy, setSortBy] = useState<ProductSortBy>("createdAt");
 
-    const [order, setOrder] = useState<"asc" | "desc">("desc");
+    // const [order, setOrder] = useState<"asc" | "desc">("desc");
+    const [order] = useState<"asc" | "desc">("desc");
     const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
 
     const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string | null }>({
@@ -117,7 +118,7 @@ export default function AdminProductsPage() {
             }
 
             setProducts(filteredProducts);
-            setTotal(response.meta.total);
+            // setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (err) {
             const errorResult = handleApiError(err);

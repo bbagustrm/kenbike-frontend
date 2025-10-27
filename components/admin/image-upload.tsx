@@ -2,9 +2,9 @@
 
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Upload, Loader2, Image as ImageIcon } from "lucide-react";
+import { X, Loader2, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { validateImageFile, formatFileSize, createImagePreview } from "@/lib/image-utils";
+import { validateImageFile, createImagePreview } from "@/lib/image-utils";
 import { UploadService } from "@/services/upload.service";
 import { UploadFolder } from "@/types/upload";
 import { toast } from "sonner";

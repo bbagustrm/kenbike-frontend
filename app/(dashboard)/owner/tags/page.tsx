@@ -40,8 +40,6 @@ import {
     Edit,
     Trash2,
     RotateCcw,
-    Eye,
-    EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -209,17 +207,6 @@ export default function OwnerTagsPage() {
         try {
             await TagService.hardDeleteTag(id);
             toast.success("Tag permanently deleted");
-            await fetchTags();
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-        }
-    };
-
-    const handleToggleActive = async (id: string) => {
-        try {
-            await TagService.toggleTagActive(id);
-            toast.success("Tag status updated");
             await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
