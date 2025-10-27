@@ -40,8 +40,6 @@ import {
     Edit,
     Trash2,
     RotateCcw,
-    Eye,
-    EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -72,7 +70,7 @@ export default function AdminTagsPage() {
 
     const [page, setPage] = useState(1);
     const [limit] = useState(20);
-    const [total, setTotal] = useState(0);
+    // const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
@@ -114,7 +112,7 @@ export default function AdminTagsPage() {
 
             setTags(filteredTags);
             if (response.meta) {
-                setTotal(response.meta.total);
+                // setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);
             }
         } catch (err) {
@@ -210,17 +208,6 @@ export default function AdminTagsPage() {
         try {
             await TagService.hardDeleteTag(id);
             toast.success("Tag permanently deleted");
-            await fetchTags();
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-        }
-    };
-
-    const handleToggleActive = async (id: string) => {
-        try {
-            await TagService.toggleTagActive(id);
-            toast.success("Tag status updated");
             await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);

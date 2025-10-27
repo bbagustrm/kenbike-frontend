@@ -54,7 +54,7 @@ export interface TagActionResponse {
     message: string;
     data: {
         id: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 }
 

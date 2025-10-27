@@ -77,69 +77,73 @@ export default function OwnerEditProductPage() {
     });
 
     useEffect(() => {
-        loadData();
-    }, [productId]);
+        const loadData = async () => {
+            try {
+                setIsLoadingData(true);
 
-    const loadData = async () => {
-        try {
-            setIsLoadingData(true);
+                // Load product data
+                const productRes = await ProductService.getProductById(productId);
+                const product = productRes.data;
 
-            const productRes = await ProductService.getProductById(productId);
-            const product = productRes.data;
+                // Load categories, tags, promotions
+                const [categoriesRes, tagsRes] = await Promise.all([
+                    CategoryService.getAdminCategories({ limit: 100, isActive: true }),
+                    TagService.getAdminTags({ limit: 100, isActive: true }),
+                ]);
 
-            const [categoriesRes, tagsRes] = await Promise.all([
-                CategoryService.getAdminCategories({ limit: 100, isActive: true }),
-                TagService.getAdminTags({ limit: 100, isActive: true }),
-            ]);
+                setCategories(categoriesRes.data || []);
+                setTags(tagsRes.data || []);
 
-            setCategories(categoriesRes.data || []);
-            setTags(tagsRes.data || []);
+                if (isOwner) {
+                    const promotionsRes = await PromotionService.getAdminPromotions({
+                        limit: 100,
+                        isActive: true,
+                    });
+                    setPromotions(promotionsRes.data || []);
+                }
 
-            if (isOwner) {
-                const promotionsRes = await PromotionService.getAdminPromotions({
-                    limit: 100,
-                    isActive: true,
+                // Populate form with product data
+                setFormData({
+                    name: product.name,
+                    slug: product.slug,
+                    idDescription: product.idDescription,
+                    enDescription: product.enDescription,
+                    idPrice: product.idPrice,
+                    enPrice: product.enPrice,
+                    imageUrl: product.imageUrl,
+                    weight: product.weight,
+                    height: product.height,
+                    length: product.length,
+                    width: product.width,
+                    taxRate: product.taxRate,
+                    categoryId: product.categoryId || undefined,
+                    promotionId: product.promotionId || undefined,
+                    isFeatured: product.isFeatured,
+                    isActive: product.isActive,
+                    isPreOrder: product.isPreOrder,
+                    preOrderDays: product.preOrderDays,
+                    variants: product.variants?.map((v) => ({
+                        id: v.id,
+                        variantName: v.variantName,
+                        sku: v.sku,
+                        stock: v.stock,
+                        isActive: v.isActive,
+                        imageUrls: v.images?.map((img) => img.imageUrl) || [],
+                    })) || [],
+                    tagIds: product.tags?.map((t) => t.id) || [],
                 });
-                setPromotions(promotionsRes.data || []);
+            } catch (err) {
+                const errorResult = handleApiError(err);
+                toast.error(errorResult.message);
+                router.push("/admin/products");
+            } finally {
+                setIsLoadingData(false);
             }
+        };
 
-            setFormData({
-                name: product.name,
-                slug: product.slug,
-                idDescription: product.idDescription,
-                enDescription: product.enDescription,
-                idPrice: product.idPrice,
-                enPrice: product.enPrice,
-                imageUrl: product.imageUrl,
-                weight: product.weight,
-                height: product.height,
-                length: product.length,
-                width: product.width,
-                taxRate: product.taxRate,
-                categoryId: product.categoryId || undefined,
-                promotionId: product.promotionId || undefined,
-                isFeatured: product.isFeatured,
-                isActive: product.isActive,
-                isPreOrder: product.isPreOrder,
-                preOrderDays: product.preOrderDays,
-                variants: product.variants?.map((v) => ({
-                    id: v.id,
-                    variantName: v.variantName,
-                    sku: v.sku,
-                    stock: v.stock,
-                    isActive: v.isActive,
-                    imageUrls: v.images?.map((img) => img.imageUrl) || [],
-                })) || [],
-                tagIds: product.tags?.map((t) => t.id) || [],
-            });
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-            router.push("/owner/products");
-        } finally {
-            setIsLoadingData(false);
-        }
-    };
+        loadData();
+    }, [productId, isOwner, router]);
+
 
     const handleChange = (field: keyof UpdateProductData, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));

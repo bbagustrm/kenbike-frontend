@@ -7,7 +7,7 @@ import { CategoryService } from "@/services/category.service";
 import { TagService } from "@/services/tag.service";
 import { PromotionService } from "@/services/promotion.service";
 import { handleApiError } from "@/lib/api-client";
-import { CreateProductData, CreateVariantData } from "@/types/product";
+import { CreateProductData } from "@/types/product";
 import { Category } from "@/types/category";
 import { Tag } from "@/types/tag";
 import { Promotion } from "@/types/promotion";
@@ -74,34 +74,37 @@ export default function NewProductPage() {
     });
 
     useEffect(() => {
-        loadInitialData();
-    }, []);
+        const loadInitialData = async () => {
+            try {
+                const [categoriesRes, tagsRes] = await Promise.all([
+                    CategoryService.getAdminCategories({ limit: 100, isActive: true }),
+                    TagService.getAdminTags({ limit: 100, isActive: true }),
+                ]);
 
-    const loadInitialData = async () => {
-        try {
-            const [categoriesRes, tagsRes] = await Promise.all([
-                CategoryService.getAdminCategories({ limit: 100, isActive: true }),
-                TagService.getAdminTags({ limit: 100, isActive: true }),
-            ]);
+                setCategories(categoriesRes.data || []);
+                setTags(tagsRes.data || []);
 
-            setCategories(categoriesRes.data || []);
-            setTags(tagsRes.data || []);
-
-            // Load promotions only for OWNER
-            if (isOwner) {
-                const promotionsRes = await PromotionService.getAdminPromotions({
-                    limit: 100,
-                    isActive: true,
-                });
-                setPromotions(promotionsRes.data || []);
+                // Load promotions only for OWNER
+                if (isOwner) {
+                    const promotionsRes = await PromotionService.getAdminPromotions({
+                        limit: 100,
+                        isActive: true,
+                    });
+                    setPromotions(promotionsRes.data || []);
+                } else {
+                    // Jika bukan owner, pastikan array promosi kosong
+                    setPromotions([]);
+                }
+            } catch (err) {
+                const errorResult = handleApiError(err);
+                toast.error(errorResult.message);
+            } finally {
+                setIsLoadingData(false);
             }
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-        } finally {
-            setIsLoadingData(false);
-        }
-    };
+        };
+
+        loadInitialData();
+    }, [isOwner]);
 
     const handleChange = (field: keyof CreateProductData, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -147,7 +150,7 @@ export default function NewProductPage() {
         setIsLoading(true);
 
         try {
-            const response = await ProductService.createProduct(formData);
+            await ProductService.createProduct(formData);
             toast.success("Product created successfully");
             router.push("/admin/products");
         } catch (err) {

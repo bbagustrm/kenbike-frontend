@@ -31,8 +31,6 @@ import {
     Edit,
     Trash2,
     RotateCcw,
-    Eye,
-    EyeOff,
     Calendar,
     Percent,
     AlertTriangle,
@@ -66,7 +64,7 @@ export default function OwnerPromotionsPage() {
 
     const [page, setPage] = useState(1);
     const [limit] = useState(20);
-    const [total, setTotal] = useState(0);
+    // const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState<"active" | "expired" | "deleted">("active");
@@ -106,7 +104,7 @@ export default function OwnerPromotionsPage() {
 
             setPromotions(filteredPromotions);
             if (response.meta) {
-                setTotal(response.meta.total);
+                // setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);
             }
         } catch (err) {
@@ -155,17 +153,6 @@ export default function OwnerPromotionsPage() {
         try {
             await PromotionService.restorePromotion(id);
             toast.success("Promotion restored successfully");
-            fetchPromotions();
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-        }
-    };
-
-    const handleToggleActive = async (id: string) => {
-        try {
-            await PromotionService.togglePromotionActive(id);
-            toast.success("Promotion status updated");
             fetchPromotions();
         } catch (err) {
             const errorResult = handleApiError(err);

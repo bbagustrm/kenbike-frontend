@@ -1,6 +1,5 @@
 import apiClient from "@/lib/api-client";
 import {
-    Tag,
     CreateTagData,
     UpdateTagData,
     GetTagsParams,

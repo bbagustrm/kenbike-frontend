@@ -44,44 +44,45 @@ export default function OwnerEditPromotionPage() {
     });
 
     useEffect(() => {
+        const loadPromotion = async () => {
+            try {
+                setIsLoadingData(true);
+                // --- PERUBAHAN KEDUA: Destrukturisasi 'response' ---
+                const { data: promotion } = await PromotionService.getAdminPromotionById(promotionId);
+                // --- AKHIR PERUBAHAN KEDUA ---
+
+                const startDate = new Date(promotion.startDate);
+                const endDate = new Date(promotion.endDate);
+
+                // Set discount percentage
+                const percentValue = Math.round(promotion.discount * 100);
+                setDiscountPercent(percentValue.toString());
+
+                // Set date range
+                setDateRange({
+                    from: startDate,
+                    to: endDate
+                });
+
+                setFormData({
+                    name: promotion.name,
+                    discount: promotion.discount,
+                    startDate: promotion.startDate, // Keep original ISO format
+                    endDate: promotion.endDate,     // Keep original ISO format
+                    isActive: promotion.isActive,
+                });
+            } catch (err) {
+                const errorResult = handleApiError(err);
+                toast.error(errorResult.message);
+                router.push("/owner/promotions");
+            } finally {
+                setIsLoadingData(false);
+            }
+        };
+
         loadPromotion();
-    }, [promotionId]);
-
-    const loadPromotion = async () => {
-        try {
-            setIsLoadingData(true);
-            const response = await PromotionService.getAdminPromotionById(promotionId);
-            const promotion = response.data;
-
-            const startDate = new Date(promotion.startDate);
-            const endDate = new Date(promotion.endDate);
-
-            // Set discount percentage
-            const percentValue = Math.round(promotion.discount * 100);
-            setDiscountPercent(percentValue.toString());
-
-            // Set date range
-            setDateRange({
-                from: startDate,
-                to: endDate
-            });
-
-            setFormData({
-                name: promotion.name,
-                discount: promotion.discount,
-                startDate: promotion.startDate, // Keep original ISO format
-                endDate: promotion.endDate,     // Keep original ISO format
-                isActive: promotion.isActive,
-            });
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-            router.push("/owner/promotions");
-        } finally {
-            setIsLoadingData(false);
-        }
-    };
-
+    }, [promotionId, router]);
+    
     const handleDiscountChange = (value: string) => {
         if (value === "" || /^\d+$/.test(value)) {
             setDiscountPercent(value);
@@ -269,7 +270,6 @@ export default function OwnerEditPromotionPage() {
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
-                                        initialFocus
                                         mode="range"
                                         defaultMonth={dateRange?.from}
                                         selected={dateRange}
