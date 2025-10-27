@@ -24,7 +24,7 @@ export class CategoryService {
     }
 
     /**
-     * Get category by slug
+     * Get categories by slug
      */
     static async getCategoryBySlug(slug: string): Promise<CategoryResponse> {
         const response = await apiClient.get<CategoryResponse>(`/categories/${slug}`);
@@ -44,7 +44,7 @@ export class CategoryService {
     }
 
     /**
-     * Get category by ID (admin)
+     * Get categories by ID (admin)
      */
     static async getCategoryById(id: string): Promise<CategoryResponse> {
         const response = await apiClient.get<CategoryResponse>(`/admin/categories/${id}`);
@@ -52,7 +52,7 @@ export class CategoryService {
     }
 
     /**
-     * Get category statistics
+     * Get categories statistics
      */
     static async getCategoryStatistics(id: string): Promise<{ data: CategoryStatistics }> {
         const response = await apiClient.get<{ data: CategoryStatistics }>(
@@ -62,7 +62,7 @@ export class CategoryService {
     }
 
     /**
-     * Create category
+     * Create categories
      */
     static async createCategory(data: CreateCategoryData): Promise<CategoryResponse> {
         const response = await apiClient.post<CategoryResponse>("/admin/categories", data);
@@ -70,7 +70,7 @@ export class CategoryService {
     }
 
     /**
-     * Update category
+     * Update categories
      */
     static async updateCategory(id: string, data: UpdateCategoryData): Promise<CategoryResponse> {
         const response = await apiClient.patch<CategoryResponse>(`/admin/categories/${id}`, data);
@@ -78,7 +78,7 @@ export class CategoryService {
     }
 
     /**
-     * Soft delete category
+     * Soft delete categories
      */
     static async deleteCategory(id: string): Promise<CategoryActionResponse> {
         const response = await apiClient.delete<CategoryActionResponse>(`/admin/categories/${id}`);
@@ -86,7 +86,7 @@ export class CategoryService {
     }
 
     /**
-     * Restore deleted category
+     * Restore deleted categories
      */
     static async restoreCategory(id: string): Promise<CategoryResponse> {
         const response = await apiClient.post<CategoryResponse>(`/admin/categories/${id}/restore`);
@@ -94,7 +94,7 @@ export class CategoryService {
     }
 
     /**
-     * Hard delete category (permanent)
+     * Hard delete categories (permanent)
      */
     static async hardDeleteCategory(id: string): Promise<CategoryActionResponse> {
         const response = await apiClient.delete<CategoryActionResponse>(
@@ -104,7 +104,7 @@ export class CategoryService {
     }
 
     /**
-     * Toggle category active status
+     * Toggle categories active status
      */
     static async toggleCategoryActive(id: string): Promise<CategoryActionResponse> {
         const response = await apiClient.patch<CategoryActionResponse>(

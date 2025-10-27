@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { CategoryService } from "@/services/category.service";
 import { TagService } from "@/services/tag.service";
 import { PromotionService } from "@/services/promotion.service";
 import { handleApiError } from "@/lib/api-client";
-import { UpdateProductData} from "@/types/product";
+import { CreateProductData } from "@/types/product";
 import { Category } from "@/types/category";
 import { Tag } from "@/types/tag";
 import { Promotion } from "@/types/promotion";
@@ -40,12 +40,10 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 
-export default function EditProductPage() {
+export default function OwnerNewProductPage() {
     const router = useRouter();
-    const params = useParams();
     const { user } = useAuth();
     const isOwner = user?.role === "OWNER";
-    const productId = params.id as string;
 
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
@@ -53,7 +51,7 @@ export default function EditProductPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-    const [formData, setFormData] = useState<UpdateProductData>({
+    const [formData, setFormData] = useState<CreateProductData>({
         name: "",
         slug: "",
         idDescription: "",
@@ -69,7 +67,6 @@ export default function EditProductPage() {
         categoryId: undefined,
         promotionId: undefined,
         isFeatured: false,
-        isActive: true,
         isPreOrder: false,
         preOrderDays: 0,
         variants: [],
@@ -77,18 +74,11 @@ export default function EditProductPage() {
     });
 
     useEffect(() => {
-        loadData();
-    }, [productId]);
+        loadInitialData();
+    }, []);
 
-    const loadData = async () => {
+    const loadInitialData = async () => {
         try {
-            setIsLoadingData(true);
-
-            // Load product data
-            const productRes = await ProductService.getProductById(productId);
-            const product = productRes.data;
-
-            // Load categories, tags, promotions
             const [categoriesRes, tagsRes] = await Promise.all([
                 CategoryService.getAdminCategories({ limit: 100, isActive: true }),
                 TagService.getAdminTags({ limit: 100, isActive: true }),
@@ -104,77 +94,59 @@ export default function EditProductPage() {
                 });
                 setPromotions(promotionsRes.data || []);
             }
-
-            // Populate form with product data
-            setFormData({
-                name: product.name,
-                slug: product.slug,
-                idDescription: product.idDescription,
-                enDescription: product.enDescription,
-                idPrice: product.idPrice,
-                enPrice: product.enPrice,
-                imageUrl: product.imageUrl,
-                weight: product.weight,
-                height: product.height,
-                length: product.length,
-                width: product.width,
-                taxRate: product.taxRate,
-                categoryId: product.categoryId || undefined,
-                promotionId: product.promotionId || undefined,
-                isFeatured: product.isFeatured,
-                isActive: product.isActive,
-                isPreOrder: product.isPreOrder,
-                preOrderDays: product.preOrderDays,
-                variants: product.variants?.map((v) => ({
-                    id: v.id,
-                    variantName: v.variantName,
-                    sku: v.sku,
-                    stock: v.stock,
-                    isActive: v.isActive,
-                    imageUrls: v.images?.map((img) => img.imageUrl) || [],
-                })) || [],
-                tagIds: product.tags?.map((t) => t.id) || [],
-            });
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
-            router.push("/admin/products");
         } finally {
             setIsLoadingData(false);
         }
     };
 
-    const handleChange = (field: keyof UpdateProductData, value: unknown) => {
+    const handleChange = (field: keyof CreateProductData, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const generateSlug = (name: string) => {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, "");
+    };
+
+    const handleNameChange = (name: string) => {
+        handleChange("name", name);
+        if (!formData.slug) {
+            handleChange("slug", generateSlug(name));
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
         if (!formData.imageUrl) {
             toast.error("Please upload a product image");
             return;
         }
 
-        if (formData.variants && formData.variants.length > 0) {
-            for (let i = 0; i < formData.variants.length; i++) {
-                const variant = formData.variants[i];
-                if (variant._action === "delete") continue;
+        if (formData.variants.length === 0) {
+            toast.error("Please add at least one variant");
+            return;
+        }
 
-                if (!variant.variantName || !variant.sku) {
-                    toast.error(`Variant ${i + 1}: Name and SKU are required`);
-                    return;
-                }
+        for (let i = 0; i < formData.variants.length; i++) {
+            const variant = formData.variants[i];
+            if (!variant.variantName || !variant.sku) {
+                toast.error(`Variant ${i + 1}: Name and SKU are required`);
+                return;
             }
         }
 
         setIsLoading(true);
 
         try {
-            await ProductService.updateProduct(productId, formData);
-            toast.success("Product updated successfully");
-            router.push("/admin/products");
+            const response = await ProductService.createProduct(formData);
+            toast.success("Product created successfully");
+            router.push("/owner/products");
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -193,43 +165,39 @@ export default function EditProductPage() {
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-5xl">
-            {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/admin">Dashboard</BreadcrumbLink>
+                        <BreadcrumbLink href="/owner">Dashboard</BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/admin/products">Products</BreadcrumbLink>
+                        <BreadcrumbLink href="/owner/products">Products</BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                        <BreadcrumbPage>Edit Product</BreadcrumbPage>
+                        <BreadcrumbPage>New Product</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
 
-            {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-bold">Edit Product</h1>
-                    <p className="text-muted-foreground">Update product information</p>
+                    <h1 className="text-3xl font-bold">Create New Product</h1>
+                    <p className="text-muted-foreground">Add a new product to your catalog</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Information */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Basic Information</CardTitle>
                         <CardDescription>Essential product details</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Product Name */}
                         <div className="space-y-2">
                             <Label htmlFor="name">
                                 Product Name <span className="text-destructive">*</span>
@@ -238,14 +206,13 @@ export default function EditProductPage() {
                                 id="name"
                                 placeholder="e.g., MacBook Pro M3"
                                 value={formData.name}
-                                onChange={(e) => handleChange("name", e.target.value)}
+                                onChange={(e) => handleNameChange(e.target.value)}
                                 required
                                 minLength={3}
                                 maxLength={255}
                             />
                         </div>
 
-                        {/* Slug */}
                         <div className="space-y-2">
                             <Label htmlFor="slug">
                                 Slug <span className="text-destructive">*</span>
@@ -264,7 +231,6 @@ export default function EditProductPage() {
                             </p>
                         </div>
 
-                        {/* Description ID */}
                         <div className="space-y-2">
                             <Label htmlFor="idDescription">
                                 Description (Indonesian) <span className="text-destructive">*</span>
@@ -280,7 +246,6 @@ export default function EditProductPage() {
                             />
                         </div>
 
-                        {/* Description EN */}
                         <div className="space-y-2">
                             <Label htmlFor="enDescription">
                                 Description (English) <span className="text-destructive">*</span>
@@ -296,7 +261,6 @@ export default function EditProductPage() {
                             />
                         </div>
 
-                        {/* Product Image */}
                         <div className="space-y-2">
                             <ImageUpload
                                 label="Product Image"
@@ -311,7 +275,6 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Pricing */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Pricing</CardTitle>
@@ -319,7 +282,6 @@ export default function EditProductPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Price IDR */}
                             <div className="space-y-2">
                                 <Label htmlFor="idPrice">
                                     Price (IDR) <span className="text-destructive">*</span>
@@ -329,10 +291,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="25000000"
-                                    value={formData.idPrice || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.idPrice || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("idPrice", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -343,7 +304,6 @@ export default function EditProductPage() {
                                 />
                             </div>
 
-                            {/* Price USD */}
                             <div className="space-y-2">
                                 <Label htmlFor="enPrice">
                                     Price (USD) <span className="text-destructive">*</span>
@@ -353,10 +313,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="1700"
-                                    value={formData.enPrice || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.enPrice || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("enPrice", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -367,7 +326,6 @@ export default function EditProductPage() {
                                 />
                             </div>
 
-                            {/* Tax Rate */}
                             <div className="space-y-2">
                                 <Label htmlFor="taxRate">Tax Rate</Label>
                                 <Input
@@ -377,10 +335,9 @@ export default function EditProductPage() {
                                     min="0"
                                     max="1"
                                     placeholder="0.11"
-                                    value={formData.taxRate || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.taxRate || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("taxRate", parseFloat(value.substring(1)) || 0);
                                         } else {
@@ -396,7 +353,6 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Specifications */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Specifications</CardTitle>
@@ -411,10 +367,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="1600"
-                                    value={formData.weight || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.weight || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("weight", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -430,10 +385,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="30"
-                                    value={formData.length || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.length || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("length", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -449,10 +403,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="21"
-                                    value={formData.width || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.width || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("width", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -468,10 +421,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="2"
-                                    value={formData.height || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.height || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("height", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -484,14 +436,12 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Categorization */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Categorization</CardTitle>
                         <CardDescription>Organize your product</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Category */}
                         <div className="space-y-2">
                             <Label htmlFor="categoryId">Category</Label>
                             <Select
@@ -512,7 +462,6 @@ export default function EditProductPage() {
                             </Select>
                         </div>
 
-                        {/* Tags */}
                         <div className="space-y-2">
                             <Label>Tags</Label>
                             <MultiSelect
@@ -523,7 +472,6 @@ export default function EditProductPage() {
                             />
                         </div>
 
-                        {/* Promotion (Owner Only) */}
                         {isOwner && (
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
@@ -548,7 +496,6 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Product Variants */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Product Variants</CardTitle>
@@ -556,36 +503,18 @@ export default function EditProductPage() {
                     </CardHeader>
                     <CardContent>
                         <VariantManager
-                            variants={formData.variants || []}
+                            variants={formData.variants}
                             onChange={(variants) => handleChange("variants", variants)}
-                            isEdit={true}
                         />
                     </CardContent>
                 </Card>
 
-                {/* Settings */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Settings</CardTitle>
                         <CardDescription>Additional product settings</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="isActive">Active Status</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Control product visibility
-                                </p>
-                            </div>
-                            <Switch
-                                id="isActive"
-                                checked={formData.isActive}
-                                onCheckedChange={(checked) => handleChange("isActive", checked)}
-                            />
-                        </div>
-
-                        <Separator />
-
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label htmlFor="isFeatured">Featured Product</Label>
@@ -624,10 +553,9 @@ export default function EditProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="7"
-                                    value={formData.preOrderDays || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.preOrderDays || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("preOrderDays", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -643,18 +571,17 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Submit Buttons */}
                 <div className="flex items-center gap-4">
                     <Button type="submit" disabled={isLoading} size="lg">
                         {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Updating...
+                                Creating...
                             </>
                         ) : (
                             <>
                                 <Save className="mr-2 h-4 w-4" />
-                                Update Product
+                                Create Product
                             </>
                         )}
                     </Button>

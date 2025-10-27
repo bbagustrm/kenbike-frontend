@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { CategoryService } from "@/services/category.service";
+import { TagService } from "@/services/tag.service";
 import { handleApiError } from "@/lib/api-client";
-import { Category, CreateCategoryData, UpdateCategoryData } from "@/types/category";
+import { Tag, CreateTagData, UpdateTagData } from "@/types/tag";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,6 @@ import {
     EyeOff,
     ChevronLeft,
     ChevronRight,
-    AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -59,8 +58,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function AdminCategoriesPage() {
-    const [categories, setCategories] = useState<Category[]>([]);
+export default function OwnerTagsPage() {
+    const [tags, setTags] = useState<Tag[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -74,10 +73,10 @@ export default function AdminCategoriesPage() {
     const [formDialog, setFormDialog] = useState<{
         open: boolean;
         mode: "create" | "edit";
-        category: Category | null;
-    }>({ open: false, mode: "create", category: null });
+        tag: Tag | null;
+    }>({ open: false, mode: "create", tag: null });
 
-    const [formData, setFormData] = useState<CreateCategoryData | UpdateCategoryData>({
+    const [formData, setFormData] = useState<CreateTagData | UpdateTagData>({
         name: "",
         slug: "",
     });
@@ -88,32 +87,24 @@ export default function AdminCategoriesPage() {
         id: null,
     });
 
-    // Tambahkan state untuk hard delete dialog
-    const [hardDeleteDialog, setHardDeleteDialog] = useState<{ open: boolean; id: string | null }>({
-        open: false,
-        id: null,
-    });
-
-    const fetchCategories = useCallback(async () => {
+    const fetchTags = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await CategoryService.getAdminCategories({
+            const response = await TagService.getAdminTags({
                 page,
                 limit,
                 search: search || undefined,
                 includeDeleted: activeTab === "deleted",
-                onlyDeleted: activeTab === "deleted",
             });
 
-            // Filter data based on activeTab (client-side)
-            let filteredCategories = response.data || [];
+            let filteredTags = response.data || [];
             if (activeTab === "deleted") {
-                filteredCategories = filteredCategories.filter(c => c.deletedAt !== null);
+                filteredTags = filteredTags.filter(t => t.deletedAt !== null);
             } else {
-                filteredCategories = filteredCategories.filter(c => c.deletedAt === null);
+                filteredTags = filteredTags.filter(t => t.deletedAt === null);
             }
 
-            setCategories(filteredCategories);
+            setTags(filteredTags);
             if (response.meta) {
                 setTotal(response.meta.total);
                 setTotalPages(response.meta.totalPages);
@@ -127,13 +118,13 @@ export default function AdminCategoriesPage() {
     }, [page, limit, search, activeTab]);
 
     useEffect(() => {
-        fetchCategories();
-    }, [fetchCategories]);
+        fetchTags();
+    }, [fetchTags]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
-        fetchCategories();
+        fetchTags();
     };
 
     const generateSlug = (name: string) => {
@@ -145,16 +136,16 @@ export default function AdminCategoriesPage() {
 
     const handleOpenCreateDialog = () => {
         setFormData({ name: "", slug: "" });
-        setFormDialog({ open: true, mode: "create", category: null });
+        setFormDialog({ open: true, mode: "create", tag: null });
     };
 
-    const handleOpenEditDialog = (category: Category) => {
+    const handleOpenEditDialog = (tag: Tag) => {
         setFormData({
-            name: category.name,
-            slug: category.slug,
-            isActive: category.isActive,
+            name: tag.name,
+            slug: tag.slug,
+            isActive: tag.isActive,
         });
-        setFormDialog({ open: true, mode: "edit", category });
+        setFormDialog({ open: true, mode: "edit", tag });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -163,18 +154,15 @@ export default function AdminCategoriesPage() {
 
         try {
             if (formDialog.mode === "create") {
-                await CategoryService.createCategory(formData as CreateCategoryData);
-                toast.success("Category created successfully");
-            } else if (formDialog.category) {
-                await CategoryService.updateCategory(
-                    formDialog.category.id,
-                    formData as UpdateCategoryData
-                );
-                toast.success("Category updated successfully");
+                await TagService.createTag(formData as CreateTagData);
+                toast.success("Tag created successfully");
+            } else if (formDialog.tag) {
+                await TagService.updateTag(formDialog.tag.id, formData as UpdateTagData);
+                toast.success("Tag updated successfully");
             }
 
-            setFormDialog({ open: false, mode: "create", category: null });
-            await fetchCategories();
+            setFormDialog({ open: false, mode: "create", tag: null });
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -185,23 +173,10 @@ export default function AdminCategoriesPage() {
 
     const handleDelete = async (id: string) => {
         try {
-            await CategoryService.deleteCategory(id);
-            toast.success("Category deleted successfully");
+            await TagService.deleteTag(id);
+            toast.success("Tag deleted successfully");
             setDeleteDialog({ open: false, id: null });
-            await fetchCategories();
-        } catch (err) {
-            const errorResult = handleApiError(err);
-            toast.error(errorResult.message);
-        }
-    };
-
-    // Tambahkan fungsi handleHardDelete
-    const handleHardDelete = async (id: string) => {
-        try {
-            await CategoryService.hardDeleteCategory(id);
-            toast.success("Category permanently deleted");
-            setHardDeleteDialog({ open: false, id: null });
-            await fetchCategories();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -210,9 +185,24 @@ export default function AdminCategoriesPage() {
 
     const handleRestore = async (id: string) => {
         try {
-            await CategoryService.restoreCategory(id);
-            toast.success("Category restored successfully");
-            await fetchCategories();
+            await TagService.restoreTag(id);
+            toast.success("Tag restored successfully");
+            await fetchTags();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        }
+    };
+
+    const handleHardDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to permanently delete this tag? This action cannot be undone!")) {
+            return;
+        }
+
+        try {
+            await TagService.hardDeleteTag(id);
+            toast.success("Tag permanently deleted");
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -221,9 +211,9 @@ export default function AdminCategoriesPage() {
 
     const handleToggleActive = async (id: string) => {
         try {
-            await CategoryService.toggleCategoryActive(id);
-            toast.success("Category status updated");
-            await fetchCategories();
+            await TagService.toggleTagActive(id);
+            toast.success("Tag status updated");
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -232,7 +222,7 @@ export default function AdminCategoriesPage() {
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedIds(categories.map((c) => c.id));
+            setSelectedIds(tags.map((t) => t.id));
         } else {
             setSelectedIds([]);
         }
@@ -250,10 +240,10 @@ export default function AdminCategoriesPage() {
         if (selectedIds.length === 0) return;
 
         try {
-            await CategoryService.bulkDeleteCategories(selectedIds);
-            toast.success(`${selectedIds.length} categories deleted successfully`);
+            await TagService.bulkDeleteTags(selectedIds);
+            toast.success(`${selectedIds.length} tags deleted successfully`);
             setSelectedIds([]);
-            await fetchCategories();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -264,10 +254,10 @@ export default function AdminCategoriesPage() {
         if (selectedIds.length === 0) return;
 
         try {
-            await CategoryService.bulkRestoreCategories(selectedIds);
-            toast.success(`${selectedIds.length} categories restored successfully`);
+            await TagService.bulkRestoreTags(selectedIds);
+            toast.success(`${selectedIds.length} tags restored successfully`);
             setSelectedIds([]);
-            await fetchCategories();
+            await fetchTags();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -276,19 +266,17 @@ export default function AdminCategoriesPage() {
 
     return (
         <div className="container mx-auto py-8 px-4">
-            {/* Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">Category Management</h1>
-                <p className="text-muted-foreground">Organize your products into categories</p>
+                <h1 className="text-3xl font-bold mb-2">Tag Management</h1>
+                <p className="text-muted-foreground">Label and organize your products with tags</p>
             </div>
 
-            {/* Filters */}
             <div className="mb-6 flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex-1 flex gap-2">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Search categories..."
+                            placeholder="Search tags..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-10"
@@ -299,11 +287,10 @@ export default function AdminCategoriesPage() {
 
                 <Button onClick={handleOpenCreateDialog}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Category
+                    Add Tag
                 </Button>
             </div>
 
-            {/* Tabs */}
             <Tabs
                 value={activeTab}
                 onValueChange={(v) => {
@@ -324,7 +311,7 @@ export default function AdminCategoriesPage() {
                                 <TableRow className="hover:bg-transparent">
                                     <TableHead className="w-12">
                                         <Checkbox
-                                            checked={selectedIds.length === categories.length && categories.length > 0}
+                                            checked={selectedIds.length === tags.length && tags.length > 0}
                                             onCheckedChange={handleSelectAll}
                                         />
                                     </TableHead>
@@ -342,40 +329,44 @@ export default function AdminCategoriesPage() {
                                             <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                         </TableCell>
                                     </TableRow>
-                                ) : categories.length === 0 ? (
+                                ) : tags.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={7} className="text-center py-8">
-                                            No categories found
+                                            No tags found
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    categories.map((category) => (
-                                        <TableRow key={category.id}>
+                                    tags.map((tag) => (
+                                        <TableRow key={tag.id}>
                                             <TableCell>
                                                 <Checkbox
-                                                    checked={selectedIds.includes(category.id)}
+                                                    checked={selectedIds.includes(tag.id)}
                                                     onCheckedChange={(checked) =>
-                                                        handleSelectOne(category.id, checked as boolean)
+                                                        handleSelectOne(tag.id, checked as boolean)
                                                     }
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{category.name}</TableCell>
                                             <TableCell>
-                                                <code className="text-xs bg-muted px-2 py-1 rounded">{category.slug}</code>
+                                                <Badge variant="outline" className="font-medium">
+                                                    {tag.name}
+                                                </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="secondary">{category.productCount || 0}</Badge>
+                                                <code className="text-xs bg-muted px-2 py-1 rounded">{tag.slug}</code>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary">{tag.productCount || 0}</Badge>
                                             </TableCell>
                                             <TableCell>
                                                 {activeTab === "active" ? (
-                                                    <Badge variant={category.isActive ? "default" : "secondary"}>
-                                                        {category.isActive ? "Active" : "Inactive"}
+                                                    <Badge variant={tag.isActive ? "default" : "secondary"}>
+                                                        {tag.isActive ? "Active" : "Inactive"}
                                                     </Badge>
                                                 ) : (
                                                     <Badge variant="destructive">Deleted</Badge>
                                                 )}
                                             </TableCell>
-                                            <TableCell>{new Date(category.createdAt).toLocaleDateString()}</TableCell>
+                                            <TableCell>{new Date(tag.createdAt).toLocaleDateString()}</TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -386,21 +377,21 @@ export default function AdminCategoriesPage() {
                                                     <DropdownMenuContent align="end">
                                                         {activeTab === "active" ? (
                                                             <>
-                                                                <DropdownMenuItem onClick={() => handleOpenEditDialog(category)}>
+                                                                <DropdownMenuItem onClick={() => handleOpenEditDialog(tag)}>
                                                                     <Edit className="h-4 w-4 mr-2" />
                                                                     Edit
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handleToggleActive(category.id)}>
-                                                                    {category.isActive ? (
+                                                                <DropdownMenuItem onClick={() => handleToggleActive(tag.id)}>
+                                                                    {tag.isActive ? (
                                                                         <EyeOff className="h-4 w-4 mr-2" />
                                                                     ) : (
                                                                         <Eye className="h-4 w-4 mr-2" />
                                                                     )}
-                                                                    {category.isActive ? "Deactivate" : "Activate"}
+                                                                    {tag.isActive ? "Deactivate" : "Activate"}
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem
                                                                     className="text-destructive"
-                                                                    onClick={() => setDeleteDialog({ open: true, id: category.id })}
+                                                                    onClick={() => setDeleteDialog({ open: true, id: tag.id })}
                                                                 >
                                                                     <Trash2 className="h-4 w-4 mr-2" />
                                                                     Delete
@@ -408,15 +399,15 @@ export default function AdminCategoriesPage() {
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <DropdownMenuItem onClick={() => handleRestore(category.id)}>
+                                                                <DropdownMenuItem onClick={() => handleRestore(tag.id)}>
                                                                     <RotateCcw className="h-4 w-4 mr-2" />
                                                                     Restore
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem
                                                                     className="text-destructive"
-                                                                    onClick={() => setHardDeleteDialog({ open: true, id: category.id })}
+                                                                    onClick={() => handleHardDelete(tag.id)}
                                                                 >
-                                                                    <AlertTriangle className="h-4 w-4 mr-2" />
+                                                                    <Trash2 className="h-4 w-4 mr-2" />
                                                                     Delete Permanently
                                                                 </DropdownMenuItem>
                                                             </>
@@ -431,12 +422,11 @@ export default function AdminCategoriesPage() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="mt-6 flex items-center justify-between">
                             <p className="text-sm text-muted-foreground">
                                 Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}{" "}
-                                categories
+                                tags
                             </p>
                             <div className="flex gap-2">
                                 <Button
@@ -463,7 +453,6 @@ export default function AdminCategoriesPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Bulk Action Bar */}
             <BulkActionBar
                 selectedCount={selectedIds.length}
                 onDelete={activeTab === "active" ? handleBulkDelete : undefined}
@@ -472,28 +461,27 @@ export default function AdminCategoriesPage() {
                 isDeleted={activeTab === "deleted"}
             />
 
-            {/* Create/Edit Dialog */}
             <Dialog open={formDialog.open} onOpenChange={(open) => setFormDialog({ ...formDialog, open })}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {formDialog.mode === "create" ? "Create Category" : "Edit Category"}
+                            {formDialog.mode === "create" ? "Create Tag" : "Edit Tag"}
                         </DialogTitle>
                         <DialogDescription>
                             {formDialog.mode === "create"
-                                ? "Add a new categories to organize your products"
-                                : "Update categories information"}
+                                ? "Add a new tag to label your products"
+                                : "Update tag information"}
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit}>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
                                 <Label htmlFor="name">
-                                    Category Name <span className="text-destructive">*</span>
+                                    Tag Name <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                     id="name"
-                                    placeholder="e.g., Electronics"
+                                    placeholder="e.g., Trending"
                                     value={formData.name}
                                     onChange={(e) => {
                                         const name = e.target.value;
@@ -505,7 +493,7 @@ export default function AdminCategoriesPage() {
                                     }}
                                     required
                                     minLength={2}
-                                    maxLength={100}
+                                    maxLength={50}
                                 />
                             </div>
 
@@ -515,7 +503,7 @@ export default function AdminCategoriesPage() {
                                 </Label>
                                 <Input
                                     id="slug"
-                                    placeholder="electronics"
+                                    placeholder="trending"
                                     value={formData.slug}
                                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                                     required
@@ -527,8 +515,8 @@ export default function AdminCategoriesPage() {
                             {formDialog.mode === "edit" && (
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="isActive">Active Status</Label>
-                                    <Badge variant={(formData as UpdateCategoryData).isActive ? "default" : "secondary"}>
-                                        {(formData as UpdateCategoryData).isActive ? "Active" : "Inactive"}
+                                    <Badge variant={(formData as UpdateTagData).isActive ? "default" : "secondary"}>
+                                        {(formData as UpdateTagData).isActive ? "Active" : "Inactive"}
                                     </Badge>
                                 </div>
                             )}
@@ -537,7 +525,7 @@ export default function AdminCategoriesPage() {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => setFormDialog({ open: false, mode: "create", category: null })}
+                                onClick={() => setFormDialog({ open: false, mode: "create", tag: null })}
                                 disabled={isSubmitting}
                             >
                                 Cancel
@@ -559,17 +547,16 @@ export default function AdminCategoriesPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, id: null })}
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                        <AlertDialogTitle>Delete Tag</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this category? Products in this category will not be
-                            deleted but will be uncategorized.
+                            Are you sure you want to delete this tag? Products with this tag will remain but
+                            will no longer be associated with it.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -579,31 +566,6 @@ export default function AdminCategoriesPage() {
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Hard Delete Confirmation Dialog */}
-            <AlertDialog
-                open={hardDeleteDialog.open}
-                onOpenChange={(open) => setHardDeleteDialog({ open, id: null })}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Permanently Delete Category</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to permanently delete this category? This action cannot be undone and
-                            will remove all data associated with this category.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => hardDeleteDialog.id && handleHardDelete(hardDeleteDialog.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                            Delete Permanently
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

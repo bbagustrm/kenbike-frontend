@@ -191,10 +191,15 @@ export function VariantManager({
                                                     type="number"
                                                     min="0"
                                                     placeholder="0"
-                                                    value={variant.stock}
-                                                    onChange={(e) =>
-                                                        updateVariant(actualIndex, "stock", parseInt(e.target.value) || 0)
-                                                    }
+                                                    value={variant.stock === 0 ? "" : variant.stock}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        if (value === "") {
+                                                            updateVariant(actualIndex, "stock", 0);
+                                                        } else {
+                                                            updateVariant(actualIndex, "stock", parseInt(value) || 0);
+                                                        }
+                                                    }}
                                                     disabled={disabled}
                                                     required
                                                 />

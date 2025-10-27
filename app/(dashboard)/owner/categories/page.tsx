@@ -59,7 +59,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function AdminCategoriesPage() {
+export default function OwnerCategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -88,7 +88,6 @@ export default function AdminCategoriesPage() {
         id: null,
     });
 
-    // Tambahkan state untuk hard delete dialog
     const [hardDeleteDialog, setHardDeleteDialog] = useState<{ open: boolean; id: string | null }>({
         open: false,
         id: null,
@@ -105,7 +104,6 @@ export default function AdminCategoriesPage() {
                 onlyDeleted: activeTab === "deleted",
             });
 
-            // Filter data based on activeTab (client-side)
             let filteredCategories = response.data || [];
             if (activeTab === "deleted") {
                 filteredCategories = filteredCategories.filter(c => c.deletedAt !== null);
@@ -195,7 +193,6 @@ export default function AdminCategoriesPage() {
         }
     };
 
-    // Tambahkan fungsi handleHardDelete
     const handleHardDelete = async (id: string) => {
         try {
             await CategoryService.hardDeleteCategory(id);
@@ -276,13 +273,11 @@ export default function AdminCategoriesPage() {
 
     return (
         <div className="container mx-auto py-8 px-4">
-            {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-2">Category Management</h1>
                 <p className="text-muted-foreground">Organize your products into categories</p>
             </div>
 
-            {/* Filters */}
             <div className="mb-6 flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex-1 flex gap-2">
                     <div className="relative flex-1">
@@ -303,7 +298,6 @@ export default function AdminCategoriesPage() {
                 </Button>
             </div>
 
-            {/* Tabs */}
             <Tabs
                 value={activeTab}
                 onValueChange={(v) => {
@@ -431,7 +425,6 @@ export default function AdminCategoriesPage() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="mt-6 flex items-center justify-between">
                             <p className="text-sm text-muted-foreground">
@@ -463,7 +456,6 @@ export default function AdminCategoriesPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Bulk Action Bar */}
             <BulkActionBar
                 selectedCount={selectedIds.length}
                 onDelete={activeTab === "active" ? handleBulkDelete : undefined}
@@ -472,7 +464,6 @@ export default function AdminCategoriesPage() {
                 isDeleted={activeTab === "deleted"}
             />
 
-            {/* Create/Edit Dialog */}
             <Dialog open={formDialog.open} onOpenChange={(open) => setFormDialog({ ...formDialog, open })}>
                 <DialogContent>
                     <DialogHeader>
@@ -559,7 +550,6 @@ export default function AdminCategoriesPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, id: null })}
@@ -584,7 +574,6 @@ export default function AdminCategoriesPage() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Hard Delete Confirmation Dialog */}
             <AlertDialog
                 open={hardDeleteDialog.open}
                 onOpenChange={(open) => setHardDeleteDialog({ open, id: null })}

@@ -1,7 +1,6 @@
-// Owner products page - Same as admin but with owner path
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { handleApiError } from "@/lib/api-client";
@@ -46,6 +45,7 @@ import {
     StarOff,
     ChevronLeft,
     ChevronRight,
+    AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -84,6 +84,11 @@ export default function OwnerProductsPage() {
         id: null,
     });
 
+    const [hardDeleteDialog, setHardDeleteDialog] = useState<{ open: boolean; id: string | null }>({
+        open: false,
+        id: null,
+    });
+
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -94,10 +99,8 @@ export default function OwnerProductsPage() {
                 sortBy: sortBy,
                 order,
                 includeDeleted: activeTab === "deleted",
-                isActive: activeTab === "deleted" ? undefined : true,
             });
 
-            // Filter data based on activeTab
             let filteredProducts = response.data || [];
             if (activeTab === "deleted") {
                 filteredProducts = filteredProducts.filter(p => p.deletedAt !== null);
@@ -149,7 +152,7 @@ export default function OwnerProductsPage() {
             await ProductService.bulkDeleteProducts(selectedIds);
             toast.success(`${selectedIds.length} products deleted successfully`);
             setSelectedIds([]);
-            fetchProducts();
+            await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -163,7 +166,7 @@ export default function OwnerProductsPage() {
             await ProductService.bulkRestoreProducts(selectedIds);
             toast.success(`${selectedIds.length} products restored successfully`);
             setSelectedIds([]);
-            fetchProducts();
+            await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -175,7 +178,19 @@ export default function OwnerProductsPage() {
             await ProductService.deleteProduct(id);
             toast.success("Product deleted successfully");
             setDeleteDialog({ open: false, id: null });
-            fetchProducts();
+            await fetchProducts();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        }
+    };
+
+    const handleHardDelete = async (id: string) => {
+        try {
+            await ProductService.hardDeleteProduct(id);
+            toast.success("Product permanently deleted");
+            setHardDeleteDialog({ open: false, id: null });
+            await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -186,7 +201,7 @@ export default function OwnerProductsPage() {
         try {
             await ProductService.restoreProduct(id);
             toast.success("Product restored successfully");
-            fetchProducts();
+            await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -197,7 +212,7 @@ export default function OwnerProductsPage() {
         try {
             await ProductService.toggleProductActive(id);
             toast.success("Product status updated");
-            fetchProducts();
+            await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -208,7 +223,7 @@ export default function OwnerProductsPage() {
         try {
             await ProductService.toggleProductFeatured(id);
             toast.success("Product featured status updated");
-            fetchProducts();
+            await fetchProducts();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -261,15 +276,15 @@ export default function OwnerProductsPage() {
                 setSelectedIds([]);
             }}>
                 <TabsList>
-                    <TabsTrigger value="active">Active Products</TabsTrigger>
-                    <TabsTrigger value="deleted">Deleted Products</TabsTrigger>
+                    <TabsTrigger value="active" className="min-w-20">Active</TabsTrigger>
+                    <TabsTrigger value="deleted" className="min-w-20">Deleted</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg">
+                    <div className="border rounded-lg bg-background">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead className="w-12">
                                         <Checkbox
                                             checked={selectedIds.length === products.length && products.length > 0}
@@ -282,7 +297,6 @@ export default function OwnerProductsPage() {
                                     <TableHead>Stock</TableHead>
                                     <TableHead>Sold</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -337,9 +351,9 @@ export default function OwnerProductsPage() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex flex-col">
-                            <span className="font-medium">
-                              Rp {product.idPrice.toLocaleString("id-ID")}
-                            </span>
+                                                        <span className="font-medium">
+                                                          Rp {product.idPrice.toLocaleString("id-ID")}
+                                                        </span>
                                                         {product.promotion && (
                                                             <Badge variant="secondary" className="w-fit text-xs">
                                                                 -{(product.promotion.discount * 100).toFixed(0)}%
@@ -354,7 +368,7 @@ export default function OwnerProductsPage() {
                                                 </TableCell>
                                                 <TableCell>{product.totalSold}</TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col gap-1">
+                                                    <div className="flex flex-wrap gap-1">
                                                         {activeTab === "active" ? (
                                                             <>
                                                                 <Badge
@@ -369,6 +383,13 @@ export default function OwnerProductsPage() {
                                                                         Featured
                                                                     </Badge>
                                                                 )}
+                                                                {product.tags && product.tags.length > 0 &&
+                                                                    product.tags.map((tag) => (
+                                                                        <Badge key={tag.id} variant="secondary" className="text-xs">
+                                                                            {tag.name}
+                                                                        </Badge>
+                                                                    ))
+                                                                }
                                                             </>
                                                         ) : (
                                                             <Badge variant="destructive" className="w-fit">
@@ -380,7 +401,7 @@ export default function OwnerProductsPage() {
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
+                                                            <Button variant="ghost" size="icon" className="hover:bg-transparent">
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
@@ -422,6 +443,13 @@ export default function OwnerProductsPage() {
                                                                     <DropdownMenuItem onClick={() => handleRestore(product.id)}>
                                                                         <RotateCcw className="h-4 w-4 mr-2" />
                                                                         Restore
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        className="text-destructive"
+                                                                        onClick={() => setHardDeleteDialog({ open: true, id: product.id })}
+                                                                    >
+                                                                        <AlertTriangle className="h-4 w-4 mr-2" />
+                                                                        Hard Delete
                                                                     </DropdownMenuItem>
                                                                 </>
                                                             )}
@@ -494,6 +522,29 @@ export default function OwnerProductsPage() {
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog
+                open={hardDeleteDialog.open}
+                onOpenChange={(open) => setHardDeleteDialog({ open, id: null })}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Permanently Delete Product</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete this product? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => hardDeleteDialog.id && handleHardDelete(hardDeleteDialog.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete Permanently
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

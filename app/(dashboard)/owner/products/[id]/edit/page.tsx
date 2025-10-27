@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { CategoryService } from "@/services/category.service";
 import { TagService } from "@/services/tag.service";
 import { PromotionService } from "@/services/promotion.service";
 import { handleApiError } from "@/lib/api-client";
-import { UpdateProductData} from "@/types/product";
+import { UpdateProductData } from "@/types/product";
 import { Category } from "@/types/category";
 import { Tag } from "@/types/tag";
 import { Promotion } from "@/types/promotion";
@@ -40,7 +40,7 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 
-export default function EditProductPage() {
+export default function OwnerEditProductPage() {
     const router = useRouter();
     const params = useParams();
     const { user } = useAuth();
@@ -84,11 +84,9 @@ export default function EditProductPage() {
         try {
             setIsLoadingData(true);
 
-            // Load product data
             const productRes = await ProductService.getProductById(productId);
             const product = productRes.data;
 
-            // Load categories, tags, promotions
             const [categoriesRes, tagsRes] = await Promise.all([
                 CategoryService.getAdminCategories({ limit: 100, isActive: true }),
                 TagService.getAdminTags({ limit: 100, isActive: true }),
@@ -105,7 +103,6 @@ export default function EditProductPage() {
                 setPromotions(promotionsRes.data || []);
             }
 
-            // Populate form with product data
             setFormData({
                 name: product.name,
                 slug: product.slug,
@@ -138,7 +135,7 @@ export default function EditProductPage() {
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
-            router.push("/admin/products");
+            router.push("/owner/products");
         } finally {
             setIsLoadingData(false);
         }
@@ -151,7 +148,6 @@ export default function EditProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
         if (!formData.imageUrl) {
             toast.error("Please upload a product image");
             return;
@@ -174,7 +170,7 @@ export default function EditProductPage() {
         try {
             await ProductService.updateProduct(productId, formData);
             toast.success("Product updated successfully");
-            router.push("/admin/products");
+            router.push("/owner/products");
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -193,15 +189,14 @@ export default function EditProductPage() {
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-5xl">
-            {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/admin">Dashboard</BreadcrumbLink>
+                        <BreadcrumbLink href="/owner">Dashboard</BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                        <BreadcrumbLink href="/admin/products">Products</BreadcrumbLink>
+                        <BreadcrumbLink href="/owner/products">Products</BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
@@ -210,7 +205,6 @@ export default function EditProductPage() {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
@@ -222,85 +216,58 @@ export default function EditProductPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Information */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Basic Information</CardTitle>
                         <CardDescription>Essential product details</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Product Name */}
                         <div className="space-y-2">
-                            <Label htmlFor="name">
-                                Product Name <span className="text-destructive">*</span>
-                            </Label>
+                            <Label htmlFor="name">Product Name</Label>
                             <Input
                                 id="name"
-                                placeholder="e.g., MacBook Pro M3"
                                 value={formData.name}
                                 onChange={(e) => handleChange("name", e.target.value)}
-                                required
                                 minLength={3}
                                 maxLength={255}
                             />
                         </div>
 
-                        {/* Slug */}
                         <div className="space-y-2">
-                            <Label htmlFor="slug">
-                                Slug <span className="text-destructive">*</span>
-                            </Label>
+                            <Label htmlFor="slug">Slug</Label>
                             <Input
                                 id="slug"
-                                placeholder="macbook-pro-m3"
                                 value={formData.slug}
                                 onChange={(e) => handleChange("slug", e.target.value)}
-                                required
                                 pattern="[a-z0-9-]+"
-                                title="Only lowercase letters, numbers, and hyphens"
                             />
-                            <p className="text-xs text-muted-foreground">
-                                URL-friendly identifier (auto-generated from name)
-                            </p>
                         </div>
 
-                        {/* Description ID */}
                         <div className="space-y-2">
-                            <Label htmlFor="idDescription">
-                                Description (Indonesian) <span className="text-destructive">*</span>
-                            </Label>
+                            <Label htmlFor="idDescription">Description (Indonesian)</Label>
                             <Textarea
                                 id="idDescription"
-                                placeholder="Deskripsi produk dalam Bahasa Indonesia..."
                                 value={formData.idDescription}
                                 onChange={(e) => handleChange("idDescription", e.target.value)}
-                                required
                                 rows={4}
                                 maxLength={5000}
                             />
                         </div>
 
-                        {/* Description EN */}
                         <div className="space-y-2">
-                            <Label htmlFor="enDescription">
-                                Description (English) <span className="text-destructive">*</span>
-                            </Label>
+                            <Label htmlFor="enDescription">Description (English)</Label>
                             <Textarea
                                 id="enDescription"
-                                placeholder="Product description in English..."
                                 value={formData.enDescription}
                                 onChange={(e) => handleChange("enDescription", e.target.value)}
-                                required
                                 rows={4}
                                 maxLength={5000}
                             />
                         </div>
 
-                        {/* Product Image */}
                         <div className="space-y-2">
                             <ImageUpload
                                 label="Product Image"
-                                description="Upload main product image"
                                 value={formData.imageUrl}
                                 onChange={(url) => handleChange("imageUrl", url)}
                                 folder="products"
@@ -311,63 +278,32 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Pricing */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Pricing</CardTitle>
-                        <CardDescription>Set product prices</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Price IDR */}
                             <div className="space-y-2">
-                                <Label htmlFor="idPrice">
-                                    Price (IDR) <span className="text-destructive">*</span>
-                                </Label>
+                                <Label htmlFor="idPrice">Price (IDR)</Label>
                                 <Input
                                     id="idPrice"
                                     type="number"
                                     min="0"
-                                    placeholder="25000000"
-                                    value={formData.idPrice || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("idPrice", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("idPrice", parseInt(value) || 0);
-                                        }
-                                    }}
-                                    required
+                                    value={formData.idPrice}
+                                    onChange={(e) => handleChange("idPrice", parseInt(e.target.value) || 0)}
                                 />
                             </div>
-
-                            {/* Price USD */}
                             <div className="space-y-2">
-                                <Label htmlFor="enPrice">
-                                    Price (USD) <span className="text-destructive">*</span>
-                                </Label>
+                                <Label htmlFor="enPrice">Price (USD)</Label>
                                 <Input
                                     id="enPrice"
                                     type="number"
                                     min="0"
-                                    placeholder="1700"
-                                    value={formData.enPrice || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("enPrice", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("enPrice", parseInt(value) || 0);
-                                        }
-                                    }}
-                                    required
+                                    value={formData.enPrice}
+                                    onChange={(e) => handleChange("enPrice", parseInt(e.target.value) || 0)}
                                 />
                             </div>
-
-                            {/* Tax Rate */}
                             <div className="space-y-2">
                                 <Label htmlFor="taxRate">Tax Rate</Label>
                                 <Input
@@ -376,31 +312,17 @@ export default function EditProductPage() {
                                     step="0.01"
                                     min="0"
                                     max="1"
-                                    placeholder="0.11"
-                                    value={formData.taxRate || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("taxRate", parseFloat(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("taxRate", parseFloat(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.taxRate}
+                                    onChange={(e) => handleChange("taxRate", parseFloat(e.target.value) || 0)}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    Default: 0.11 (11%)
-                                </p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Specifications */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Specifications</CardTitle>
-                        <CardDescription>Product dimensions and weight</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -410,17 +332,8 @@ export default function EditProductPage() {
                                     id="weight"
                                     type="number"
                                     min="0"
-                                    placeholder="1600"
-                                    value={formData.weight || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("weight", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("weight", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.weight}
+                                    onChange={(e) => handleChange("weight", parseInt(e.target.value) || 0)}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -429,17 +342,8 @@ export default function EditProductPage() {
                                     id="length"
                                     type="number"
                                     min="0"
-                                    placeholder="30"
-                                    value={formData.length || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("length", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("length", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.length}
+                                    onChange={(e) => handleChange("length", parseInt(e.target.value) || 0)}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -448,17 +352,8 @@ export default function EditProductPage() {
                                     id="width"
                                     type="number"
                                     min="0"
-                                    placeholder="21"
-                                    value={formData.width || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("width", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("width", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.width}
+                                    onChange={(e) => handleChange("width", parseInt(e.target.value) || 0)}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -467,31 +362,19 @@ export default function EditProductPage() {
                                     id="height"
                                     type="number"
                                     min="0"
-                                    placeholder="2"
-                                    value={formData.height || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("height", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("height", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.height}
+                                    onChange={(e) => handleChange("height", parseInt(e.target.value) || 0)}
                                 />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Categorization */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Categorization</CardTitle>
-                        <CardDescription>Organize your product</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Category */}
                         <div className="space-y-2">
                             <Label htmlFor="categoryId">Category</Label>
                             <Select
@@ -512,7 +395,6 @@ export default function EditProductPage() {
                             </Select>
                         </div>
 
-                        {/* Tags */}
                         <div className="space-y-2">
                             <Label>Tags</Label>
                             <MultiSelect
@@ -523,13 +405,12 @@ export default function EditProductPage() {
                             />
                         </div>
 
-                        {/* Promotion (Owner Only) */}
                         {isOwner && (
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
                                 <Select
-                                    value={formData.promotionId || "none"}
-                                    onValueChange={(value) => handleChange("promotionId", value === "none" ? undefined : value)}
+                                    value={formData.promotionId || ""}
+                                    onValueChange={(value) => handleChange("promotionId", value || undefined)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select promotion" />
@@ -548,11 +429,9 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Product Variants */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Product Variants</CardTitle>
-                        <CardDescription>Add variants like sizes, colors, etc.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <VariantManager
@@ -563,11 +442,9 @@ export default function EditProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Settings */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Settings</CardTitle>
-                        <CardDescription>Additional product settings</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -590,7 +467,7 @@ export default function EditProductPage() {
                             <div className="space-y-0.5">
                                 <Label htmlFor="isFeatured">Featured Product</Label>
                                 <p className="text-sm text-muted-foreground">
-                                    Show this product on homepage
+                                    Show on homepage
                                 </p>
                             </div>
                             <Switch
@@ -606,7 +483,7 @@ export default function EditProductPage() {
                             <div className="space-y-0.5">
                                 <Label htmlFor="isPreOrder">Pre-Order</Label>
                                 <p className="text-sm text-muted-foreground">
-                                    Enable pre-order for this product
+                                    Enable pre-order
                                 </p>
                             </div>
                             <Switch
@@ -623,27 +500,16 @@ export default function EditProductPage() {
                                     id="preOrderDays"
                                     type="number"
                                     min="0"
-                                    placeholder="7"
-                                    value={formData.preOrderDays || ""} // Gunakan string kosong jika nilai 0
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("preOrderDays", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("preOrderDays", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.preOrderDays}
+                                    onChange={(e) =>
+                                        handleChange("preOrderDays", parseInt(e.target.value) || 0)
+                                    }
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    Number of days until product is available
-                                </p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Submit Buttons */}
                 <div className="flex items-center gap-4">
                     <Button type="submit" disabled={isLoading} size="lg">
                         {isLoading ? (

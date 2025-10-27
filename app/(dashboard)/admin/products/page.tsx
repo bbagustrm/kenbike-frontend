@@ -372,7 +372,7 @@ export default function AdminProductsPage() {
                                                 </TableCell>
                                                 <TableCell>{product.totalSold}</TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col gap-1">
+                                                    <div className="flex flex-wrap gap-1">
                                                         {activeTab === "active" ? (
                                                             <>
                                                                 <Badge
@@ -387,18 +387,13 @@ export default function AdminProductsPage() {
                                                                         Featured
                                                                     </Badge>
                                                                 )}
-                                                                {/* Display tags */}
-                                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                                    {product.tags && product.tags.length > 0 ? (
-                                                                        product.tags.map((tag) => (
-                                                                            <Badge key={tag.id} variant="secondary" className="text-xs">
-                                                                                {tag.name}
-                                                                            </Badge>
-                                                                        ))
-                                                                    ) : (
-                                                                        <span className="text-xs text-muted-foreground"></span>
-                                                                    )}
-                                                                </div>
+                                                                {product.tags && product.tags.length > 0 &&
+                                                                    product.tags.map((tag) => (
+                                                                        <Badge key={tag.id} variant="secondary" className="text-xs">
+                                                                            {tag.name}
+                                                                        </Badge>
+                                                                    ))
+                                                                }
                                                             </>
                                                         ) : (
                                                             <Badge variant="destructive" className="w-fit">

@@ -386,10 +386,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="1600"
-                                    value={formData.weight || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.weight || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("weight", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -405,10 +404,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="30"
-                                    value={formData.length || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.length || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("length", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -424,10 +422,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="21"
-                                    value={formData.width || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.width || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("width", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -443,10 +440,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="2"
-                                    value={formData.height || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.height || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("height", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -582,10 +578,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="7"
-                                    value={formData.preOrderDays || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.preOrderDays || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("preOrderDays", parseInt(value.substring(1)) || 0);
                                         } else {

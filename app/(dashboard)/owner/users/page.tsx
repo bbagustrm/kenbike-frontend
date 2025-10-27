@@ -57,7 +57,7 @@ import { toast } from "sonner";
 import { useTranslation } from "@/hooks/use-translation";
 import { UserFormDrawer } from "@/components/admin/user-form-drawer";
 
-export default function AdminUsersPage() {
+export default function OwnerUsersPage() {
     const { t } = useTranslation();
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
         setIsActionLoading(true);
         try {
             await UserService.deleteUser(selectedUser.id, false);
-            const errorResult = handleApiError(null); // No error, success case
+            const errorResult = handleApiError(null);
             toast.success(`User ${selectedUser.username} deleted successfully`);
             setShowDeleteDialog(false);
             fetchUsers();
@@ -408,7 +408,6 @@ export default function AdminUsersPage() {
                 </div>
             </TooltipProvider>
 
-            {/* Pagination */}
             {totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
@@ -437,7 +436,6 @@ export default function AdminUsersPage() {
                 </div>
             )}
 
-            {/* User Form Drawer (Create/Edit) */}
             <UserFormDrawer
                 open={showUserFormDrawer}
                 onOpenChange={setShowUserFormDrawer}
