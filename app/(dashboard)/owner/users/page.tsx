@@ -64,7 +64,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 
-export default function AdminUsersPage() {
+export default function OwnerUsersPage() {
     const { t } = useTranslation();
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
         setIsActionLoading(true);
         try {
             await UserService.deleteUser(selectedUser.id, false);
-            const errorResult = handleApiError(null); // No error, success case
+            const errorResult = handleApiError(null);
             toast.success(`User ${selectedUser.username} deleted successfully`);
             setShowDeleteDialog(false);
             fetchUsers();

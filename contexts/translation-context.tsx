@@ -99,7 +99,7 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
     return (
         <TranslationContext.Provider
             value={{
-                t: translations[locale],
+                t: isInitialized ? translations[locale] : translations["id"],
                 locale,
                 setLocale,
             }}

@@ -1,19 +1,25 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Raleway, Poppins, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from "@/contexts/auth-context";
 import { TranslationProvider } from "@/contexts/translation-context";
 import "./globals.css";
 import { Toaster } from 'sonner';
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
+const raleway = Raleway({
+    subsets: ['latin'],
+    weight: ['600'],
+    variable: '--display-family',
 });
-
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
+const poppins = Poppins({
+    subsets: ['latin'],
+    weight: ['400'],
+    variable: '--body-family',
+});
+const jetbrains_mono = JetBrains_Mono({
+    subsets: ['latin'],
+    weight: ['400'],
+    variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
@@ -25,8 +31,8 @@ export default function RootLayout({ children, }: Readonly<{
     children: ReactNode;
 }>) {
     return (
-        <html lang="id" className="">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <html lang="id" >
+        <body className={`${raleway.variable} ${poppins.variable} ${jetbrains_mono.variable}`}>
         <TranslationProvider>
             <AuthProvider>
                 {children}

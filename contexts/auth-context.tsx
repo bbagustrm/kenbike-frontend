@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (redirect) {
                 router.push(redirect);
             } else if (userData.role === "ADMIN") {
-                router.push("/admin/users");
+                router.push("/admin/dashboard");
             } else if (userData.role === "OWNER") {
                 router.push("/owner/dashboard");
             } else {
