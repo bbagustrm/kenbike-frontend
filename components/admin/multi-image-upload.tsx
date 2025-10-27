@@ -90,14 +90,14 @@ export function MultiImageUpload({
     };
 
     return (
-        <div className={cn("space-y-2", className)}>
+        <div className={cn("flex flex-col gap-4", className)}>
             {label && (
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     {label}
                 </label>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {/* Existing Images */}
                 {value.map((url, index) => (
                     <div

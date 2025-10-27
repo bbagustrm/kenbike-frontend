@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { CategoryService } from "@/services/category.service";
 import { handleApiError } from "@/lib/api-client";
 import { Category, CreateCategoryData, UpdateCategoryData } from "@/types/category";
@@ -174,7 +174,7 @@ export default function AdminCategoriesPage() {
             }
 
             setFormDialog({ open: false, mode: "create", category: null });
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -188,7 +188,7 @@ export default function AdminCategoriesPage() {
             await CategoryService.deleteCategory(id);
             toast.success("Category deleted successfully");
             setDeleteDialog({ open: false, id: null });
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -201,7 +201,7 @@ export default function AdminCategoriesPage() {
             await CategoryService.hardDeleteCategory(id);
             toast.success("Category permanently deleted");
             setHardDeleteDialog({ open: false, id: null });
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -212,7 +212,7 @@ export default function AdminCategoriesPage() {
         try {
             await CategoryService.restoreCategory(id);
             toast.success("Category restored successfully");
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -223,7 +223,7 @@ export default function AdminCategoriesPage() {
         try {
             await CategoryService.toggleCategoryActive(id);
             toast.success("Category status updated");
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -253,7 +253,7 @@ export default function AdminCategoriesPage() {
             await CategoryService.bulkDeleteCategories(selectedIds);
             toast.success(`${selectedIds.length} categories deleted successfully`);
             setSelectedIds([]);
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -267,7 +267,7 @@ export default function AdminCategoriesPage() {
             await CategoryService.bulkRestoreCategories(selectedIds);
             toast.success(`${selectedIds.length} categories restored successfully`);
             setSelectedIds([]);
-            fetchCategories();
+            await fetchCategories();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -313,15 +313,15 @@ export default function AdminCategoriesPage() {
                 }}
             >
                 <TabsList>
-                    <TabsTrigger value="active">Active Categories</TabsTrigger>
-                    <TabsTrigger value="deleted">Deleted Categories</TabsTrigger>
+                    <TabsTrigger value="active" className="min-w-20">Active</TabsTrigger>
+                    <TabsTrigger value="deleted" className="min-w-20">Deleted</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg">
+                    <div className="border rounded-lg bg-background">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead className="w-12">
                                         <Checkbox
                                             checked={selectedIds.length === categories.length && categories.length > 0}
@@ -333,7 +333,6 @@ export default function AdminCategoriesPage() {
                                     <TableHead>Products</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Created</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -380,7 +379,7 @@ export default function AdminCategoriesPage() {
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
+                                                        <Button variant="ghost" size="icon" className="hover:bg-transparent">
                                                             <MoreVertical className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>

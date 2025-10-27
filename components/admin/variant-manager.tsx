@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { MultiImageUpload } from "./multi-image-upload";
 import { CreateVariantData, UpdateVariantData } from "@/types/product";
-import { cn } from "@/lib/utils";
 
 interface VariantManagerProps {
     variants: (CreateVariantData | UpdateVariantData)[];
@@ -108,7 +107,7 @@ export function VariantManager({
                         const actualIndex = variants.indexOf(variant);
 
                         return (
-                            <Card key={actualIndex} className="overflow-hidden">
+                            <Card key={actualIndex} className="overflow-hidden p-0">
                                 <CardHeader
                                     className="cursor-pointer hover:bg-muted/50 transition-colors p-4"
                                     onClick={() => toggleExpand(index)}
@@ -124,8 +123,8 @@ export function VariantManager({
                                                 {variant.variantName || `Variant ${index + 1}`}
                                                 {variant.sku && (
                                                     <span className="ml-2 text-xs text-muted-foreground font-normal">
-                            ({variant.sku})
-                          </span>
+                                                        ({variant.sku})
+                                                    </span>
                                                 )}
                                             </CardTitle>
                                         </div>
@@ -214,16 +213,17 @@ export function VariantManager({
                                                         disabled={disabled}
                                                     />
                                                     <span className="text-sm text-muted-foreground">
-                            {variant.isActive ?? true ? "Active" : "Inactive"}
-                          </span>
+                                                        {variant.isActive ?? true ? "Active" : "Inactive"}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Variant Images */}
                                         <div className="space-y-2">
-                                            <Label>Variant Images</Label>
                                             <MultiImageUpload
+                                                label="Variant Images"
+                                                className="space-y-2"
                                                 value={variant.imageUrls || []}
                                                 onChange={(urls) => updateVariant(actualIndex, "imageUrls", urls)}
                                                 folder="variants"

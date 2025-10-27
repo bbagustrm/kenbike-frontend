@@ -279,8 +279,8 @@ export default function NewProductPage() {
                                 value={formData.imageUrl}
                                 onChange={(url) => handleChange("imageUrl", url)}
                                 folder="products"
-                                aspectRatio="4/3"
-                                className="max-w-sm"
+                                aspectRatio="1/1"
+                                className="w-48"
                             />
                         </div>
                     </CardContent>

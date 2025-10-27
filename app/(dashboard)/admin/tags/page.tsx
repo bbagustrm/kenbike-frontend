@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { TagService } from "@/services/tag.service";
 import { handleApiError } from "@/lib/api-client";
 import { Tag, CreateTagData, UpdateTagData } from "@/types/tag";
@@ -304,15 +304,15 @@ export default function AdminTagsPage() {
                 }}
             >
                 <TabsList>
-                    <TabsTrigger value="active">Active Tags</TabsTrigger>
-                    <TabsTrigger value="deleted">Deleted Tags</TabsTrigger>
+                    <TabsTrigger value="active" className="min-w-20">Active</TabsTrigger>
+                    <TabsTrigger value="deleted" className="min-w-20">Deleted</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg">
+                    <div className="border rounded-lg bg-background">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead className="w-12">
                                         <Checkbox
                                             checked={selectedIds.length === tags.length && tags.length > 0}
@@ -324,7 +324,6 @@ export default function AdminTagsPage() {
                                     <TableHead>Products</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Created</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -375,7 +374,7 @@ export default function AdminTagsPage() {
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
+                                                        <Button variant="ghost" size="icon" className="hover:bg-transparent">
                                                             <MoreVertical className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>

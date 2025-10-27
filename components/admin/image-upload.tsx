@@ -24,17 +24,17 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({
-                                value,
-                                onChange,
-                                onRemove,
-                                folder,
-                                disabled = false,
-                                maxSizeMB = 2,
-                                label = "Upload Image",
-                                description = "Click to upload or drag and drop",
-                                aspectRatio = "16/9",
-                                className,
-                            }: ImageUploadProps) {
+    value,
+    onChange,
+    onRemove,
+    folder,
+    disabled = false,
+    maxSizeMB = 2,
+    label = "Upload Image",
+    description = "Click to upload or drag and drop",
+    aspectRatio = "1/1",
+    className,
+}: ImageUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [preview, setPreview] = useState<string | null>(value || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,7 +95,7 @@ export function ImageUpload({
     };
 
     return (
-        <div className={cn("space-y-2", className)}>
+        <div className={cn("flex flex-col gap-4", className)}>
             {label && (
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     {label}

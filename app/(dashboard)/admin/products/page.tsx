@@ -280,15 +280,15 @@ export default function AdminProductsPage() {
                 setSelectedIds([]);
             }}>
                 <TabsList>
-                    <TabsTrigger value="active">Active Products</TabsTrigger>
-                    <TabsTrigger value="deleted">Deleted Products</TabsTrigger>
+                    <TabsTrigger value="active" className="min-w-20">Active</TabsTrigger>
+                    <TabsTrigger value="deleted" className="min-w-20">Deleted</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg">
+                    <div className="border rounded-lg bg-background">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead className="w-12">
                                         <Checkbox
                                             checked={selectedIds.length === products.length && products.length > 0}
@@ -300,8 +300,7 @@ export default function AdminProductsPage() {
                                     <TableHead>Price (IDR)</TableHead>
                                     <TableHead>Stock</TableHead>
                                     <TableHead>Sold</TableHead>
-                                    <TableHead>Status & Tags</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -356,9 +355,9 @@ export default function AdminProductsPage() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex flex-col">
-                            <span className="font-medium">
-                              Rp {product.idPrice.toLocaleString("id-ID")}
-                            </span>
+                                                        <span className="font-medium">
+                                                          Rp {product.idPrice.toLocaleString("id-ID")}
+                                                        </span>
                                                         {product.promotion && (
                                                             <Badge variant="secondary" className="w-fit text-xs">
                                                                 -{(product.promotion.discount * 100).toFixed(0)}%
@@ -411,7 +410,7 @@ export default function AdminProductsPage() {
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
+                                                            <Button variant="ghost" size="icon" className="hover:bg-transparent">
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
