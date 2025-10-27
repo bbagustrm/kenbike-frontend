@@ -37,6 +37,7 @@ import {
     ChevronRight,
     Calendar,
     Percent,
+    AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -68,6 +69,11 @@ export default function OwnerPromotionsPage() {
         id: null,
     });
 
+    const [hardDeleteDialog, setHardDeleteDialog] = useState<{ open: boolean; id: string | null }>({
+        open: false,
+        id: null,
+    });
+
     const fetchPromotions = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -78,7 +84,6 @@ export default function OwnerPromotionsPage() {
                 includeDeleted: activeTab === "deleted",
             });
 
-            // Filter data based on activeTab
             let filteredPromotions = response.data || [];
             if (activeTab === "deleted") {
                 filteredPromotions = filteredPromotions.filter(p => p.deletedAt !== null);
@@ -87,7 +92,6 @@ export default function OwnerPromotionsPage() {
                     p.deletedAt === null && new Date(p.endDate) < new Date()
                 );
             } else {
-                // active
                 filteredPromotions = filteredPromotions.filter(p =>
                     p.deletedAt === null && new Date(p.endDate) >= new Date()
                 );
@@ -121,6 +125,18 @@ export default function OwnerPromotionsPage() {
             await PromotionService.deletePromotion(id);
             toast.success("Promotion deleted successfully");
             setDeleteDialog({ open: false, id: null });
+            fetchPromotions();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        }
+    };
+
+    const handleHardDelete = async (id: string) => {
+        try {
+            await PromotionService.hardDeletePromotion(id);
+            toast.success("Promotion permanently deleted");
+            setHardDeleteDialog({ open: false, id: null });
             fetchPromotions();
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -181,7 +197,6 @@ export default function OwnerPromotionsPage() {
 
     return (
         <div className="container mx-auto py-8 px-4">
-            {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-2">Promotion Management</h1>
                 <p className="text-muted-foreground">
@@ -189,7 +204,6 @@ export default function OwnerPromotionsPage() {
                 </p>
             </div>
 
-            {/* Filters */}
             <div className="mb-6 flex flex-col md:flex-row gap-4">
                 <form onSubmit={handleSearch} className="flex-1 flex gap-2">
                     <div className="relative flex-1">
@@ -210,7 +224,6 @@ export default function OwnerPromotionsPage() {
                 </Button>
             </div>
 
-            {/* Tabs */}
             <Tabs
                 value={activeTab}
                 onValueChange={(v) => {
@@ -225,16 +238,15 @@ export default function OwnerPromotionsPage() {
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg">
+                    <div className="border rounded-lg bg-background">
                         <Table>
                             <TableHeader>
-                                <TableRow>
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead>Promotion</TableHead>
                                     <TableHead>Discount</TableHead>
                                     <TableHead>Period</TableHead>
                                     <TableHead>Products</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -260,8 +272,8 @@ export default function OwnerPromotionsPage() {
                                                     <div className="flex flex-col">
                                                         <span className="font-medium">{promotion.name}</span>
                                                         <span className="text-xs text-muted-foreground">
-                              {promotion.id}
-                            </span>
+                                                            {promotion.id}
+                                                        </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -277,8 +289,8 @@ export default function OwnerPromotionsPage() {
                                                             <span>{format(new Date(promotion.startDate), "MMM d, yyyy")}</span>
                                                         </div>
                                                         <span className="text-xs">
-                              to {format(new Date(promotion.endDate), "MMM d, yyyy")}
-                            </span>
+                                                            to {format(new Date(promotion.endDate), "MMM d, yyyy")}
+                                                        </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -288,16 +300,27 @@ export default function OwnerPromotionsPage() {
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
+                                                            <Button variant="ghost" size="icon" className="hover:bg-transparent">
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             {activeTab === "deleted" ? (
-                                                                <DropdownMenuItem onClick={() => handleRestore(promotion.id)}>
-                                                                    <RotateCcw className="h-4 w-4 mr-2" />
-                                                                    Restore
-                                                                </DropdownMenuItem>
+                                                                <>
+                                                                    <DropdownMenuItem onClick={() => handleRestore(promotion.id)}>
+                                                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                                                        Restore
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        className="text-destructive"
+                                                                        onClick={() =>
+                                                                            setHardDeleteDialog({ open: true, id: promotion.id })
+                                                                        }
+                                                                    >
+                                                                        <AlertTriangle className="h-4 w-4 mr-2" />
+                                                                        Delete Permanently
+                                                                    </DropdownMenuItem>
+                                                                </>
                                                             ) : (
                                                                 <>
                                                                     <DropdownMenuItem
@@ -307,16 +330,6 @@ export default function OwnerPromotionsPage() {
                                                                     >
                                                                         <Edit className="h-4 w-4 mr-2" />
                                                                         Edit
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        onClick={() => handleToggleActive(promotion.id)}
-                                                                    >
-                                                                        {promotion.isActive ? (
-                                                                            <EyeOff className="h-4 w-4 mr-2" />
-                                                                        ) : (
-                                                                            <Eye className="h-4 w-4 mr-2" />
-                                                                        )}
-                                                                        {promotion.isActive ? "Deactivate" : "Activate"}
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuItem
                                                                         className="text-destructive"
@@ -340,7 +353,6 @@ export default function OwnerPromotionsPage() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="mt-6 flex items-center justify-between">
                             <p className="text-sm text-muted-foreground">
@@ -372,7 +384,6 @@ export default function OwnerPromotionsPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Delete Confirmation Dialog */}
             <AlertDialog
                 open={deleteDialog.open}
                 onOpenChange={(open) => setDeleteDialog({ open, id: null })}
@@ -392,6 +403,30 @@ export default function OwnerPromotionsPage() {
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog
+                open={hardDeleteDialog.open}
+                onOpenChange={(open) => setHardDeleteDialog({ open, id: null })}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Permanently Delete Promotion</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete this promotion? This action cannot be undone
+                            and will remove all data associated with this promotion.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => hardDeleteDialog.id && handleHardDelete(hardDeleteDialog.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Delete Permanently
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

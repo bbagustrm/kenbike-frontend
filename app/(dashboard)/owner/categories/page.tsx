@@ -384,14 +384,6 @@ export default function OwnerCategoriesPage() {
                                                                     <Edit className="h-4 w-4 mr-2" />
                                                                     Edit
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handleToggleActive(category.id)}>
-                                                                    {category.isActive ? (
-                                                                        <EyeOff className="h-4 w-4 mr-2" />
-                                                                    ) : (
-                                                                        <Eye className="h-4 w-4 mr-2" />
-                                                                    )}
-                                                                    {category.isActive ? "Deactivate" : "Activate"}
-                                                                </DropdownMenuItem>
                                                                 <DropdownMenuItem
                                                                     className="text-destructive"
                                                                     onClick={() => setDeleteDialog({ open: true, id: category.id })}

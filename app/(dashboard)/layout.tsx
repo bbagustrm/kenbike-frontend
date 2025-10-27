@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
       <ProtectedRoute>
-        <div className="flex h-screen bg-neutral-50 ">
+        <div className="flex h-screen bg-neutral-50 overflow-hidden">
           {/* Desktop Sidebar */}
           <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-white">
             <Sidebar />
@@ -139,13 +139,12 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     <Sidebar />
                   </SheetContent>
                 </Sheet>
-
               </div>
               <UserAvatar />
             </header>
 
-            {/* Page Content */}
-            <main className="flex-1 overflow-y-auto md:px-8">
+            {/* Page Content - TAMBAHKAN flex flex-col DI SINI */}
+            <main className="flex-1 overflow-y-auto md:px-8 flex flex-col">
               {children}
             </main>
           </div>
