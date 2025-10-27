@@ -42,8 +42,6 @@ import {
     RotateCcw,
     Eye,
     EyeOff,
-    ChevronLeft,
-    ChevronRight,
     AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -58,6 +56,15 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function AdminCategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -274,6 +281,88 @@ export default function AdminCategoriesPage() {
         }
     };
 
+    // Generate pagination items
+    const getPaginationItems = () => {
+        const items = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                items.push(
+                    <PaginationItem key={i}>
+                        <PaginationLink
+                            isActive={page === i}
+                            onClick={() => setPage(i)}
+                        >
+                            {i}
+                        </PaginationLink>
+                    </PaginationItem>
+                );
+            }
+        } else {
+            // Always show first page
+            items.push(
+                <PaginationItem key={1}>
+                    <PaginationLink
+                        isActive={page === 1}
+                        onClick={() => setPage(1)}
+                    >
+                        1
+                    </PaginationLink>
+                </PaginationItem>
+            );
+
+            // Determine if we need ellipsis
+            if (page > 3) {
+                items.push(
+                    <PaginationItem key="ellipsis-start">
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                );
+            }
+
+            // Show pages around current page
+            const startPage = Math.max(2, page - 1);
+            const endPage = Math.min(totalPages - 1, page + 1);
+
+            for (let i = startPage; i <= endPage; i++) {
+                items.push(
+                    <PaginationItem key={i}>
+                        <PaginationLink
+                            isActive={page === i}
+                            onClick={() => setPage(i)}
+                        >
+                            {i}
+                        </PaginationLink>
+                    </PaginationItem>
+                );
+            }
+
+            // Determine if we need ellipsis at the end
+            if (page < totalPages - 2) {
+                items.push(
+                    <PaginationItem key="ellipsis-end">
+                        <PaginationEllipsis />
+                    </PaginationItem>
+                );
+            }
+
+            // Always show last page
+            items.push(
+                <PaginationItem key={totalPages}>
+                    <PaginationLink
+                        isActive={page === totalPages}
+                        onClick={() => setPage(totalPages)}
+                    >
+                        {totalPages}
+                    </PaginationLink>
+                </PaginationItem>
+            );
+        }
+
+        return items;
+    };
+
     return (
         <div className="container mx-auto py-8 px-4">
             {/* Header */}
@@ -422,36 +511,26 @@ export default function AdminCategoriesPage() {
                             </TableBody>
                         </Table>
                     </div>
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        onClick={() => setPage(page - 1)}
+                                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+                                {getPaginationItems()}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        onClick={() => setPage(page + 1)}
+                                        className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="mt-6 flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">
-                                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}{" "}
-                                categories
-                            </p>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setPage(page - 1)}
-                                    disabled={page === 1}
-                                >
-                                    <ChevronLeft className="h-4 w-4 mr-1" />
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setPage(page + 1)}
-                                    disabled={page === totalPages}
-                                >
-                                    Next
-                                    <ChevronRight className="h-4 w-4 ml-1" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
                 </TabsContent>
             </Tabs>
 
