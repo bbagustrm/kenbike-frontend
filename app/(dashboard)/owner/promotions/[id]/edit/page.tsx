@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { PromotionService } from "@/services/promotion.service";
+import { ProductService } from "@/services/product.service";
 import { handleApiError } from "@/lib/api-client";
 import { UpdatePromotionData } from "@/types/promotion";
 import { Button } from "@/components/ui/button";
@@ -19,11 +20,12 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Save, CalendarIcon, Percent } from "lucide-react";
+import { ArrowLeft, Loader2, Save, CalendarIcon, Percent, Package } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import { MultiSelect, Option } from "@/components/ui/multi-select";
 
 export default function OwnerEditPromotionPage() {
     const router = useRouter();
@@ -32,8 +34,13 @@ export default function OwnerEditPromotionPage() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(true);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const [discountPercent, setDiscountPercent] = useState<string>("");
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [productOptions, setProductOptions] = useState<Option[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+    const [initialProducts, setInitialProducts] = useState<string[]>([]);
+    const [promotionProducts, setPromotionProducts] = useState<Option[]>([]);
 
     const [formData, setFormData] = useState<UpdatePromotionData>({
         name: "",
@@ -44,18 +51,18 @@ export default function OwnerEditPromotionPage() {
     });
 
     useEffect(() => {
-        const loadPromotion = async () => {
+        const loadData = async () => {
             try {
                 setIsLoadingData(true);
-                // --- PERUBAHAN KEDUA: Destrukturisasi 'response' ---
-                const { data: promotion } = await PromotionService.getAdminPromotionById(promotionId);
-                // --- AKHIR PERUBAHAN KEDUA ---
 
-                const startDate = new Date(promotion.startDate);
-                const endDate = new Date(promotion.endDate);
+                // Load promotion details with products
+                const { data: promotionDetail } = await PromotionService.getPromotionDetailWithProducts(promotionId);
+
+                const startDate = new Date(promotionDetail.startDate);
+                const endDate = new Date(promotionDetail.endDate);
 
                 // Set discount percentage
-                const percentValue = Math.round(promotion.discount * 100);
+                const percentValue = Math.round(promotionDetail.discount * 100);
                 setDiscountPercent(percentValue.toString());
 
                 // Set date range
@@ -65,12 +72,26 @@ export default function OwnerEditPromotionPage() {
                 });
 
                 setFormData({
-                    name: promotion.name,
-                    discount: promotion.discount,
-                    startDate: promotion.startDate, // Keep original ISO format
-                    endDate: promotion.endDate,     // Keep original ISO format
-                    isActive: promotion.isActive,
+                    name: promotionDetail.name,
+                    discount: promotionDetail.discount,
+                    startDate: promotionDetail.startDate,
+                    endDate: promotionDetail.endDate,
+                    isActive: promotionDetail.isActive,
                 });
+
+                // Set initially assigned products
+                const products = promotionDetail.products || [];
+                const assignedProductIds = products.map(p => p.id);
+                setSelectedProducts(assignedProductIds);
+                setInitialProducts(assignedProductIds);
+
+                // Store promotion products for the MultiSelect
+                const promotionProductOptions: Option[] = products.map((product) => ({
+                    label: product.name,
+                    value: product.id,
+                }));
+                setPromotionProducts(promotionProductOptions);
+
             } catch (err) {
                 const errorResult = handleApiError(err);
                 toast.error(errorResult.message);
@@ -80,9 +101,45 @@ export default function OwnerEditPromotionPage() {
             }
         };
 
-        loadPromotion();
+        loadData();
     }, [promotionId, router]);
-    
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                setIsLoadingProducts(true);
+                const response = await ProductService.getAdminProducts({
+                    page: 1,
+                    limit: 50,
+                    hasPromotion: false,
+                    sortBy: "name",
+                    order: "asc",
+                });
+
+                // Combine products without promotion with products already assigned to this promotion
+                const allOptions = [
+                    ...response.data.map((product) => ({
+                        label: product.name,
+                        value: product.id,
+                    })),
+                    ...promotionProducts
+                ];
+
+                setProductOptions(allOptions);
+            } catch (err) {
+                const errorResult = handleApiError(err);
+                toast.error(`Failed to load products: ${errorResult.message}`);
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        };
+
+        // Only load products after we have the promotion products
+        if (promotionProducts.length > 0 || !isLoadingData) {
+            loadProducts();
+        }
+    }, [promotionProducts, isLoadingData]);
+
     const handleDiscountChange = (value: string) => {
         if (value === "" || /^\d+$/.test(value)) {
             setDiscountPercent(value);
@@ -101,7 +158,6 @@ export default function OwnerEditPromotionPage() {
         setDateRange(range);
 
         if (range?.from) {
-            // Set to start of day and convert to ISO string
             const startDate = new Date(range.from);
             startDate.setHours(0, 0, 0, 0);
             setFormData(prev => ({
@@ -111,7 +167,6 @@ export default function OwnerEditPromotionPage() {
         }
 
         if (range?.to) {
-            // Set to end of day and convert to ISO string
             const endDate = new Date(range.to);
             endDate.setHours(23, 59, 59, 999);
             setFormData(prev => ({
@@ -143,8 +198,45 @@ export default function OwnerEditPromotionPage() {
         setIsLoading(true);
 
         try {
+            // Update promotion details
             await PromotionService.updatePromotion(promotionId, formData);
-            toast.success("Promotion updated successfully");
+
+            // Handle product assignments changes
+            const productsToAdd = selectedProducts.filter(id => !initialProducts.includes(id));
+            const productsToRemove = initialProducts.filter(id => !selectedProducts.includes(id));
+
+            let productUpdateSuccess = true;
+
+            // Bulk assign new products
+            if (productsToAdd.length > 0) {
+                try {
+                    await PromotionService.bulkAssignProducts(promotionId, productsToAdd);
+                } catch (err) {
+                    productUpdateSuccess = false;
+                    const errorResult = handleApiError(err);
+                    toast.warning(`Failed to assign ${productsToAdd.length} product(s): ${errorResult.message}`);
+                }
+            }
+
+            // Remove unselected products
+            if (productsToRemove.length > 0) {
+                const removePromises = productsToRemove.map(productId =>
+                    PromotionService.removeProductFromPromotion(promotionId, productId).catch(err => {
+                        productUpdateSuccess = false;
+                        console.error(`Failed to remove product ${productId}:`, err);
+                    })
+                );
+                await Promise.allSettled(removePromises);
+            }
+
+            if (productUpdateSuccess && (productsToAdd.length > 0 || productsToRemove.length > 0)) {
+                toast.success("Promotion and product assignments updated successfully");
+            } else if (productsToAdd.length === 0 && productsToRemove.length === 0) {
+                toast.success("Promotion updated successfully");
+            } else {
+                toast.warning("Promotion updated but some product assignments failed");
+            }
+
             router.push("/owner/promotions");
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -156,7 +248,7 @@ export default function OwnerEditPromotionPage() {
 
     if (isLoadingData) {
         return (
-            <div className="flex items-center justify-center flex-1">
+            <div className="flex items-center justify-center flex-1 min-h-screen">
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         );
@@ -283,6 +375,44 @@ export default function OwnerEditPromotionPage() {
                                 Select the start and end date for the promotion period
                             </p>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <Package className="h-5 w-5 inline mr-2" />
+                            Manage Products
+                        </CardTitle>
+                        <CardDescription>
+                            Add or remove products from this promotion
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {isLoadingProducts ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                <span className="ml-2 text-sm text-muted-foreground">
+                                    Loading products...
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <Label>Products</Label>
+                                <MultiSelect
+                                    options={productOptions}
+                                    selected={selectedProducts}
+                                    onChange={setSelectedProducts}
+                                    placeholder="Select products to apply promotion..."
+                                    disabled={isLoading}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    {selectedProducts.length > 0
+                                        ? `${selectedProducts.length} product(s) selected`
+                                        : "No products assigned to this promotion"}
+                                </p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 

@@ -208,6 +208,7 @@ export interface GetProductsParams {
     maxPrice?: number;
     isFeatured?: boolean;
     isPreOrder?: boolean;
+    hasPromotion?: boolean;
     sortBy?: 'name' | 'idPrice' | 'enPrice' | 'totalSold' | 'totalView' | 'avgRating' | 'createdAt';
     order?: 'asc' | 'desc';
     includeDeleted?: boolean;
