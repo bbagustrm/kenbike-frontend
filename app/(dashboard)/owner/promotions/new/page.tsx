@@ -1,8 +1,11 @@
+// app/(dashboard)/owner/promotions/new/page.tsx
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PromotionService } from "@/services/promotion.service";
+import { ProductService } from "@/services/product.service";
 import { handleApiError } from "@/lib/api-client";
 import { CreatePromotionData } from "@/types/promotion";
 import { Button } from "@/components/ui/button";
@@ -19,17 +22,21 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Save, CalendarIcon, Percent } from "lucide-react";
+import { ArrowLeft, Loader2, Save, CalendarIcon, Percent, Package } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import { MultiSelect, Option } from "@/components/ui/multi-select";
 
 export default function OwnerNewPromotionPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const [discountPercent, setDiscountPercent] = useState<string>("");
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
+    const [productOptions, setProductOptions] = useState<Option[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
     const [formData, setFormData] = useState<CreatePromotionData>({
         name: "",
@@ -39,8 +46,36 @@ export default function OwnerNewPromotionPage() {
         isActive: true,
     });
 
+    // Load products for assignment
+    useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                setIsLoadingProducts(true);
+                const response = await ProductService.getAdminProducts({
+                    page: 1,
+                    limit: 50,
+                    hasPromotion: false,
+                    sortBy: "name",
+                    order: "asc",
+                });
+                const options: Option[] = response.data.map((product) => ({
+                    label: product.name,
+                    value: product.id,
+                }));
+
+                setProductOptions(options);
+            } catch (err) {
+                const errorResult = handleApiError(err);
+                toast.error(`Failed to load products: ${errorResult.message}`);
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        };
+
+        loadProducts();
+    }, []);
+
     const handleDiscountChange = (value: string) => {
-        // Hanya izinkan angka
         if (value === "" || /^\d+$/.test(value)) {
             setDiscountPercent(value);
             const numValue = value === "" ? 0 : parseInt(value);
@@ -50,7 +85,6 @@ export default function OwnerNewPromotionPage() {
                 return;
             }
 
-            // Convert to decimal (20 -> 0.2)
             setFormData(prev => ({ ...prev, discount: numValue / 100 }));
         }
     };
@@ -59,7 +93,6 @@ export default function OwnerNewPromotionPage() {
         setDateRange(range);
 
         if (range?.from) {
-            // Set to start of day and convert to ISO string
             const startDate = new Date(range.from);
             startDate.setHours(0, 0, 0, 0);
             setFormData(prev => ({
@@ -69,7 +102,6 @@ export default function OwnerNewPromotionPage() {
         }
 
         if (range?.to) {
-            // Set to end of day and convert to ISO string
             const endDate = new Date(range.to);
             endDate.setHours(23, 59, 59, 999);
             setFormData(prev => ({
@@ -105,8 +137,24 @@ export default function OwnerNewPromotionPage() {
         setIsLoading(true);
 
         try {
-            await PromotionService.createPromotion(formData);
-            toast.success("Promotion created successfully");
+            // Create promotion first
+            const response = await PromotionService.createPromotion(formData);
+            const promotionId = response.data.id;
+
+            // Assign products if any selected
+            if (selectedProducts.length > 0) {
+                try {
+                    await PromotionService.bulkAssignProducts(promotionId, selectedProducts);
+                    toast.success(`Promotion created with ${selectedProducts.length} products assigned`);
+                } catch (assignErr) {
+                    // Promotion created but product assignment failed
+                    const errorResult = handleApiError(assignErr);
+                    toast.warning(`Promotion created but failed to assign products: ${errorResult.message}`);
+                }
+            } else {
+                toast.success("Promotion created successfully");
+            }
+
             router.push("/owner/promotions");
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -233,7 +281,6 @@ export default function OwnerNewPromotionPage() {
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
-                                        initialFocus
                                         mode="range"
                                         defaultMonth={dateRange?.from}
                                         selected={dateRange}
@@ -247,6 +294,44 @@ export default function OwnerNewPromotionPage() {
                                 Select the start and end date for the promotion period
                             </p>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            <Package className="h-5 w-5 inline mr-2" />
+                            Assign Products
+                        </CardTitle>
+                        <CardDescription>
+                            Select products to apply this promotion (optional)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {isLoadingProducts ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                <span className="ml-2 text-sm text-muted-foreground">
+                                    Loading products...
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <Label>Products</Label>
+                                <MultiSelect
+                                    options={productOptions}
+                                    selected={selectedProducts}
+                                    onChange={setSelectedProducts}
+                                    placeholder="Select products to apply promotion..."
+                                    disabled={isLoading}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    {selectedProducts.length > 0
+                                        ? `${selectedProducts.length} product(s) selected`
+                                        : "No products selected. You can assign products later."}
+                                </p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
