@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  kenbike-frontend:
+    image: bbagustrm/kenbike-frontend:latest
+    container_name: kenbike-frontend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - kenbike_network
+
+networks:
+  kenbike_network:
+    external: true
