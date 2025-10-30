@@ -28,6 +28,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const COOKIE_DOMAIN = '.kenbike.store';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -46,9 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Continue with logout even if API call fails
         } finally {
             // Clear cookies and state
-            Cookies.remove("access_token");
-            Cookies.remove("refresh_token");
-            Cookies.remove("user");
+            Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
+            Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
+            Cookies.remove("user", { domain: COOKIE_DOMAIN });
             setUser(null);
 
             console.log("👋 Logged out successfully");
@@ -94,15 +96,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     Cookies.set("user", JSON.stringify(freshUser), {
                         expires: 7,
                         sameSite: "lax",
+                        domain: COOKIE_DOMAIN,
                     });
                 }
             } catch (error) {
                 console.error("Failed to load user:", error);
 
                 // Clear invalid tokens
-                Cookies.remove("access_token");
-                Cookies.remove("refresh_token");
-                Cookies.remove("user");
+                Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
+                Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
+                Cookies.remove("user", { domain: COOKIE_DOMAIN });
                 setUser(null);
             } finally {
                 setIsLoading(false);
@@ -160,6 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 expires: accessTokenExpiryDays,
                 sameSite: "lax",
                 secure: process.env.NODE_ENV === "production",
+                domain: COOKIE_DOMAIN,
             });
 
             // Save refresh token (7 days)
@@ -167,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 expires: 7,
                 sameSite: "lax",
                 secure: process.env.NODE_ENV === "production",
+                domain: COOKIE_DOMAIN,
             });
 
             // Save user data
@@ -174,6 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             Cookies.set("user", JSON.stringify(userData), {
                 expires: 7,
                 sameSite: "lax",
+                domain: COOKIE_DOMAIN,
             });
 
             console.log("✅ Login successful");
@@ -215,9 +221,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (!prevUser || !response.data) return prevUser;
 
                 const updatedUser = { ...prevUser, ...response.data };
+                // PERBAIKAN: Tambahkan domain agar cookie bisa diakses oleh subdomain API
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
+                    domain: COOKIE_DOMAIN,
                 });
                 return updatedUser;
             });
@@ -246,6 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
+                    domain: COOKIE_DOMAIN,
                 });
                 return updatedUser;
             });
@@ -264,6 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
+                    domain: COOKIE_DOMAIN,
                 });
             }
         } catch (error) {
