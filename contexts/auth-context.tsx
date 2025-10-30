@@ -162,7 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             Cookies.set("access_token", access_token, {
                 expires: accessTokenExpiryDays,
                 sameSite: "lax",
-                secure: process.env.NODE_ENV === "production",
+                // secure: process.env.NODE_ENV === "production",
+                secure: false,
                 domain: COOKIE_DOMAIN,
             });
 
@@ -170,7 +171,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             Cookies.set("refresh_token", refresh_token, {
                 expires: 7,
                 sameSite: "lax",
-                secure: process.env.NODE_ENV === "production",
+                // secure: process.env.NODE_ENV === "production",
+                secure: false,
                 domain: COOKIE_DOMAIN,
             });
 

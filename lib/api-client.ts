@@ -4,13 +4,16 @@ import { ApiResponse } from "@/types/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
 
+// Definisikan domain cookie di satu tempat
+const COOKIE_DOMAIN = '.kenbike.store';
+
 let isRefreshing = false;
 let failedQueue: Array<{
-    resolve: (value?: string | null) => void;
-    reject: (reason?: Error) => void;
+    resolve: (value?: unknown) => void;
+    reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: Error | null = null, token: string | null = null) => {
+const processQueue = (error: unknown = null, token: unknown = null) => {
     failedQueue.forEach((prom) => {
         if (error) {
             prom.reject(error);
@@ -18,28 +21,31 @@ const processQueue = (error: Error | null = null, token: string | null = null) =
             prom.resolve(token);
         }
     });
-
     failedQueue = [];
 };
 
 // Create axios instance
+// >>> PERUBAHAN KRUSIAL: Tambahkan withCredentials: true <<<
 export const apiClient: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
     timeout: 30000,
+    withCredentials: true, // Ini akan mengirim cookie ke api.kenbike.store
 });
 
-// Request interceptor - Add token to every request
+// Request interceptor - TIDAK PERLU lagi menambahkan token manual
+// karena cookie akan dikirim otomatis oleh axios
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const token = Cookies.get("access_token");
-
-        if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-
+        // Kita tidak lagi perlu membaca token dan menyetel header Authorization
+        // karena backend akan membacanya dari cookie.
+        // Baris di bawah ini dihapus atau dikomentari.
+        // const token = Cookies.get("access_token");
+        // if (token && config.headers) {
+        //     config.headers.Authorization = `Bearer ${token}`;
+        // }
         return config;
     },
     (error) => {
@@ -55,87 +61,50 @@ apiClient.interceptors.response.use(
     async (error: AxiosError<ApiResponse>) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        // If error is 401 and we haven't retried yet
         if (error.response?.status === 401 && !originalRequest._retry) {
-            // If already refreshing, queue this request
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 })
-                    .then((token) => {
-                        if (originalRequest.headers) {
-                            originalRequest.headers.Authorization = `Bearer ${token}`;
-                        }
-                        return apiClient(originalRequest);
-                    })
-                    .catch((err) => {
-                        return Promise.reject(err);
-                    });
+                    .then(() => apiClient(originalRequest))
+                    .catch((err) => Promise.reject(err));
             }
 
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const refreshToken = Cookies.get("refresh_token");
-
-            if (!refreshToken) {
-                // No refresh token, clear everything and redirect
-                console.error("No refresh token available");
-                handleLogout();
-                processQueue(new Error("No refresh token"), null);
-                isRefreshing = false;
-                return Promise.reject(error);
-            }
-
             try {
                 console.log("🔄 Attempting to refresh token...");
 
-                // Try to refresh the token
-                const response = await axios.post(
-                    `${API_BASE_URL}/auth/refresh`,
-                    {
-                        refresh_token: refreshToken,
-                    },
-                    {
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
+                // >>> PERUBAHAN: Gunakan apiClient untuk refresh, karena ia sudah denganCredentials <<<
+                const response = await apiClient.post("/auth/refresh", {
+                    // Kita tidak perlu mengirim refresh_token di body,
+                    // karena cookie-nya akan dikirim otomatis.
+                });
 
                 const { access_token, expires_in } = response.data.data;
 
                 console.log("✅ Token refreshed successfully");
 
-                // Calculate expiry time in days (expires_in is in seconds)
                 const expiresInDays = expires_in / (60 * 60 * 24);
 
-                // Save new access token
+                // >>> PERUBAHAN: Saat refresh token, set cookie dengan domain yang benar <<<
                 Cookies.set("access_token", access_token, {
                     expires: expiresInDays,
                     sameSite: "lax",
-                    secure: process.env.NODE_ENV === "production",
+                    secure: false, // Sama, paksa false untuk http
+                    domain: COOKIE_DOMAIN,
                 });
 
-                // Update authorization header for current request
-                if (originalRequest.headers) {
-                    originalRequest.headers.Authorization = `Bearer ${access_token}`;
-                }
-
-                // Process queued requests
                 processQueue(null, access_token);
                 isRefreshing = false;
 
-                // Retry the original request
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 console.error("❌ Token refresh failed:", refreshError);
-
-                // Refresh failed, logout user
-                processQueue(refreshError as Error, null); // Cast ke Error untuk kejelasan
+                processQueue(refreshError, null);
                 isRefreshing = false;
                 handleLogout();
-
                 return Promise.reject(refreshError);
             }
         }
@@ -148,21 +117,17 @@ apiClient.interceptors.response.use(
 function handleLogout() {
     console.log("🚪 Logging out user...");
 
-    // Clear all auth cookies
-    Cookies.remove("access_token");
-    Cookies.remove("refresh_token");
-    Cookies.remove("user");
+    // >>> PERUBAHAN: Hapus cookie dengan domain yang benar <<<
+    Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
+    Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
+    Cookies.remove("user", { domain: COOKIE_DOMAIN });
 
-    // Redirect to login if we're on client side
     if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
-
-        // Don't redirect if already on auth pages
         if (!currentPath.startsWith("/login") &&
             !currentPath.startsWith("/register") &&
             !currentPath.startsWith("/forgot-password") &&
             !currentPath.startsWith("/reset-password")) {
-
             window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
         }
     }
@@ -172,19 +137,15 @@ function handleLogout() {
 export function handleApiError(error: unknown): { message: string; fieldErrors?: Record<string, string> } {
     if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ApiResponse>;
-
-        // Default message
         let message = "An unexpected error occurred";
         const fieldErrors: Record<string, string> = {};
 
-        // Get general message
         if (axiosError.response?.data?.message) {
             message = axiosError.response.data.message;
         } else if (axiosError.message) {
             message = axiosError.message;
         }
 
-        // Get field-specific errors
         if (axiosError.response?.data?.errors && Array.isArray(axiosError.response.data.errors)) {
             axiosError.response.data.errors.forEach(err => {
                 if (err.field && err.message) {
