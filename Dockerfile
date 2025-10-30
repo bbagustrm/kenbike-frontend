@@ -7,6 +7,19 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+# >>> Tambahkan bagian ini untuk menerima variabel dari GitHub Actions <<<
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_IMAGE_BASE_URL
+
+# Jadikan argumen tersebut sebagai environment variable
+# agar bisa dibaca oleh `npm run build`
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_IMAGE_BASE_URL=$NEXT_PUBLIC_IMAGE_BASE_URL
+
+# Sekarang, `npm run build` akan menggunakan variabel yang benar
 RUN npm run build
 
 # --- Stage 2: Runner ---
