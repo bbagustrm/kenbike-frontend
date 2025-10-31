@@ -11,13 +11,25 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { User, Settings, LogOut, LayoutDashboard, Users, Package, ShoppingCart, BarChart3, Tag } from "lucide-react";
+import {
+    User,
+    Settings,
+    LogOut,
+    LayoutDashboard,
+    Users,
+    Package,
+    ShoppingCart,
+    BarChart3,
+    Tag
+} from "lucide-react";
 import { getUserInitials } from "@/lib/auth-utils";
+import { getImageUrl } from "@/lib/image-utils";
 import Link from "next/link";
 
 export function UserAvatar() {
     const { user, logout } = useAuth();
 
+    // ✅ Early return jika user belum ada
     if (!user) return null;
 
     const handleLogout = async () => {
@@ -41,29 +53,43 @@ export function UserAvatar() {
                 <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <Avatar className="h-9 w-9 cursor-pointer">
                         <AvatarImage
-                            src={user?.profile_image}
-                            alt={user?.username}
+                            src={getImageUrl(user.profile_image)}
+                            alt={user.username}
                         />
-                        <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                            {getUserInitials(user)}
+                        </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                        <p className="text-sm font-medium leading-none">{user?.first_name} {user?.last_name}</p>
-                        <p className="text-xs text-muted-foreground mt-1">@{user.username}</p>
+                        <p className="text-sm font-medium leading-none">
+                            {user.first_name} {user.last_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            @{user.username}
+                        </p>
                     </div>
                 </button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.first_name} {user?.last_name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                        <Badge variant="outline" className={`mt-2 w-fit ${getRoleColor()}`}>
+                        <p className="text-sm font-medium leading-none">
+                            {user.first_name} {user.last_name}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                        </p>
+                        <Badge
+                            variant="outline"
+                            className={`mt-2 w-fit ${getRoleColor()}`}
+                        >
                             {user.role}
                         </Badge>
                     </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
 
+                <DropdownMenuSeparator />
 
                 {/* Menu khusus untuk user biasa */}
                 {user.role === "USER" && (
@@ -168,7 +194,8 @@ export function UserAvatar() {
                 )}
 
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                 </DropdownMenuItem>
