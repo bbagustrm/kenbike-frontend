@@ -28,7 +28,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const COOKIE_DOMAIN = '.kenbike.store';
+const COOKIE_DOMAIN = '.kenbike.store'; // ✅ Leading dot work di HTTPS
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -121,14 +121,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                         console.log("✅ User refreshed from API:", freshUser.email);
                     }
-                } catch (apiError: unknown) {
+                } catch (apiError: any) {
                     console.error("Failed to fetch user from API:", apiError);
 
                     // ✅ CRITICAL: Jangan clear cookie jika error 401 dan user cookie masih valid
-                    // Type assertion to access the response property
-                    const error = apiError as { response?: { status?: number } };
-
-                    if (error?.response?.status === 401) {
+                    if (apiError?.response?.status === 401) {
                         console.log("⚠️ Token expired, but keeping user data for now");
                         // Biarkan refresh token interceptor yang handle
                     } else {
@@ -150,8 +147,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         loadUser();
-    }, []);
+    }, []); // ✅ Empty dependency array - run once
 
+    // ✅ PERBAIKAN: Periodic token check yang lebih aman
     useEffect(() => {
         if (!isAuthenticated || !hasInitialized.current) return;
 
@@ -200,14 +198,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             Cookies.set("access_token", access_token, {
                 expires: accessTokenExpiryDays,
                 sameSite: "lax",
-                secure: false,
+                secure: true,
                 domain: COOKIE_DOMAIN,
             });
 
             Cookies.set("refresh_token", refresh_token, {
                 expires: 7,
                 sameSite: "lax",
-                secure: false,
+                secure: true,
                 domain: COOKIE_DOMAIN,
             });
 

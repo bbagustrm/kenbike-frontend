@@ -4,8 +4,7 @@ import { ApiResponse } from "@/types/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
 
-// Definisikan domain cookie di satu tempat
-const COOKIE_DOMAIN = '.kenbike.store';
+const COOKIE_DOMAIN = '.kenbike.store'; // ✅ HTTPS
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -88,11 +87,10 @@ apiClient.interceptors.response.use(
 
                 const expiresInDays = expires_in / (60 * 60 * 24);
 
-                // >>> PERUBAHAN: Saat refresh token, set cookie dengan domain yang benar <<<
                 Cookies.set("access_token", access_token, {
                     expires: expiresInDays,
                     sameSite: "lax",
-                    secure: false, // Sama, paksa false untuk http
+                    secure: true,
                     domain: COOKIE_DOMAIN,
                 });
 
