@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { AuthService } from "@/services/auth.service";
@@ -36,26 +36,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
+    // ✅ PERBAIKAN: Prevent multiple loadUser calls
+    const isLoadingUser = useRef(false);
+    const hasInitialized = useRef(false);
+
     const isAuthenticated = !!user;
 
-    // Wrap logout in useCallback to prevent recreation on every render
+    // Wrap logout in useCallback
     const logout = useCallback(async () => {
         try {
-            // Try to logout from backend (blacklist token)
             await AuthService.logout();
         } catch (error) {
             console.error("Logout error:", error);
-            // Continue with logout even if API call fails
         } finally {
             // Clear cookies and state
             Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
             Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
             Cookies.remove("user", { domain: COOKIE_DOMAIN });
             setUser(null);
+            hasInitialized.current = false;
 
             console.log("👋 Logged out successfully");
 
-            // Redirect to login with current path
+            // Redirect to login
             const currentPath = pathname || "/";
             if (!currentPath.startsWith("/login")) {
                 router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
@@ -63,80 +66,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [pathname, router]);
 
-    // Load user on mount
+    // ✅ PERBAIKAN: Load user dengan protection
     useEffect(() => {
         async function loadUser() {
+            // Prevent concurrent calls
+            if (isLoadingUser.current || hasInitialized.current) {
+                return;
+            }
+
+            isLoadingUser.current = true;
+
             try {
                 const accessToken = Cookies.get("access_token");
                 const userCookie = Cookies.get("user");
 
+                console.log("🔍 Loading user...", {
+                    hasToken: !!accessToken,
+                    hasCookie: !!userCookie
+                });
+
                 if (!accessToken) {
+                    console.log("⚠️ No access token found");
                     setIsLoading(false);
+                    hasInitialized.current = true;
+                    isLoadingUser.current = false;
                     return;
                 }
 
-                // First, try to load from cookie (faster)
+                // Load from cookie first (instant)
                 if (userCookie) {
                     try {
                         const cachedUser = JSON.parse(userCookie);
                         setUser(cachedUser);
+                        console.log("✅ User loaded from cookie:", cachedUser.email);
                     } catch (error) {
                         console.error("Error parsing user cookie:", error);
                     }
                 }
 
-                // Then, fetch fresh data from API
-                const response = await AuthService.getCurrentUser();
-                const freshUser = response.data;
+                // ✅ PERBAIKAN: Fetch dari API dengan error handling yang lebih baik
+                try {
+                    const response = await AuthService.getCurrentUser();
+                    const freshUser = response.data;
 
-                if (freshUser) {
-                    setUser(freshUser);
+                    if (freshUser) {
+                        setUser(freshUser);
 
-                    // Update cookie with fresh data
-                    Cookies.set("user", JSON.stringify(freshUser), {
-                        expires: 7,
-                        sameSite: "lax",
-                        domain: COOKIE_DOMAIN,
-                    });
+                        // Update cookie
+                        Cookies.set("user", JSON.stringify(freshUser), {
+                            expires: 7,
+                            sameSite: "lax",
+                            domain: COOKIE_DOMAIN,
+                        });
+
+                        console.log("✅ User refreshed from API:", freshUser.email);
+                    }
+                } catch (apiError: unknown) {
+                    console.error("Failed to fetch user from API:", apiError);
+
+                    // ✅ CRITICAL: Jangan clear cookie jika error 401 dan user cookie masih valid
+                    // Type assertion to access the response property
+                    const error = apiError as { response?: { status?: number } };
+
+                    if (error?.response?.status === 401) {
+                        console.log("⚠️ Token expired, but keeping user data for now");
+                        // Biarkan refresh token interceptor yang handle
+                    } else {
+                        // Error lain, clear everything
+                        console.log("❌ Clearing invalid session");
+                        Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
+                        Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
+                        Cookies.remove("user", { domain: COOKIE_DOMAIN });
+                        setUser(null);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load user:", error);
-
-                // Clear invalid tokens
-                Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
-                Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
-                Cookies.remove("user", { domain: COOKIE_DOMAIN });
-                setUser(null);
             } finally {
                 setIsLoading(false);
+                hasInitialized.current = true;
+                isLoadingUser.current = false;
             }
         }
 
         loadUser();
     }, []);
 
-    // Set up periodic token check (every 5 minutes)
     useEffect(() => {
-        if (!isAuthenticated) return;
+        if (!isAuthenticated || !hasInitialized.current) return;
 
         async function checkTokenValidity() {
             const accessToken = Cookies.get("access_token");
 
             if (!accessToken) {
-                console.log("⚠️ No access token found, logging out...");
-                await logout();
+                console.log("⚠️ No access token found during check");
+                // Jangan langsung logout, cek dulu refresh token
+                const refreshToken = Cookies.get("refresh_token");
+                if (!refreshToken) {
+                    console.log("⚠️ No refresh token, logging out...");
+                    await logout();
+                }
                 return;
             }
 
             try {
-                // Try to decode and check expiry
                 const payload = JSON.parse(atob(accessToken.split(".")[1]));
-                const expiresAt = payload.exp * 1000; // Convert to milliseconds
+                const expiresAt = payload.exp * 1000;
                 const now = Date.now();
 
-                // If token expires in less than 2 minutes, try to refresh
                 if (expiresAt - now < 2 * 60 * 1000) {
-                    console.log("⏰ Token expiring soon, will be auto-refreshed on next request");
+                    console.log("⏰ Token expiring soon, will be auto-refreshed");
                 }
             } catch (error) {
                 console.error("❌ Error checking token validity:", error);
@@ -145,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const interval = setInterval(() => {
             checkTokenValidity();
-        }, 5 * 60 * 1000); // Check every 5 minutes
+        }, 5 * 60 * 1000);
 
         return () => clearInterval(interval);
     }, [isAuthenticated, logout]);
@@ -155,23 +194,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const response = await AuthService.login(credentials);
             const { access_token, refresh_token, expires_in, user: userData } = response.data!;
 
-            // Calculate expiry time in days (expires_in is in seconds)
             const accessTokenExpiryDays = expires_in / (60 * 60 * 24);
 
-            // Save access token (15 minutes = 900 seconds = 0.0104 days)
+            // Save tokens
             Cookies.set("access_token", access_token, {
                 expires: accessTokenExpiryDays,
                 sameSite: "lax",
-                // secure: process.env.NODE_ENV === "production",
                 secure: false,
                 domain: COOKIE_DOMAIN,
             });
 
-            // Save refresh token (7 days)
             Cookies.set("refresh_token", refresh_token, {
                 expires: 7,
                 sameSite: "lax",
-                // secure: process.env.NODE_ENV === "production",
                 secure: false,
                 domain: COOKIE_DOMAIN,
             });
@@ -187,7 +222,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.log("✅ Login successful");
             console.log("🔑 Access token expires in:", expires_in, "seconds");
 
-            // Get redirect path from query params or default based on role
+            // ✅ PERBAIKAN: Force set initialized flag
+            hasInitialized.current = true;
+
+            // Get redirect path
             const searchParams = new URLSearchParams(window.location.search);
             const redirect = searchParams.get("redirect");
 
@@ -218,12 +256,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const response = await AuthService.updateProfile(data);
 
-            // Update user state with new data
             setUser((prevUser) => {
                 if (!prevUser || !response.data) return prevUser;
 
                 const updatedUser = { ...prevUser, ...response.data };
-                // PERBAIKAN: Tambahkan domain agar cookie bisa diakses oleh subdomain API
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
@@ -248,7 +284,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await AuthService.deleteProfileImage();
 
-            // Update user state
             setUser((prevUser) => {
                 if (!prevUser) return prevUser;
 
