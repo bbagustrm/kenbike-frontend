@@ -4,7 +4,7 @@ import { ApiResponse } from "@/types/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api";
 
-const COOKIE_DOMAIN = '.kenbike.store'; // ✅ HTTPS
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || undefined;
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -23,28 +23,17 @@ const processQueue = (error: unknown = null, token: unknown = null) => {
     failedQueue = [];
 };
 
-// Create axios instance
-// >>> PERUBAHAN KRUSIAL: Tambahkan withCredentials: true <<<
 export const apiClient: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
     timeout: 30000,
-    withCredentials: true, // Ini akan mengirim cookie ke api.kenbike.store
+    withCredentials: true,
 });
 
-// Request interceptor - TIDAK PERLU lagi menambahkan token manual
-// karena cookie akan dikirim otomatis oleh axios
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        // Kita tidak lagi perlu membaca token dan menyetel header Authorization
-        // karena backend akan membacanya dari cookie.
-        // Baris di bawah ini dihapus atau dikomentari.
-        // const token = Cookies.get("access_token");
-        // if (token && config.headers) {
-        //     config.headers.Authorization = `Bearer ${token}`;
-        // }
         return config;
     },
     (error) => {
@@ -52,7 +41,6 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Response interceptor - Handle token refresh
 apiClient.interceptors.response.use(
     (response) => {
         return response;
@@ -75,24 +63,14 @@ apiClient.interceptors.response.use(
             try {
                 console.log("🔄 Attempting to refresh token...");
 
-                // >>> PERUBAHAN: Gunakan apiClient untuk refresh, karena ia sudah denganCredentials <<<
-                const response = await apiClient.post("/auth/refresh", {
-                    // Kita tidak perlu mengirim refresh_token di body,
-                    // karena cookie-nya akan dikirim otomatis.
-                });
+                const response = await apiClient.post("/auth/refresh", {});
 
                 const { access_token, expires_in } = response.data.data;
 
                 console.log("✅ Token refreshed successfully");
 
-                const expiresInDays = expires_in / (60 * 60 * 24);
-
-                Cookies.set("access_token", access_token, {
-                    expires: expiresInDays,
-                    sameSite: "lax",
-                    secure: true,
-                    domain: COOKIE_DOMAIN,
-                });
+                // ✅ NOTE: access_token is set by backend via httpOnly cookie
+                // No need to manually set it here
 
                 processQueue(null, access_token);
                 isRefreshing = false;
@@ -111,14 +89,11 @@ apiClient.interceptors.response.use(
     }
 );
 
-// Helper function to handle logout
 function handleLogout() {
     console.log("🚪 Logging out user...");
 
-    // >>> PERUBAHAN: Hapus cookie dengan domain yang benar <<<
-    Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
-    Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
-    Cookies.remove("user", { domain: COOKIE_DOMAIN });
+    // ✅ CHANGED: Conditional cookie removal based on environment
+    Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
 
     if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
@@ -131,7 +106,6 @@ function handleLogout() {
     }
 }
 
-// Helper function to handle API errors
 export function handleApiError(error: unknown): { message: string; fieldErrors?: Record<string, string> } {
     if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ApiResponse>;

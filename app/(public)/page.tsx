@@ -1,173 +1,138 @@
 "use client";
 
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MoveRight, Star } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { PromotionCarousel } from "@/components/product/promotion-carousel";
+import { ProductCarousel } from "@/components/product/product-carousel";
+import { ProductCard } from "@/components/product/product-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ProductService } from "@/services/product.service";
+import { ProductListItem } from "@/types/product";
+import { useTranslation } from "@/hooks/use-translation";
+import { handleApiError } from "@/lib/api-client";
+import { toast } from "sonner";
 
-// ProductCard Component
-interface ProductCardProps {
-  name: string;
-  price: string;
-  image: string;
-  rating: number;
-  reviews: number;
-  colors: string[];
-}
+export default function HomePage() {
+  const { t } = useTranslation();
 
-function ProductCard({
-  name,
-  price,
-  image,
-  rating,
-  reviews,
-  colors,
-}: ProductCardProps) {
-  return (
-    <Card className="w-full rounded-lg border shadow-sm hover:shadow-md transition">
-      <CardContent className="p-2">
-        {/* Product Image (1:1 aspect) */}
-        <div className="relative w-full aspect-square">
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-contain rounded-md"
-          />
-        </div>
+  const [promotionProducts, setPromotionProducts] = useState<ProductListItem[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<ProductListItem[]>([]);
+  const [isLoadingPromotion, setIsLoadingPromotion] = useState(true);
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
 
-        {/* Name & Price */}
-        <div className="mt-2">
-          <p className="text-sm font-medium text-gray-800">{name}</p>
-          <p className="text-sm font-semibold text-gray-900">{price}</p>
-        </div>
-      </CardContent>
+  useEffect(() => {
+    const fetchPromotionProducts = async () => {
+      try {
+        const response = await ProductService.getProducts({
+          hasPromotion: true,
+          limit: 12,
+          sortBy: "totalSold",
+          order: "desc",
+        });
+        setPromotionProducts(response.data);
+      } catch (error) {
+        const errorResult = handleApiError(error);
+        toast.error(errorResult.message);
+      } finally {
+        setIsLoadingPromotion(false);
+      }
+    };
 
-      <CardFooter className="flex flex-row items-center justify-between px-3 pb-3">
-        {/* Rating */}
-        <div className="flex items-center text-xs text-blue-600">
-          <Star className="h-4 w-4 fill-blue-500 text-blue-500 mr-1" />
-          <span>{rating.toFixed(1)}</span>
-          <span className="ml-1 text-gray-500">({reviews})</span>
-        </div>
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await ProductService.getFeaturedProducts(12);
+        setFeaturedProducts(response.data);
+      } catch (error) {
+        const errorResult = handleApiError(error);
+        toast.error(errorResult.message);
+      } finally {
+        setIsLoadingFeatured(false);
+      }
+    };
 
-        {/* Colors */}
-        <div className="flex gap-1">
-          {colors.map((c, i) => (
-            <span
-              key={i}
-              className="h-3 w-3 rounded-full border"
-              style={{ backgroundColor: c }}
-            />
-          ))}
-        </div>
-      </CardFooter>
-    </Card>
-  );
-}
-
-// Home Page
-export default function Home() {
-  // Dummy product (Bullmoose Bar)
-  const product = {
-    name: "Bullmoose Bar",
-    price: "Rp. 319.000",
-    image: "/bullmoose.jpg", // ganti sesuai path gambar kamu
-    rating: 5.0,
-    reviews: 12,
-    colors: ["#5c4b3b", "#000000", "#c0c0c0", "#ffffff"],
-  };
-
-  // Gandakan produk agar ada banyak data
-  const products = Array.from({ length: 15 }, () => product);
+    fetchPromotionProducts();
+    fetchFeaturedProducts();
+  }, []);
 
   return (
-    <div className="h-full">
-      {/* Banner Carousel */}
-      <Carousel className="container flex-col mx-auto justify-center w-full p-2 sm:container md:container lg:container">
-        <CarouselContent>
-          {products.slice(0, 3).map((p, index) => (
-            <CarouselItem key={index}>
-              <div className="p-1">
-                <Card className="relative w-full rounded-lg border shadow-sm hover:shadow-md transition">
-                  <CardContent className="p-0">
-                    {/* Banner Image (wide aspect) */}
-                    <div className="relative w-full h-[400px]">
-                      <Image
-                        src={p.image}
-                        alt={p.name}
-                        fill
-                        className="object-cover rounded-md"
-                      />
-                    </div>
+      <div className="min-h-screen">
+        {/* Hero Section - Promotion Banner Carousel */}
+        <section className="container mx-auto px-4 py-8">
+          <PromotionCarousel />
+        </section>
 
-                    {/* Overlay Info (nama & harga) */}
-                    <div className="container w-full mx-auto flex-col absolute bottom-0 left-0 right-0 bg-black/40 text-white p-4 rounded-b-md">
-                      <p className="text-lg font-bold">{p.name}</p>
-                      <p className="text-md font-semibold">{p.price}</p>
-                    </div>
-                  </CardContent>
-                </Card>
+        {/* Promotion Products Section */}
+        {(isLoadingPromotion || promotionProducts.length > 0) && (
+            <section className="container mx-auto px-4 py-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                    {t.home.promotionProductsTitle}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {t.home.promotionTitle}
+                  </p>
+                </div>
+                {promotionProducts.length > 0 && (
+                    <Button asChild variant="ghost" className="group">
+                      <Link href="/search?hasPromotion=true">
+                        {t.home.seeAll}
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
+                    </Button>
+                )}
               </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
 
-      {/* Section Header */}
-      <div className="container flex flex-row justify-between items-center mx-auto my-2 font-bold">
-        <span>New Release</span>
-        <Button variant="link" className="text-blue-400 underline font-bold">
-          <Link href="/products">
-            See More <MoveRight className="inline-block w-4 h-4" />
-          </Link>
-        </Button>
-      </div>
+              {isLoadingPromotion ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+              ) : promotionProducts.length > 0 ? (
+                  <ProductCarousel products={promotionProducts} />
+              ) : null}
+            </section>
+        )}
 
-      {/* Product Carousel */}
-      <Carousel
-        opts={{ align: "start" }}
-        className="container flex-col mx-auto justify-center w-full p-2 sm:container md:container lg:container"
-      >
-        <CarouselContent>
-          {products.map((p, index) => (
-            <CarouselItem key={index} className="md:basis-1/3 lg:basis-1/5">
-              <div className="p-1">
-                <ProductCard {...p} />
+        {/* Featured Products Section */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                {t.home.featuredTitle}
+              </h2>
+              <p className="text-muted-foreground">
+                Produk pilihan terbaik untuk Anda
+              </p>
+            </div>
+            {featuredProducts.length > 0 && (
+                <Button asChild variant="ghost" className="group">
+                  <Link href="/search?isFeatured=true">
+                    {t.home.seeAll}
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </Button>
+            )}
+          </div>
+
+          {isLoadingFeatured ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-
-      {/* All Products Grid */}
-      <div className="container mx-auto my-6">
-        <h2 className="text-lg font-bold mb-4 text-center">All Products</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:container md:container lg:container">
-          {products.map((p, i) => (
-            <ProductCard key={i} {...p} />
-          ))}
-        </div>
-
-        {/* Tombol Semua Produk */}
-        <div className="flex justify-center mt-6">
-          <Button asChild variant="outline">
-            <Link href="/products">Semua Produk →</Link>
-          </Button>
-        </div>
+          ) : featuredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {featuredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+          ) : (
+              <EmptyState
+                  title={t.search.noResults}
+                  description="Belum ada produk unggulan saat ini"
+              />
+          )}
+        </section>
       </div>
-    </div>
   );
 }
