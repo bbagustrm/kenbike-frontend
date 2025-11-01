@@ -28,7 +28,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const COOKIE_DOMAIN = '.kenbike.store'; // ✅ Leading dot work di HTTPS
+const COOKIE_DOMAIN = '.kenbike.store';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -36,29 +36,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
-    // ✅ PERBAIKAN: Prevent multiple loadUser calls
     const isLoadingUser = useRef(false);
     const hasInitialized = useRef(false);
 
     const isAuthenticated = !!user;
 
-    // Wrap logout in useCallback
     const logout = useCallback(async () => {
         try {
             await AuthService.logout();
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
-            // Clear cookies and state
-            Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
-            Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
+            // ✅ PERBAIKAN: Hanya hapus user cookie (yang bisa diakses JS)
+            // access_token dan refresh_token akan di-clear oleh backend
             Cookies.remove("user", { domain: COOKIE_DOMAIN });
             setUser(null);
             hasInitialized.current = false;
 
             console.log("👋 Logged out successfully");
 
-            // Redirect to login
             const currentPath = pathname || "/";
             if (!currentPath.startsWith("/login")) {
                 router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
@@ -66,10 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [pathname, router]);
 
-    // ✅ PERBAIKAN: Load user dengan protection
+    // ✅ CRITICAL FIX: Jangan cek access_token (HttpOnly tidak bisa diakses JS)
     useEffect(() => {
         async function loadUser() {
-            // Prevent concurrent calls
             if (isLoadingUser.current || hasInitialized.current) {
                 return;
             }
@@ -77,34 +72,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isLoadingUser.current = true;
 
             try {
-                const accessToken = Cookies.get("access_token");
+                // ✅ HANYA CEK USER COOKIE (yang bisa diakses JS)
                 const userCookie = Cookies.get("user");
 
                 console.log("🔍 Loading user...", {
-                    hasToken: !!accessToken,
                     hasCookie: !!userCookie
                 });
 
-                if (!accessToken) {
-                    console.log("⚠️ No access token found");
+                // ✅ Jika tidak ada user cookie, anggap belum login
+                if (!userCookie) {
+                    console.log("⚠️ No user cookie found");
                     setIsLoading(false);
                     hasInitialized.current = true;
                     isLoadingUser.current = false;
                     return;
                 }
 
-                // Load from cookie first (instant)
-                if (userCookie) {
-                    try {
-                        const cachedUser = JSON.parse(userCookie);
-                        setUser(cachedUser);
-                        console.log("✅ User loaded from cookie:", cachedUser.email);
-                    } catch (error) {
-                        console.error("Error parsing user cookie:", error);
-                    }
+                // ✅ Load dari cookie (instant)
+                try {
+                    const cachedUser = JSON.parse(userCookie);
+                    setUser(cachedUser);
+                    console.log("✅ User loaded from cookie:", cachedUser.email);
+                } catch (error) {
+                    console.error("Error parsing user cookie:", error);
                 }
 
-                // ✅ PERBAIKAN: Fetch dari API dengan error handling yang lebih baik
+                // ✅ Verify dengan backend (token ada di cookie, dikirim otomatis)
                 try {
                     const response = await AuthService.getCurrentUser();
                     const freshUser = response.data;
@@ -119,23 +112,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             domain: COOKIE_DOMAIN,
                         });
 
-                        console.log("✅ User refreshed from API:", freshUser.email);
+                        console.log("✅ User verified from API:", freshUser.email);
                     }
-                } catch (apiError: any) {
-                    console.error("Failed to fetch user from API:", apiError);
+                } catch (apiError) {
+                    console.error("Failed to verify user from API:", apiError);
 
-                    // ✅ CRITICAL: Jangan clear cookie jika error 401 dan user cookie masih valid
-                    if (apiError?.response?.status === 401) {
-                        console.log("⚠️ Token expired, but keeping user data for now");
-                        // Biarkan refresh token interceptor yang handle
-                    } else {
-                        // Error lain, clear everything
-                        console.log("❌ Clearing invalid session");
-                        Cookies.remove("access_token", { domain: COOKIE_DOMAIN });
-                        Cookies.remove("refresh_token", { domain: COOKIE_DOMAIN });
+                    // ✅ CRITICAL: Jika 401, token invalid → logout
+                    if (
+                        apiError &&
+                        typeof apiError === 'object' &&
+                        'response' in apiError &&
+                        apiError.response &&
+                        typeof apiError.response === 'object' &&
+                        'status' in apiError.response &&
+                        apiError.response.status === 401
+                    ) {
+                        console.log("⚠️ Token invalid, logging out...");
                         Cookies.remove("user", { domain: COOKIE_DOMAIN });
                         setUser(null);
                     }
+                    // Error lain (network, server down) → biarkan user cookie tetap ada
+                    // User masih bisa navigate, tapi API call akan fail
                 }
             } catch (error) {
                 console.error("Failed to load user:", error);
@@ -147,42 +144,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         loadUser();
-    }, []); // ✅ Empty dependency array - run once
+    }, []);
 
-    // ✅ PERBAIKAN: Periodic token check yang lebih aman
+    // ✅ PERBAIKAN: Periodic check yang lebih aman
     useEffect(() => {
         if (!isAuthenticated || !hasInitialized.current) return;
 
-        async function checkTokenValidity() {
-            const accessToken = Cookies.get("access_token");
-
-            if (!accessToken) {
-                console.log("⚠️ No access token found during check");
-                // Jangan langsung logout, cek dulu refresh token
-                const refreshToken = Cookies.get("refresh_token");
-                if (!refreshToken) {
-                    console.log("⚠️ No refresh token, logging out...");
+        async function checkUserSession() {
+            try {
+                // Coba fetch user untuk verify session masih valid
+                await AuthService.getCurrentUser();
+            } catch (error) {
+                if (
+                    error &&
+                    typeof error === 'object' &&
+                    'response' in error &&
+                    error.response &&
+                    typeof error.response === 'object' &&
+                    'status' in error.response &&
+                    error.response.status === 401
+                ) {
+                    console.log("⚠️ Session expired, logging out...");
                     await logout();
                 }
-                return;
-            }
-
-            try {
-                const payload = JSON.parse(atob(accessToken.split(".")[1]));
-                const expiresAt = payload.exp * 1000;
-                const now = Date.now();
-
-                if (expiresAt - now < 2 * 60 * 1000) {
-                    console.log("⏰ Token expiring soon, will be auto-refreshed");
-                }
-            } catch (error) {
-                console.error("❌ Error checking token validity:", error);
             }
         }
 
+        // Check setiap 10 menit
         const interval = setInterval(() => {
-            checkTokenValidity();
-        }, 5 * 60 * 1000);
+            checkUserSession();
+        }, 10 * 60 * 1000);
 
         return () => clearInterval(interval);
     }, [isAuthenticated, logout]);
@@ -190,26 +181,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = useCallback(async (credentials: LoginCredentials) => {
         try {
             const response = await AuthService.login(credentials);
-            const { access_token, refresh_token, expires_in, user: userData } = response.data!;
+            const { user: userData } = response.data!;
 
-            const accessTokenExpiryDays = expires_in / (60 * 60 * 24);
-
-            // Save tokens
-            Cookies.set("access_token", access_token, {
-                expires: accessTokenExpiryDays,
-                sameSite: "lax",
-                secure: true,
-                domain: COOKIE_DOMAIN,
-            });
-
-            Cookies.set("refresh_token", refresh_token, {
-                expires: 7,
-                sameSite: "lax",
-                secure: true,
-                domain: COOKIE_DOMAIN,
-            });
-
-            // Save user data
+            // ✅ HANYA SIMPAN USER DATA (backend sudah set httpOnly cookies)
             setUser(userData);
             Cookies.set("user", JSON.stringify(userData), {
                 expires: 7,
@@ -218,9 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             console.log("✅ Login successful");
-            console.log("🔑 Access token expires in:", expires_in, "seconds");
 
-            // ✅ PERBAIKAN: Force set initialized flag
             hasInitialized.current = true;
 
             // Get redirect path
