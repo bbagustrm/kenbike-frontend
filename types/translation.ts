@@ -36,6 +36,45 @@ export interface Translation {
         noResults: string;
         pages: string;
         products: string;
+        // NEW KEYS
+        filters: string;
+        sortBy: string;
+        priceRange: string;
+        category: string;
+        tags: string;
+        promotion: string;
+        availableOnly: string;
+        applyFilters: string;
+        clearFilters: string;
+        allCategories: string;
+        allTags: string;
+        allPromotions: string;
+        searchButton: string;
+        resultsFound: string;
+        showingResults: string;
+        sortOptions: {
+            priceLowHigh: string;
+            priceHighLow: string;
+            mostSold: string;
+            mostViewed: string;
+            newest: string;
+            oldest: string;
+        };
+    };
+
+    // Home Page (NEW)
+    home: {
+        promotionTitle: string;
+        promotionProductsTitle: string;
+        featuredTitle: string;
+        seeAll: string;
+    };
+
+    // Product (NEW)
+    product: {
+        outOfStock: string;
+        itemsSold: string;
+        promo: string;
     };
 
     // Auth
@@ -166,6 +205,7 @@ export interface Translation {
         copyright: string;
     };
 
+    // Profile
     profile: {
         title: string;
         description: string;
@@ -231,6 +271,7 @@ export interface Translation {
         imageInfo: string;
     };
 
+    // Admin Users
     adminUsers: {
         title: string;
         description: string;

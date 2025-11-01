@@ -28,12 +28,48 @@ export const en: Translation = {
         contact: "Contact",
     },
 
+    home: {
+        promotionTitle: "Special Promotions",
+        promotionProductsTitle: "Promotion Products",
+        featuredTitle: "Featured Products",
+        seeAll: "See All",
+    },
+
+    product: {
+        outOfStock: "Out of Stock",
+        itemsSold: "{count} sold",
+        promo: "PROMO",
+    },
+
     search: {
         placeholder: "Search products, categories, or tags...",
         typeToSearch: "Type to search...",
         noResults: "No results found",
         pages: "Pages",
         products: "Products",
+        filters: "Filters",
+        sortBy: "Sort By",
+        priceRange: "Price Range",
+        category: "Category",
+        tags: "Tags",
+        promotion: "Promotion",
+        availableOnly: "Available Only",
+        applyFilters: "Apply",
+        clearFilters: "Clear Filters",
+        allCategories: "All Categories",
+        allTags: "All Tags",
+        allPromotions: "All Promotions",
+        sortOptions: {
+            priceLowHigh: "Price: Low to High",
+            priceHighLow: "Price: High to Low",
+            mostSold: "Best Selling",
+            mostViewed: "Most Viewed",
+            newest: "Newest",
+            oldest: "Oldest",
+        },
+        resultsFound: "{count} products found",
+        showingResults: "Showing {start} - {end} of {total} products",
+        searchButton: "Search"
     },
 
     auth: {

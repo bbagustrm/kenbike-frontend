@@ -34,6 +34,42 @@ export const id: Translation = {
         noResults: "Tidak ada hasil ditemukan",
         pages: "Halaman",
         products: "Produk",
+        filters: "Filter",
+        sortBy: "Urutkan",
+        priceRange: "Rentang Harga",
+        category: "Kategori",
+        tags: "Tag",
+        promotion: "Promosi",
+        availableOnly: "Stok Tersedia",
+        applyFilters: "Terapkan",
+        clearFilters: "Hapus Filter",
+        allCategories: "Semua Kategori",
+        allTags: "Semua Tag",
+        allPromotions: "Semua Promosi",
+        searchButton: "Cari",
+        resultsFound: "{count} produk ditemukan",
+        showingResults: "Menampilkan {start} - {end} dari {total} produk",
+        sortOptions: {
+            priceLowHigh: "Harga Terendah",
+            priceHighLow: "Harga Tertinggi",
+            mostSold: "Terlaris",
+            mostViewed: "Paling Dilihat",
+            newest: "Terbaru",
+            oldest: "Terlama",
+        },
+    },
+
+    home: {
+        promotionTitle: "Promo Spesial",
+        promotionProductsTitle: "Produk Promo",
+        featuredTitle: "Produk Unggulan",
+        seeAll: "Lihat Semua",
+    },
+
+    product: {
+        outOfStock: "Stok Habis",
+        itemsSold: "{count} terjual",
+        promo: "PROMO",
     },
 
     auth: {
@@ -222,6 +258,7 @@ export const id: Translation = {
         },
         imageInfo: "JPG, JPEG, PNG atau WEBP. Maks 2MB. Direkomendasikan 400x400px",
     },
+
     adminUsers: {
         title: "Manajemen Pengguna",
         description: "Kelola pengguna, peran, dan izin",
