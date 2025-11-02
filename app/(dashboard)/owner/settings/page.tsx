@@ -12,6 +12,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -377,9 +378,8 @@ export default function OwnerSettingsPage() {
                             <form onSubmit={handlePasswordSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="old_password">{t.profile.fields.currentPassword}</Label>
-                                    <Input
+                                    <PasswordInput
                                         id="old_password"
-                                        type="password"
                                         placeholder={t.profile.placeholders.currentPassword}
                                         value={passwordData.old_password}
                                         onChange={(e) =>
@@ -392,9 +392,8 @@ export default function OwnerSettingsPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="new_password">{t.profile.fields.newPassword}</Label>
-                                    <Input
+                                    <PasswordInput
                                         id="new_password"
-                                        type="password"
                                         placeholder={t.profile.placeholders.newPassword}
                                         value={passwordData.new_password}
                                         onChange={(e) =>
@@ -407,9 +406,8 @@ export default function OwnerSettingsPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="confirm_password">{t.profile.fields.confirmNewPassword}</Label>
-                                    <Input
+                                    <PasswordInput
                                         id="confirm_password"
-                                        type="password"
                                         placeholder={t.profile.placeholders.confirmNewPassword}
                                         value={passwordData.confirm_password}
                                         onChange={(e) =>

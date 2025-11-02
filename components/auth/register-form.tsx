@@ -12,6 +12,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
 import { Loader2 } from "lucide-react";
@@ -217,10 +218,10 @@ export default function RegisterForm() {
                                     <Label htmlFor="password">
                                         {t.auth.register.passwordLabel} <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input
+                                    {/* <-- 2. Ganti Input dengan PasswordInput */}
+                                    <PasswordInput
                                         id="password"
                                         name="password"
-                                        type="password"
                                         placeholder={t.auth.register.placeholders.password}
                                         value={formData.password}
                                         onChange={handleChange}
@@ -233,10 +234,10 @@ export default function RegisterForm() {
                                     <Label htmlFor="confirm_password">
                                         {t.auth.register.confirmPasswordLabel} <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input
+                                    {/* <-- 3. Ganti Input dengan PasswordInput */}
+                                    <PasswordInput
                                         id="confirm_password"
                                         name="confirm_password"
-                                        type="password"
                                         placeholder={t.auth.register.placeholders.password}
                                         value={formData.confirm_password}
                                         onChange={handleChange}
