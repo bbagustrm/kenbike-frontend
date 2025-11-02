@@ -579,15 +579,6 @@ export default function AdminCategoriesPage() {
                                     title="Only lowercase letters, numbers, and hyphens"
                                 />
                             </div>
-
-                            {formDialog.mode === "edit" && (
-                                <div className="flex items-center justify-between">
-                                    <Label htmlFor="isActive">Active Status</Label>
-                                    <Badge variant={(formData as UpdateCategoryData).isActive ? "default" : "secondary"}>
-                                        {(formData as UpdateCategoryData).isActive ? "Active" : "Inactive"}
-                                    </Badge>
-                                </div>
-                            )}
                         </div>
                         <DialogFooter>
                             <Button

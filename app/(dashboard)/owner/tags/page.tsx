@@ -573,15 +573,6 @@ export default function OwnerTagsPage() {
                                     title="Only lowercase letters, numbers, and hyphens"
                                 />
                             </div>
-
-                            {formDialog.mode === "edit" && (
-                                <div className="flex items-center justify-between">
-                                    <Label htmlFor="isActive">Active Status</Label>
-                                    <Badge variant={(formData as UpdateTagData).isActive ? "default" : "secondary"}>
-                                        {(formData as UpdateTagData).isActive ? "Active" : "Inactive"}
-                                    </Badge>
-                                </div>
-                            )}
                         </div>
                         <DialogFooter>
                             <Button
