@@ -14,7 +14,6 @@ import { Promotion } from "@/types/promotion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
     Select,
@@ -39,6 +38,8 @@ import { VariantManager } from "@/components/admin/variant-manager";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
+
 
 export default function OwnerEditProductPage() {
     const router = useRouter();
@@ -249,22 +250,20 @@ export default function OwnerEditProductPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="idDescription">Description (Indonesian)</Label>
-                            <Textarea
-                                id="idDescription"
-                                value={formData.idDescription}
-                                onChange={(e) => handleChange("idDescription", e.target.value)}
-                                rows={4}
+                            <RichTextEditor
+                                value={formData.idDescription || ""}
+                                onChange={(value) => handleChange("idDescription", value)}
+                                placeholder="Deskripsi produk dalam Bahasa Indonesia..."
                                 maxLength={5000}
                             />
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="enDescription">Description (English)</Label>
-                            <Textarea
-                                id="enDescription"
-                                value={formData.enDescription}
-                                onChange={(e) => handleChange("enDescription", e.target.value)}
-                                rows={4}
+                            <RichTextEditor
+                                value={formData.enDescription || ""}
+                                onChange={(value) => handleChange("enDescription", value)}
+                                placeholder="Product description in English..."
                                 maxLength={5000}
                             />
                         </div>
@@ -451,22 +450,6 @@ export default function OwnerEditProductPage() {
                         <CardTitle>Settings</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="isActive">Active Status</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Control product visibility
-                                </p>
-                            </div>
-                            <Switch
-                                id="isActive"
-                                checked={formData.isActive}
-                                onCheckedChange={(checked) => handleChange("isActive", checked)}
-                            />
-                        </div>
-
-                        <Separator />
-
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label htmlFor="isFeatured">Featured Product</Label>

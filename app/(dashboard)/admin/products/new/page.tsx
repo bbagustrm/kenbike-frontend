@@ -14,7 +14,6 @@ import { Promotion } from "@/types/promotion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
     Select,
@@ -39,6 +38,8 @@ import { VariantManager } from "@/components/admin/variant-manager";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
+
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -242,34 +243,26 @@ export default function NewProductPage() {
                             </p>
                         </div>
 
-                        {/* Description ID */}
                         <div className="space-y-2">
                             <Label htmlFor="idDescription">
                                 Description (Indonesian) <span className="text-destructive">*</span>
                             </Label>
-                            <Textarea
-                                id="idDescription"
-                                placeholder="Deskripsi produk dalam Bahasa Indonesia..."
+                            <RichTextEditor
                                 value={formData.idDescription}
-                                onChange={(e) => handleChange("idDescription", e.target.value)}
-                                required
-                                rows={4}
+                                onChange={(value) => handleChange("idDescription", value)}
+                                placeholder="Deskripsi produk dalam Bahasa Indonesia..."
                                 maxLength={5000}
                             />
                         </div>
 
-                        {/* Description EN */}
                         <div className="space-y-2">
                             <Label htmlFor="enDescription">
                                 Description (English) <span className="text-destructive">*</span>
                             </Label>
-                            <Textarea
-                                id="enDescription"
-                                placeholder="Product description in English..."
+                            <RichTextEditor
                                 value={formData.enDescription}
-                                onChange={(e) => handleChange("enDescription", e.target.value)}
-                                required
-                                rows={4}
+                                onChange={(value) => handleChange("enDescription", value)}
+                                placeholder="Product description in English..."
                                 maxLength={5000}
                             />
                         </div>
