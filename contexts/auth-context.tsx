@@ -175,7 +175,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const { user: userData } = response.data!;
 
             setUser(userData);
-            // ✅ CHANGED: Conditional domain for cookie
             Cookies.set("user", JSON.stringify(userData), {
                 expires: 7,
                 sameSite: "lax",
@@ -199,7 +198,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 router.push("/");
             }
         } catch (error) {
-            throw new Error(handleApiError(error).message);
+            const apiError = handleApiError(error);
+            const errorWithFields = new Error(apiError.message) as Error & { fieldErrors?: Record<string, string> };
+            errorWithFields.fieldErrors = apiError.fieldErrors;
+            throw errorWithFields;
         }
     }, [router]);
 
@@ -208,7 +210,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await AuthService.register(data);
             router.push("/login?registered=true");
         } catch (error) {
-            throw new Error(handleApiError(error).message);
+            const apiError = handleApiError(error);
+            const errorWithFields = new Error(apiError.message) as Error & { fieldErrors?: Record<string, string> };
+            errorWithFields.fieldErrors = apiError.fieldErrors;
+            throw errorWithFields;
         }
     }, [router]);
 

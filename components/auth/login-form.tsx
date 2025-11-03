@@ -13,7 +13,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input"; // Import komponen baru
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
 import { Loader2 } from "lucide-react";
@@ -71,7 +71,26 @@ export default function LoginForm() {
                 position: "top-center",
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message : t.auth.login.loginFailed);
+            const error = err as Error & { fieldErrors?: Record<string, string> };
+
+            // Display main error message
+            const errorMessage = error.message || t.auth.login.loginFailed;
+            toast.error(errorMessage, {
+                duration: 5000,
+                position: "top-center",
+            });
+
+            // Display field-specific errors if available
+            if (error.fieldErrors) {
+                Object.entries(error.fieldErrors).forEach(([field, message]) => {
+                    toast.error(`${field}: ${message}`, {
+                        duration: 5000,
+                        position: "top-center",
+                    });
+                });
+            }
+
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
