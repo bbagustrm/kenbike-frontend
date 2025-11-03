@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { CategoryService } from "@/services/category.service";
 import { TagService } from "@/services/tag.service";
 import { PromotionService } from "@/services/promotion.service";
 import { handleApiError } from "@/lib/api-client";
-import { UpdateProductData } from "@/types/product";
+import {ProductImage, UpdateProductData} from "@/types/product";
 import { Category } from "@/types/category";
 import { Tag } from "@/types/tag";
 import { Promotion } from "@/types/promotion";
@@ -39,7 +39,7 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
-
+import { MultiImageUpload } from "@/components/admin/multi-image-upload";
 
 export default function OwnerEditProductPage() {
     const router = useRouter();
@@ -61,7 +61,7 @@ export default function OwnerEditProductPage() {
         enDescription: "",
         idPrice: 0,
         enPrice: 0,
-        imageUrl: "",
+        imageUrls: [],
         weight: 0,
         height: 0,
         length: 0,
@@ -86,6 +86,11 @@ export default function OwnerEditProductPage() {
                 const productRes = await ProductService.getProductById(productId);
                 const product = productRes.data;
 
+                // ✅ TAMBAHKAN DEBUG INI
+                console.log('🔍 Product Data:', product);
+                console.log('🔍 Product Images:', product.images);
+                console.log('🔍 Mapped URLs:', product.images?.map((img) => img.imageUrl));
+
                 // Load categories, tags, promotions
                 const [categoriesRes, tagsRes] = await Promise.all([
                     CategoryService.getAdminCategories({ limit: 100, isActive: true }),
@@ -103,6 +108,10 @@ export default function OwnerEditProductPage() {
                     setPromotions(promotionsRes.data || []);
                 }
 
+                const imageUrls = Array.isArray(product.images)
+                    ? product.images.map((img: ProductImage) => img.imageUrl)
+                    : [];
+
                 // Populate form with product data
                 setFormData({
                     name: product.name,
@@ -111,7 +120,7 @@ export default function OwnerEditProductPage() {
                     enDescription: product.enDescription,
                     idPrice: product.idPrice,
                     enPrice: product.enPrice,
-                    imageUrl: product.imageUrl,
+                    imageUrls: imageUrls,
                     weight: product.weight,
                     height: product.height,
                     length: product.length,
@@ -133,6 +142,7 @@ export default function OwnerEditProductPage() {
                     })) || [],
                     tagIds: product.tags?.map((t) => t.id) || [],
                 });
+                console.log('🔍 FormData after set:', formData);
             } catch (err) {
                 const errorResult = handleApiError(err);
                 toast.error(errorResult.message);
@@ -145,6 +155,10 @@ export default function OwnerEditProductPage() {
         loadData();
     }, [productId, isOwner, router]);
 
+    useEffect(() => {
+        console.log('🔍 FormData imageUrls updated:', formData.imageUrls);
+    }, [formData.imageUrls]);
+
 
     const handleChange = (field: keyof UpdateProductData, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -153,8 +167,8 @@ export default function OwnerEditProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.imageUrl) {
-            toast.error("Please upload a product image");
+        if (!formData.imageUrls || formData.imageUrls.length === 0) {
+            toast.error("Please upload at least one product image");
             return;
         }
 
@@ -269,13 +283,13 @@ export default function OwnerEditProductPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <ImageUpload
-                                label="Product Image"
-                                value={formData.imageUrl}
-                                onChange={(url) => handleChange("imageUrl", url)}
+                            <MultiImageUpload
+                                label="Product Images"
+                                description="Upload product images (first image will be the primary image)"
+                                value={formData.imageUrls || []}
+                                onChange={(urls) => handleChange("imageUrls", urls)}
                                 folder="products"
-                                aspectRatio="1/1"
-                                className="w-48"
+                                maxFiles={5}
                             />
                         </div>
                     </CardContent>

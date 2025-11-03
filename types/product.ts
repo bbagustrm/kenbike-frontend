@@ -6,7 +6,8 @@ export interface Product {
     enDescription: string;
     idPrice: number;
     enPrice: number;
-    imageUrl: string;
+    imageUrl: string | null;
+    images?: ProductImage[];
     totalSold: number;
     totalView: number;
     avgRating: number;
@@ -40,7 +41,8 @@ export interface ProductListItem {
     slug: string;
     idPrice: number;
     enPrice: number;
-    imageUrl: string;
+    imageUrl: string | null;
+    images?: ProductImage[];
     totalSold: number;
     totalView: number;
     avgRating: number;
@@ -54,6 +56,13 @@ export interface ProductListItem {
     variants?: Pick<ProductVariant, 'id' | 'variantName' | 'sku' | 'stock' | 'isActive'>[];
     createdAt: string;
     updatedAt: string;
+}
+
+export interface ProductImage {
+    id: string;
+    productId: string;
+    imageUrl: string;
+    order: number;
 }
 
 // Product Category
@@ -139,7 +148,7 @@ export interface CreateProductData {
     enDescription: string;
     idPrice: number;
     enPrice: number;
-    imageUrl: string;
+    imageUrls: string[];
     weight: number;
     height: number;
     length: number;
@@ -169,7 +178,7 @@ export interface UpdateProductData {
     enDescription?: string;
     idPrice?: number;
     enPrice?: number;
-    imageUrl?: string;
+    imageUrls?: string[];
     weight?: number;
     height?: number;
     length?: number;

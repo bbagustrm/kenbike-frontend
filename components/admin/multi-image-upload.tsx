@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 interface MultiImageUploadProps {
-    value: string[]; // Array of image URLs
+    value: string[];
     onChange: (urls: string[]) => void;
     folder: UploadFolder;
     disabled?: boolean;
@@ -65,8 +65,8 @@ export function MultiImageUpload({
             const newUrls = [...value, ...response.data.urls];
             onChange(newUrls);
 
-            toast.success(`${response.data.count} images uploaded successfully`);
-        }  catch (error: unknown) {
+            toast.success(`${response.data.count} image(s) uploaded successfully`);
+        } catch (error: unknown) {
             console.error("Upload error:", error);
             const errorMessage = error instanceof Error ? error.message : "Failed to upload images";
             toast.error(errorMessage);
@@ -78,9 +78,21 @@ export function MultiImageUpload({
         }
     };
 
-    const handleRemove = (index: number) => {
-        const newUrls = value.filter((_, i) => i !== index);
-        onChange(newUrls);
+    const handleRemove = async (index: number) => {
+        // ✅ IMPROVEMENT: Optionally delete from storage
+        const urlToRemove = value[index];
+
+        try {
+            // Optional: Call delete API if you want to clean up storage
+            // await UploadService.deleteImage(urlToRemove);
+
+            const newUrls = value.filter((_, i) => i !== index);
+            onChange(newUrls);
+            toast.success("Image removed");
+        } catch (error) {
+            console.error("Remove error:", error);
+            toast.error("Failed to remove image");
+        }
     };
 
     const handleClick = () => {
@@ -102,14 +114,23 @@ export function MultiImageUpload({
                 {value.map((url, index) => (
                     <div
                         key={index}
-                        className="relative aspect-square border-2 border-gray-200 rounded-lg overflow-hidden group"
+                        className="relative aspect-square border-2 border-gray-200 rounded-lg overflow-hidden group bg-muted"
                     >
                         <Image
                             src={url}
                             alt={`Image ${index + 1}`}
                             fill
                             className="object-cover"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
                         />
+                        {/* ✅ IMPROVEMENT: Primary badge */}
+                        {index === 0 && (
+                            <div className="absolute bottom-2 left-2">
+                                <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                                    Primary
+                                </span>
+                            </div>
+                        )}
                         {!disabled && !isUploading && (
                             <Button
                                 type="button"
@@ -164,11 +185,10 @@ export function MultiImageUpload({
                 className="hidden"
             />
 
-            {description && (
-                <p className="text-xs text-muted-foreground">
-                    PNG, JPG, WEBP up to {maxSizeMB}MB each. Max {maxFiles} images.
-                </p>
-            )}
+            {/* ✅ IMPROVEMENT: Show description only once */}
+            <p className="text-xs text-muted-foreground">
+                PNG, JPG, WEBP up to {maxSizeMB}MB each. Max {maxFiles} images. First image will be the primary image.
+            </p>
         </div>
     );
 }

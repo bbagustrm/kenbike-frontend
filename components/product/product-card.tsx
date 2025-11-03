@@ -27,6 +27,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
         ? calculateDiscountedPrice(originalPrice, product.promotion!.discount)
         : originalPrice;
 
+    const displayImage = product.imageUrl || product.images?.[0]?.imageUrl;
+
     return (
         <Card
             className={cn(
@@ -39,7 +41,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 {/* Image Container */}
                 <div className="relative aspect-square overflow-hidden bg-muted">
                     <Image
-                        src={getImageUrl(product.imageUrl) || "/placeholder.png"}
+                        src={getImageUrl(displayImage) || "/placeholder.png"}
                         alt={product.name}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"

@@ -32,7 +32,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUpload } from "@/components/admin/image-upload";
+// ✅ UBAH: Import MultiImageUpload
+import { MultiImageUpload } from "@/components/admin/multi-image-upload";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { VariantManager } from "@/components/admin/variant-manager";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
@@ -51,6 +52,7 @@ export default function OwnerNewProductPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
+    // ✅ UBAH: imageUrl → imageUrls
     const [formData, setFormData] = useState<CreateProductData>({
         name: "",
         slug: "",
@@ -58,7 +60,7 @@ export default function OwnerNewProductPage() {
         enDescription: "",
         idPrice: 0,
         enPrice: 0,
-        imageUrl: "",
+        imageUrls: [], // ✅ UBAH
         weight: 0,
         height: 0,
         length: 0,
@@ -84,7 +86,6 @@ export default function OwnerNewProductPage() {
                 setCategories(categoriesRes.data || []);
                 setTags(tagsRes.data || []);
 
-                // Load promotions only for OWNER
                 if (isOwner) {
                     const promotionsRes = await PromotionService.getAdminPromotions({
                         limit: 100,
@@ -92,7 +93,6 @@ export default function OwnerNewProductPage() {
                     });
                     setPromotions(promotionsRes.data || []);
                 } else {
-                    // Jika bukan owner, pastikan array promosi kosong
                     setPromotions([]);
                 }
             } catch (err) {
@@ -127,8 +127,9 @@ export default function OwnerNewProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.imageUrl) {
-            toast.error("Please upload a product image");
+        // ✅ UBAH: Validation untuk imageUrls
+        if (!formData.imageUrls || formData.imageUrls.length === 0) {
+            toast.error("Please upload at least one product image");
             return;
         }
 
@@ -259,15 +260,15 @@ export default function OwnerNewProductPage() {
                             />
                         </div>
 
+                        {/* ✅ UBAH: Gunakan MultiImageUpload */}
                         <div className="space-y-2">
-                            <ImageUpload
-                                label="Product Image"
-                                description="Upload main product image"
-                                value={formData.imageUrl}
-                                onChange={(url) => handleChange("imageUrl", url)}
+                            <MultiImageUpload
+                                label="Product Images"
+                                description="Click to upload or drag and drop"
+                                value={formData.imageUrls}
+                                onChange={(urls) => handleChange("imageUrls", urls)}
                                 folder="products"
-                                aspectRatio="1/1"
-                                className="w-48"
+                                maxFiles={5}
                             />
                         </div>
                     </CardContent>
