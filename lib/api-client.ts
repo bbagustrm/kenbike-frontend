@@ -48,7 +48,19 @@ apiClient.interceptors.response.use(
     async (error: AxiosError<ApiResponse>) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        const skipRefreshEndpoints = [
+            '/auth/login',
+            '/auth/register',
+            '/auth/refresh',
+            '/auth/forgot-password',
+            '/auth/reset-password'
+        ];
+
+        const isSkipRefreshEndpoint = skipRefreshEndpoints.some(endpoint =>
+            originalRequest.url?.includes(endpoint)
+        );
+
+        if (error.response?.status === 401 && !originalRequest._retry && !isSkipRefreshEndpoint) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -65,7 +77,7 @@ apiClient.interceptors.response.use(
 
                 const response = await apiClient.post("/auth/refresh", {});
 
-                const { access_token, expires_in } = response.data.data;
+                const { access_token } = response.data.data;
 
                 console.log("✅ Token refreshed successfully");
 

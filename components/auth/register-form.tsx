@@ -64,13 +64,19 @@ export default function RegisterForm() {
         e.preventDefault();
 
         if (formData.password !== formData.confirm_password) {
-            toast.error(t.auth.register.passwordsDoNotMatch);
+            toast.error(t.auth.register.passwordsDoNotMatch, {
+                duration: 5000,
+                position: "top-center",
+            });
             return;
         }
 
         const passwordError = validatePassword(formData.password);
         if (passwordError) {
-            toast.error(passwordError);
+            toast.error(passwordError, {
+                duration: 5000,
+                position: "top-center",
+            });
             return;
         }
 
@@ -80,9 +86,29 @@ export default function RegisterForm() {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { confirm_password: _, ...registerData } = formData;
             await register(registerData);
-            toast.success(t.auth.register.accountCreated);
+            toast.success(t.auth.register.accountCreated, {
+                duration: 3000,
+                position: "top-center",
+            });
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : t.auth.register.registrationFailed);
+            const error = err as Error & { fieldErrors?: Record<string, string> };
+
+            // Display main error message
+            const errorMessage = error.message || t.auth.register.registrationFailed;
+            toast.error(errorMessage, {
+                duration: 5000,
+                position: "top-center",
+            });
+
+            // Display field-specific errors if available
+            if (error.fieldErrors) {
+                Object.entries(error.fieldErrors).forEach(([field, message]) => {
+                    toast.error(`${field}: ${message}`, {
+                        duration: 5000,
+                        position: "top-center",
+                    });
+                });
+            }
         } finally {
             setIsSubmitting(false);
         }
