@@ -19,7 +19,6 @@ export function getImageUrl(imageUrl: string | null | undefined): string | undef
         return `${baseUrl}${imageUrl}`;
     }
 
-    // Otherwise return as is
     return imageUrl;
 }
 
