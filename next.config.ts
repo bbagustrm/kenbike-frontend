@@ -4,20 +4,17 @@ const nextConfig: NextConfig = {
     images: {
         unoptimized: true,
         remotePatterns: [
-            // Local Development (HTTP)
             {
                 protocol: 'http',
                 hostname: 'localhost',
                 port: '3000',
                 pathname: '/uploads/**',
             },
-            // Production API (HTTPS) - ✅ TAMBAHKAN INI
             {
                 protocol: 'https',
                 hostname: 'api.kenbike.store',
                 pathname: '/uploads/**',
             },
-            // Production Main (HTTPS)
             {
                 protocol: 'https',
                 hostname: 'kenbike.store',
