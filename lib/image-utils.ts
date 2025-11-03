@@ -8,14 +8,14 @@
 export function getImageUrl(imageUrl: string | null | undefined): string | undefined {
     if (!imageUrl) return undefined;
 
-    // If it's already a full URL (starts with http), return as is
-    if (imageUrl.startsWith('http://')) {
+    // If it's already a full URL (http/https), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl;
     }
 
-    // If it's a relative path (starts with /uploads), prepend base URL
+    // If it's a relative path, prepend base URL
     if (imageUrl.startsWith('/uploads')) {
-        const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
+        const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || '';
         return `${baseUrl}${imageUrl}`;
     }
 
