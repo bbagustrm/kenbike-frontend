@@ -4,23 +4,17 @@ const nextConfig: NextConfig = {
     images: {
         domains: ['kenbike.store', 'localhost'],
         remotePatterns: [
-            // ✅ Local Development
+            // Development
             {
                 protocol: 'http',
                 hostname: 'localhost',
                 port: '3000',
                 pathname: '/uploads/**',
             },
-            // ✅ Production API Server
+            // Production
             {
                 protocol: 'https',
                 hostname: 'api.kenbike.store',
-                pathname: '/uploads/**',
-            },
-            // ✅ Production Main Domain
-            {
-                protocol: 'https',
-                hostname: 'kenbike.store',
                 pathname: '/uploads/**',
             },
         ],
