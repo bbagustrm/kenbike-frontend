@@ -2,19 +2,24 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     images: {
-        domains: ['kenbike.store', 'localhost'],
         remotePatterns: [
-            // Development
+            // Local Development (HTTP)
             {
                 protocol: 'http',
                 hostname: 'localhost',
                 port: '3000',
                 pathname: '/uploads/**',
             },
-            // Production
+            // Production API (HTTPS) - ✅ TAMBAHKAN INI
             {
                 protocol: 'https',
                 hostname: 'api.kenbike.store',
+                pathname: '/uploads/**',
+            },
+            // Production Main (HTTPS)
+            {
+                protocol: 'https',
+                hostname: 'kenbike.store',
                 pathname: '/uploads/**',
             },
         ],
