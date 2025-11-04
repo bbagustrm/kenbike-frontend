@@ -32,14 +32,14 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUpload } from "@/components/admin/image-upload";
+// ✅ UBAH: Ganti ImageUpload dengan MultiImageUpload
+import { MultiImageUpload } from "@/components/admin/multi-image-upload";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { VariantManager } from "@/components/admin/variant-manager";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
-
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -52,6 +52,7 @@ export default function NewProductPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
+    // ✅ UBAH: imageUrl → imageUrls (array)
     const [formData, setFormData] = useState<CreateProductData>({
         name: "",
         slug: "",
@@ -59,7 +60,7 @@ export default function NewProductPage() {
         enDescription: "",
         idPrice: 0,
         enPrice: 0,
-        imageUrl: "",
+        imageUrls: [], // ✅ UBAH: dari imageUrl menjadi imageUrls (array)
         weight: 0,
         height: 0,
         length: 0,
@@ -85,7 +86,6 @@ export default function NewProductPage() {
                 setCategories(categoriesRes.data || []);
                 setTags(tagsRes.data || []);
 
-                // Load promotions only for OWNER
                 if (isOwner) {
                     const promotionsRes = await PromotionService.getAdminPromotions({
                         limit: 100,
@@ -93,7 +93,6 @@ export default function NewProductPage() {
                     });
                     setPromotions(promotionsRes.data || []);
                 } else {
-                    // Jika bukan owner, pastikan array promosi kosong
                     setPromotions([]);
                 }
             } catch (err) {
@@ -128,9 +127,9 @@ export default function NewProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
-        if (!formData.imageUrl) {
-            toast.error("Please upload a product image");
+        // ✅ UBAH: Validasi imageUrls (array)
+        if (!formData.imageUrls || formData.imageUrls.length === 0) {
+            toast.error("Please upload at least one product image");
             return;
         }
 
@@ -139,7 +138,6 @@ export default function NewProductPage() {
             return;
         }
 
-        // Validate variants
         for (let i = 0; i < formData.variants.length; i++) {
             const variant = formData.variants[i];
             if (!variant.variantName || !variant.sku) {
@@ -172,7 +170,6 @@ export default function NewProductPage() {
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-5xl">
-            {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
                     <BreadcrumbItem>
@@ -189,7 +186,6 @@ export default function NewProductPage() {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <Button variant="outline" size="icon" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4" />
@@ -201,14 +197,12 @@ export default function NewProductPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Information */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Basic Information</CardTitle>
                         <CardDescription>Essential product details</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Product Name */}
                         <div className="space-y-2">
                             <Label htmlFor="name">
                                 Product Name <span className="text-destructive">*</span>
@@ -224,7 +218,6 @@ export default function NewProductPage() {
                             />
                         </div>
 
-                        {/* Slug */}
                         <div className="space-y-2">
                             <Label htmlFor="slug">
                                 Slug <span className="text-destructive">*</span>
@@ -267,22 +260,20 @@ export default function NewProductPage() {
                             />
                         </div>
 
-                        {/* Product Image */}
+                        {/* ✅ UBAH: Gunakan MultiImageUpload */}
                         <div className="space-y-2">
-                            <ImageUpload
-                                label="Product Image"
-                                description="Upload main product image"
-                                value={formData.imageUrl}
-                                onChange={(url) => handleChange("imageUrl", url)}
+                            <MultiImageUpload
+                                label="Product Images"
+                                description="Upload product images (first image will be the primary image)"
+                                value={formData.imageUrls}
+                                onChange={(urls) => handleChange("imageUrls", urls)}
                                 folder="products"
-                                aspectRatio="1/1"
-                                className="w-48"
+                                maxFiles={5}
                             />
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Pricing */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Pricing</CardTitle>
@@ -290,7 +281,6 @@ export default function NewProductPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Price IDR */}
                             <div className="space-y-2">
                                 <Label htmlFor="idPrice">
                                     Price (IDR) <span className="text-destructive">*</span>
@@ -300,10 +290,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="25000000"
-                                    value={formData.idPrice || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.idPrice || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("idPrice", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -314,7 +303,6 @@ export default function NewProductPage() {
                                 />
                             </div>
 
-                            {/* Price USD */}
                             <div className="space-y-2">
                                 <Label htmlFor="enPrice">
                                     Price (USD) <span className="text-destructive">*</span>
@@ -324,10 +312,9 @@ export default function NewProductPage() {
                                     type="number"
                                     min="0"
                                     placeholder="1700"
-                                    value={formData.enPrice || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.enPrice || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("enPrice", parseInt(value.substring(1)) || 0);
                                         } else {
@@ -338,7 +325,6 @@ export default function NewProductPage() {
                                 />
                             </div>
 
-                            {/* Tax Rate */}
                             <div className="space-y-2">
                                 <Label htmlFor="taxRate">Tax Rate</Label>
                                 <Input
@@ -348,10 +334,9 @@ export default function NewProductPage() {
                                     min="0"
                                     max="1"
                                     placeholder="0.11"
-                                    value={formData.taxRate || ""} // Gunakan string kosong jika nilai 0
+                                    value={formData.taxRate || ""}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        // Pastikan nilai tidak dimulai dengan 0
                                         if (value === "" || (value.length > 1 && value.startsWith("0"))) {
                                             handleChange("taxRate", parseFloat(value.substring(1)) || 0);
                                         } else {
@@ -359,15 +344,12 @@ export default function NewProductPage() {
                                         }
                                     }}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    Default: 0.11 (11%)
-                                </p>
+                                <p className="text-xs text-muted-foreground">Default: 0.11 (11%)</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Specifications */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Specifications</CardTitle>
@@ -451,14 +433,12 @@ export default function NewProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Categorization */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Categorization</CardTitle>
                         <CardDescription>Organize your product</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Category */}
                         <div className="space-y-2">
                             <Label htmlFor="categoryId">Category</Label>
                             <Select
@@ -479,7 +459,6 @@ export default function NewProductPage() {
                             </Select>
                         </div>
 
-                        {/* Tags */}
                         <div className="space-y-2">
                             <Label>Tags</Label>
                             <MultiSelect
@@ -490,7 +469,6 @@ export default function NewProductPage() {
                             />
                         </div>
 
-                        {/* Promotion (Owner Only) */}
                         {isOwner && (
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
@@ -515,7 +493,6 @@ export default function NewProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Product Variants */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Product Variants</CardTitle>
@@ -529,7 +506,6 @@ export default function NewProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Settings */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Settings</CardTitle>
@@ -592,7 +568,6 @@ export default function NewProductPage() {
                     </CardContent>
                 </Card>
 
-                {/* Submit Buttons */}
                 <div className="flex items-center gap-4">
                     <Button type="submit" disabled={isLoading} size="lg">
                         {isLoading ? (

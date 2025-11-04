@@ -170,10 +170,8 @@ export class PromotionService {
     /**
      * Manually trigger auto update promotion status
      */
-    static async manualAutoUpdate(): Promise<PromotionActionResponse> {
-        const response = await apiClient.post<PromotionActionResponse>(
-            "/admin/promotions/auto-update"
-        );
+    static async triggerAutoUpdate(): Promise<{ data: { activated: number; deactivated: number; productsCleared: number } }> {
+        const response = await apiClient.post('/admin/promotions/auto-update');
         return response.data;
     }
 }

@@ -405,6 +405,7 @@ export default function OwnerProductsPage() {
                                 ) : (
                                     products.map((product) => {
                                         const totalStock = product.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
+                                        const displayImage = product.imageUrl || product.images?.[0]?.imageUrl;
 
                                         return (
                                             <TableRow key={product.id}>
@@ -420,7 +421,7 @@ export default function OwnerProductsPage() {
                                                     <div className="flex items-center gap-3">
                                                         <div className="relative h-12 w-12 rounded overflow-hidden bg-muted">
                                                             <Image
-                                                                src={getImageUrl(product.imageUrl) || "/placeholder.png"}
+                                                                src={getImageUrl(displayImage) || "/placeholder.png"}
                                                                 alt={product.name}
                                                                 fill
                                                                 className="object-cover"
