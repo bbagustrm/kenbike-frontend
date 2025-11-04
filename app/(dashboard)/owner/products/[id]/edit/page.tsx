@@ -40,6 +40,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { MultiImageUpload } from "@/components/admin/multi-image-upload";
 import { GalleryManager } from "@/components/admin/gallery-manager";
+import {PriceInput} from "@/components/ui/price-input";
 
 
 export default function OwnerEditProductPage() {
@@ -317,26 +318,21 @@ export default function OwnerEditProductPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="idPrice">Price (IDR)</Label>
-                                <Input
-                                    id="idPrice"
-                                    type="number"
-                                    min="0"
-                                    value={formData.idPrice}
-                                    onChange={(e) => handleChange("idPrice", parseInt(e.target.value) || 0)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="enPrice">Price (USD)</Label>
-                                <Input
-                                    id="enPrice"
-                                    type="number"
-                                    min="0"
-                                    value={formData.enPrice}
-                                    onChange={(e) => handleChange("enPrice", parseInt(e.target.value) || 0)}
-                                />
-                            </div>
+                            <PriceInput
+                                label="Price (IDR)"
+                                type="IDR"
+                                value={formData.idPrice || 0}
+                                onChange={(value) => handleChange("idPrice", value)}
+                                placeholder="250000"
+                            />
+
+                            <PriceInput
+                                label="Price (USD)"
+                                type="USD"
+                                value={formData.enPrice || 0}
+                                onChange={(value) => handleChange("enPrice", value)}
+                                placeholder="17.50"
+                            />
                             <div className="space-y-2">
                                 <Label htmlFor="taxRate">Tax Rate</Label>
                                 <Input
@@ -442,8 +438,8 @@ export default function OwnerEditProductPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
                                 <Select
-                                    value={formData.promotionId || ""}
-                                    onValueChange={(value) => handleChange("promotionId", value || undefined)}
+                                    value={formData.promotionId || "none"}
+                                    onValueChange={(value) => handleChange("promotionId", value === "none" ? null : value)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select promotion" />

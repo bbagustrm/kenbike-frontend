@@ -108,16 +108,38 @@ export default function OwnerPromotionsPage() {
             const now = new Date();
 
             if (activeTab === "deleted") {
+                // Only show deleted promotions
                 filteredPromotions = filteredPromotions.filter(p => p.deletedAt !== null);
             } else if (activeTab === "expired") {
+                // Only show expired promotions
                 filteredPromotions = filteredPromotions.filter(p =>
                     p.deletedAt === null && new Date(p.endDate) < now
                 );
             } else {
                 filteredPromotions = filteredPromotions.filter(p => {
-                    const startDate = new Date(p.startDate);
                     const endDate = new Date(p.endDate);
-                    return p.deletedAt === null && startDate <= now && endDate >= now;
+                    // Show if not deleted AND not expired
+                    return p.deletedAt === null && endDate >= now;
+                });
+
+                filteredPromotions.sort((a, b) => {
+                    const nowTime = now.getTime();
+                    const aStart = new Date(a.startDate).getTime();
+                    const bStart = new Date(b.startDate).getTime();
+
+                    const aIsActive = aStart <= nowTime;
+                    const bIsActive = bStart <= nowTime;
+
+                    // Active promotions first
+                    if (aIsActive && !bIsActive) return -1;
+                    if (!aIsActive && bIsActive) return 1;
+
+                    // Within same status, sort by start date (newest first for active, earliest first for scheduled)
+                    if (aIsActive && bIsActive) {
+                        return bStart - aStart; // Active: newest first
+                    } else {
+                        return aStart - bStart; // Scheduled: earliest first
+                    }
                 });
             }
 
@@ -315,8 +337,13 @@ export default function OwnerPromotionsPage() {
         const active = promotions.filter(p => {
             const startDate = new Date(p.startDate);
             const endDate = new Date(p.endDate);
-            return p.deletedAt === null && p.isActive && startDate <= now &&
-                endDate >= now;
+            return p.deletedAt === null && p.isActive && startDate <= now && endDate >= now;
+        }).length;
+
+        const scheduled = promotions.filter(p => {
+            const startDate = new Date(p.startDate);
+            const endDate = new Date(p.endDate);
+            return p.deletedAt === null && startDate > now && endDate >= now;
         }).length;
 
         const expired = promotions.filter(p => {
@@ -324,13 +351,10 @@ export default function OwnerPromotionsPage() {
             return p.deletedAt === null && endDate < now;
         }).length;
 
-        const scheduled = promotions.filter(p => {
-            const startDate = new Date(p.startDate);
-            return p.deletedAt === null && startDate > now;
-        }).length;
-
-        return { active, expired, scheduled };
+        return { active, scheduled, expired };
     }, [promotions]);
+
+
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-7xl">
