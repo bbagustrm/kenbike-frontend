@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// ✅ UBAH: Ganti ImageUpload dengan MultiImageUpload
 import { MultiImageUpload } from "@/components/admin/multi-image-upload";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { VariantManager } from "@/components/admin/variant-manager";
@@ -40,6 +39,7 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { GalleryManager } from "@/components/admin/gallery-manager";
 
 export default function EditProductPage() {
     const router = useRouter();
@@ -54,7 +54,6 @@ export default function EditProductPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-    // ✅ UBAH: imageUrl → imageUrls (array)
     const [formData, setFormData] = useState<UpdateProductData>({
         name: "",
         slug: "",
@@ -76,6 +75,7 @@ export default function EditProductPage() {
         preOrderDays: 0,
         variants: [],
         tagIds: [],
+        galleryImages: [],
     });
 
     useEffect(() => {
@@ -130,6 +130,12 @@ export default function EditProductPage() {
                         imageUrls: v.images?.map((img) => img.imageUrl) || [],
                     })) || [],
                     tagIds: product.tags?.map((t) => t.id) || [],
+                    galleryImages: product.gallery?.map((g) => ({
+                        id: g.id,
+                        imageUrl: g.imageUrl,
+                        caption: g.caption || "",
+                        _action: undefined,
+                    })) || [],
                 });
             } catch (err) {
                 const errorResult = handleApiError(err);
@@ -293,7 +299,15 @@ export default function EditProductPage() {
                         </div>
                     </CardContent>
                 </Card>
-
+                <Card>
+                    <CardContent>
+                        <GalleryManager
+                            value={formData.galleryImages || []}
+                            onChange={(galleries) => handleChange("galleryImages", galleries)}
+                            maxImages={20}
+                        />
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Pricing</CardTitle>

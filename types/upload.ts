@@ -1,12 +1,13 @@
 // Upload folder types
-export type UploadFolder = 'profiles' | 'products' | 'variants' | 'reviews';
+export type UploadFolder = 'profiles' | 'products' | 'variants'| "gallery" | 'reviews';
 
 // Upload response
 export interface UploadResponse {
     message: string;
     data: {
         url: string;
-        path: string;
+        filename: string;
+        size: number;
     };
 }
 

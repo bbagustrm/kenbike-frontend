@@ -8,6 +8,7 @@ export interface Product {
     enPrice: number;
     imageUrl: string | null;
     images?: ProductImage[];
+    gallery?: GalleryImage[];
     totalSold: number;
     totalView: number;
     avgRating: number;
@@ -32,6 +33,22 @@ export interface Product {
     tags?: ProductTag[];
     variants?: ProductVariant[];
     reviews?: ProductReview[];
+}
+
+export interface GalleryImage {
+    id: string;
+    productId: string;
+    imageUrl: string;
+    caption?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface GalleryImageInput {
+    id?: string;
+    imageUrl: string;
+    caption?: string;
+    _action?: 'create' | 'update' | 'delete';
 }
 
 // Product List Item (lighter version for list views)
@@ -161,6 +178,7 @@ export interface CreateProductData {
     preOrderDays?: number;
     variants: CreateVariantData[];
     tagIds?: string[];
+    galleryImages?: GalleryImageInput[];
 }
 
 export interface CreateVariantData {
@@ -192,6 +210,7 @@ export interface UpdateProductData {
     preOrderDays?: number;
     variants?: UpdateVariantData[];
     tagIds?: string[];
+    galleryImages?: GalleryImageInput[];
 }
 
 export interface UpdateVariantData {
