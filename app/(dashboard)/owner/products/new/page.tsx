@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { GalleryManager } from "@/components/admin/gallery-manager";
+import {PriceInput} from "@/components/ui/price-input";
 
 
 export default function OwnerNewProductPage() {
@@ -261,7 +262,6 @@ export default function OwnerNewProductPage() {
                             />
                         </div>
 
-                        {/* ✅ UBAH: Gunakan MultiImageUpload */}
                         <div className="space-y-2">
                             <MultiImageUpload
                                 label="Product Images"
@@ -290,49 +290,23 @@ export default function OwnerNewProductPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="idPrice">
-                                    Price (IDR) <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="idPrice"
-                                    type="number"
-                                    min="0"
-                                    placeholder="25000000"
-                                    value={formData.idPrice || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("idPrice", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("idPrice", parseInt(value) || 0);
-                                        }
-                                    }}
-                                    required
-                                />
-                            </div>
+                            <PriceInput
+                                label="Price (IDR)"
+                                type="IDR"
+                                value={formData.idPrice}
+                                onChange={(value) => handleChange("idPrice", value)}
+                                placeholder="250000"
+                                required
+                            />
 
-                            <div className="space-y-2">
-                                <Label htmlFor="enPrice">
-                                    Price (USD) <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="enPrice"
-                                    type="number"
-                                    min="0"
-                                    placeholder="1700"
-                                    value={formData.enPrice || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("enPrice", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("enPrice", parseInt(value) || 0);
-                                        }
-                                    }}
-                                    required
-                                />
-                            </div>
+                            <PriceInput
+                                label="Price (USD)"
+                                type="USD"
+                                value={formData.enPrice}
+                                onChange={(value) => handleChange("enPrice", value)}
+                                placeholder="17.50"
+                                required
+                            />
 
                             <div className="space-y-2">
                                 <Label htmlFor="taxRate">Tax Rate</Label>
