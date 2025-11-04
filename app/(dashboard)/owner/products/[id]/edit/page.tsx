@@ -438,8 +438,8 @@ export default function OwnerEditProductPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
                                 <Select
-                                    value={formData.promotionId || ""}
-                                    onValueChange={(value) => handleChange("promotionId", value || undefined)}
+                                    value={formData.promotionId || "none"}
+                                    onValueChange={(value) => handleChange("promotionId", value === "none" ? null : value)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select promotion" />
