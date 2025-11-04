@@ -40,6 +40,7 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { GalleryManager } from "@/components/admin/gallery-manager";
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -52,7 +53,6 @@ export default function NewProductPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-    // ✅ UBAH: imageUrl → imageUrls (array)
     const [formData, setFormData] = useState<CreateProductData>({
         name: "",
         slug: "",
@@ -60,7 +60,7 @@ export default function NewProductPage() {
         enDescription: "",
         idPrice: 0,
         enPrice: 0,
-        imageUrls: [], // ✅ UBAH: dari imageUrl menjadi imageUrls (array)
+        imageUrls: [],
         weight: 0,
         height: 0,
         length: 0,
@@ -73,6 +73,7 @@ export default function NewProductPage() {
         preOrderDays: 0,
         variants: [],
         tagIds: [],
+        galleryImages: [],
     });
 
     useEffect(() => {
@@ -260,7 +261,6 @@ export default function NewProductPage() {
                             />
                         </div>
 
-                        {/* ✅ UBAH: Gunakan MultiImageUpload */}
                         <div className="space-y-2">
                             <MultiImageUpload
                                 label="Product Images"
@@ -271,6 +271,16 @@ export default function NewProductPage() {
                                 maxFiles={5}
                             />
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent>
+                        <GalleryManager
+                            value={formData.galleryImages || []}
+                            onChange={(galleries) => handleChange("galleryImages", galleries)}
+                            maxImages={20}
+                        />
                     </CardContent>
                 </Card>
 

@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// ✅ UBAH: Import MultiImageUpload
 import { MultiImageUpload } from "@/components/admin/multi-image-upload";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { VariantManager } from "@/components/admin/variant-manager";
@@ -40,6 +39,8 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { GalleryManager } from "@/components/admin/gallery-manager";
+
 
 export default function OwnerNewProductPage() {
     const router = useRouter();
@@ -52,7 +53,6 @@ export default function OwnerNewProductPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-    // ✅ UBAH: imageUrl → imageUrls
     const [formData, setFormData] = useState<CreateProductData>({
         name: "",
         slug: "",
@@ -60,7 +60,8 @@ export default function OwnerNewProductPage() {
         enDescription: "",
         idPrice: 0,
         enPrice: 0,
-        imageUrls: [], // ✅ UBAH
+        imageUrls: [],
+        galleryImages: [],
         weight: 0,
         height: 0,
         length: 0,
@@ -273,7 +274,15 @@ export default function OwnerNewProductPage() {
                         </div>
                     </CardContent>
                 </Card>
-
+                <Card>
+                    <CardContent>
+                        <GalleryManager
+                            value={formData.galleryImages || []}
+                            onChange={(galleries) => handleChange("galleryImages", galleries)}
+                            maxImages={20}
+                        />
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Pricing</CardTitle>

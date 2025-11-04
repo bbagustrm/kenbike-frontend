@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageUpload } from "@/components/admin/image-upload";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { VariantManager } from "@/components/admin/variant-manager";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
@@ -40,6 +39,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { MultiImageUpload } from "@/components/admin/multi-image-upload";
+import { GalleryManager } from "@/components/admin/gallery-manager";
+
 
 export default function OwnerEditProductPage() {
     const router = useRouter();
@@ -62,6 +63,7 @@ export default function OwnerEditProductPage() {
         idPrice: 0,
         enPrice: 0,
         imageUrls: [],
+        galleryImages: [],
         weight: 0,
         height: 0,
         length: 0,
@@ -141,6 +143,12 @@ export default function OwnerEditProductPage() {
                         imageUrls: v.images?.map((img) => img.imageUrl) || [],
                     })) || [],
                     tagIds: product.tags?.map((t) => t.id) || [],
+                    galleryImages: product.gallery?.map((g) => ({
+                        id: g.id,
+                        imageUrl: g.imageUrl,
+                        caption: g.caption || "",
+                        _action: undefined,
+                    })) || [],
                 });
                 console.log('🔍 FormData after set:', formData);
             } catch (err) {
@@ -294,7 +302,15 @@ export default function OwnerEditProductPage() {
                         </div>
                     </CardContent>
                 </Card>
-
+                <Card>
+                    <CardContent>
+                        <GalleryManager
+                            value={formData.galleryImages || []}
+                            onChange={(galleries) => handleChange("galleryImages", galleries)}
+                            maxImages={20}
+                        />
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Pricing</CardTitle>
