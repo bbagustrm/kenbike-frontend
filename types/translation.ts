@@ -326,4 +326,20 @@ export interface Translation {
             next: string;
         };
     };
+    productDetail: {
+        stock: string;
+        onlyLeftInStock: string;
+        chooseColor: string;
+        quantity: string;
+        subtotal: string;
+        addToCart: string;
+        communityGallery: string;
+        description: string;
+        reviews: string;
+        noReviewsYet: string;
+        beFirstToReview: string;
+        youMayAlsoLike: string;
+        rating: string;
+        reviewsCount: string;
+    };
 }
