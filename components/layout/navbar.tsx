@@ -100,8 +100,6 @@ export default function Navbar() {
   const pages = [
     { name: t.nav.home, href: "/", icon: Home },
     { name: "All Products", href: "/search", icon: Package },
-    { name: t.nav.about, href: "/about", icon: Info },
-    { name: t.nav.contact, href: "/contact", icon: Phone },
   ];
 
   // Fetch categories, tags, promotions on mount
