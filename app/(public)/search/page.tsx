@@ -2,9 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Loader2, SlidersHorizontal } from "lucide-react";
+import { Loader2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/product/product-card";
 import { FilterSidebar, FilterValues } from "@/components/search/filter-sidebar";
@@ -41,7 +40,6 @@ function SearchPageContent() {
     const sortParam = searchParams.get("sort") || "totalSold-desc";
     const page = parseInt(searchParams.get("page") || "1");
 
-    const [searchInput, setSearchInput] = useState(searchQuery);
     const [filters, setFilters] = useState<FilterValues>({
         categorySlug,
         tagSlug,
@@ -63,7 +61,7 @@ function SearchPageContent() {
             try {
                 const response = await ProductService.getProducts({
                     page,
-                    limit: 20,
+                    limit: 24,
                     search: searchQuery || undefined,
                     categorySlug: filters.categorySlug,
                     tagSlug: filters.tagSlug,
@@ -122,11 +120,6 @@ function SearchPageContent() {
         }
 
         router.push(`/search?${newParams.toString()}`);
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        updateURL({ search: searchInput || undefined });
     };
 
     const handleFilterChange = (newFilters: FilterValues) => {
@@ -231,31 +224,26 @@ function SearchPageContent() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* Search Bar & Sort */}
-            <div className="mb-6 space-y-4">
-                <form onSubmit={handleSearch} className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder={t.search.placeholder}
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            className="pl-10"
-                        />
+            {/* Page Header */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">
+                            {searchQuery ? `Search results for "${searchQuery}"` :
+                                hasPromotion ? "Special Promotions" :
+                                    categorySlug ? "Products" :
+                                        "All Products"}
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            {isLoading ? (
+                                <span>{t.common.loading}</span>
+                            ) : (
+                                <span>
+                                    {total} {total === 1 ? "product" : "products"} found
+                                </span>
+                            )}
+                        </p>
                     </div>
-                    <Button type="submit">{t.search.searchButton || "Cari"}</Button>
-                </form>
-
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                        {isLoading ? (
-                            <span>{t.common.loading}</span>
-                        ) : (
-                            <span>
-                {t.search.resultsFound.replace("{count}", total.toString())}
-              </span>
-                        )}
-                    </p>
 
                     <div className="flex items-center gap-2">
                         {/* Mobile Filter Button */}
@@ -263,12 +251,12 @@ function SearchPageContent() {
                             <SheetTrigger asChild>
                                 <Button variant="outline" size="sm" className="lg:hidden">
                                     <SlidersHorizontal className="h-4 w-4 mr-2" />
-                                    {t.search.filters}
+                                    Filters
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
                                 <SheetHeader>
-                                    <SheetTitle>{t.search.filters}</SheetTitle>
+                                    <SheetTitle>Filters</SheetTitle>
                                 </SheetHeader>
                                 <div className="mt-6">
                                     <FilterSidebar
@@ -300,12 +288,12 @@ function SearchPageContent() {
                 {/* Product Grid */}
                 <div className="lg:col-span-3">
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12">
+                        <div className="flex items-center justify-center py-20">
                             <Loader2 className="h-8 w-8 animate-spin" />
                         </div>
                     ) : products.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
                                 {products.map((product) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
@@ -313,7 +301,7 @@ function SearchPageContent() {
 
                             {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="mt-8 flex justify-center">
+                                <div className="mt-12 flex justify-center">
                                     <Pagination>
                                         <PaginationContent>
                                             <PaginationItem>
@@ -344,8 +332,8 @@ function SearchPageContent() {
                         </>
                     ) : (
                         <EmptyState
-                            title={t.search.noResults}
-                            description="Coba sesuaikan filter atau kata kunci pencarian Anda"
+                            title="No products found"
+                            description="Try adjusting your filters or search terms"
                         />
                     )}
                 </div>
