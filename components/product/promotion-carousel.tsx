@@ -41,14 +41,17 @@ export function PromotionCarousel() {
     }, [nextSlide]);
 
     return (
-        <div className="relative w-full rounded-lg overflow-hidden bg-muted group">
-            {/* Main Image Container */}
-            <div className="relative aspect-[21/9] md:aspect-[21/6] cursor-pointer" onClick={handleClick}>
+        <div className="relative w-full overflow-hidden bg-muted group">
+            {/* Main Image Container - Auto height based on image */}
+            <div
+                className="relative aspect-[21/9] md:aspect-[21/8] lg:aspect-[21/6] cursor-pointer"
+                onClick={handleClick}
+            >
                 {PROMOTION_IMAGES.map((image, index) => (
                     <div
                         key={image.id}
                         className={cn(
-                            "absolute inset-0 transition-opacity duration-500",
+                            "absolute inset-0 transition-opacity duration-700 ease-in-out",
                             index === currentIndex ? "opacity-100" : "opacity-0"
                         )}
                     >
@@ -67,7 +70,7 @@ export function PromotionCarousel() {
             <Button
                 variant="outline"
                 size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm"
+                className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
                 onClick={(e) => {
                     e.stopPropagation();
                     prevSlide();
@@ -79,7 +82,7 @@ export function PromotionCarousel() {
             <Button
                 variant="outline"
                 size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm"
+                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
                 onClick={(e) => {
                     e.stopPropagation();
                     nextSlide();
@@ -89,7 +92,7 @@ export function PromotionCarousel() {
             </Button>
 
             {/* Dots Indicator */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
                 {PROMOTION_IMAGES.map((_, index) => (
                     <button
                         key={index}
@@ -98,10 +101,10 @@ export function PromotionCarousel() {
                             goToSlide(index);
                         }}
                         className={cn(
-                            "h-2 rounded-full transition-all",
+                            "h-1.5 rounded-full transition-all",
                             index === currentIndex
-                                ? "w-8 bg-white"
-                                : "w-2 bg-white/50 hover:bg-white/75"
+                                ? "w-6 bg-white"
+                                : "w-1.5 bg-white/60 hover:bg-white/80"
                         )}
                         aria-label={`Go to slide ${index + 1}`}
                     />

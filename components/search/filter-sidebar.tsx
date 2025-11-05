@@ -35,14 +35,14 @@ interface FilterSidebarProps {
 }
 
 const PRICE_MIN = 0;
-const PRICE_MAX = 10000000;
+const PRICE_MAX = 500000;
 
 export function FilterSidebar({
-                                  filters,
-                                  onFilterChange,
-                                  className,
-                                  onClose,
-                              }: FilterSidebarProps) {
+    filters,
+    onFilterChange,
+    className,
+    onClose,
+}: FilterSidebarProps) {
     const { t } = useTranslation();
 
     const [categories, setCategories] = useState<Category[]>([]);
@@ -249,9 +249,9 @@ export function FilterSidebar({
                     )}
 
                     {/* Price Range Filter */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <Label className="text-sm font-semibold">{t.search.priceRange}</Label>
-                        <div className="px-2 py-4">
+                        <div className="px-2 py-6">
                             <Slider
                                 min={PRICE_MIN}
                                 max={PRICE_MAX}
@@ -260,20 +260,21 @@ export function FilterSidebar({
                                 onValueChange={handlePriceRangeChange}
                                 onValueCommit={handlePriceRangeCommit}
                                 className="w-full"
+                                minStepsBetweenThumbs={1}
                             />
                         </div>
                         <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                {formatCurrency(priceRange[0])}
-              </span>
-                            <span className="text-muted-foreground">
-                {formatCurrency(priceRange[1])}
-              </span>
+                            <span className="text-muted-foreground font-medium">
+                                {formatCurrency(priceRange[0])}
+                            </span>
+                            <span className="text-muted-foreground font-medium">
+                                {formatCurrency(priceRange[1])}
+                            </span>
                         </div>
                     </div>
 
                     {/* Available Only Switch */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pt-2 border-t">
                         <Label htmlFor="available-only" className="text-sm font-semibold cursor-pointer">
                             {t.search.availableOnly}
                         </Label>
