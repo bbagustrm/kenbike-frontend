@@ -548,7 +548,7 @@ export default function Navbar() {
                         className="justify-center text-primary"
                     >
                       <Search className="mr-2 h-4 w-4" />
-                      <span>View all results for "{searchQuery}"</span>
+                      <span>View all results for {"}{searchQuery}{"}</span>
                     </CommandItem>
                   </CommandGroup>
                 </>

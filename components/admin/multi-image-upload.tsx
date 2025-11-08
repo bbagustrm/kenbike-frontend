@@ -79,8 +79,8 @@ export function MultiImageUpload({
     };
 
     const handleRemove = async (index: number) => {
-        // ✅ IMPROVEMENT: Optionally delete from storage
-        const urlToRemove = value[index];
+        //  ✅ IMPROVEMENT: Optionally delete from storage
+        // const urlToRemove = value[index];
 
         try {
             // Optional: Call delete API if you want to clean up storage

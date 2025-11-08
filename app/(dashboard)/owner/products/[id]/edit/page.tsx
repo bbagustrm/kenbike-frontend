@@ -162,7 +162,7 @@ export default function OwnerEditProductPage() {
         };
 
         loadData();
-    }, [productId, isOwner, router]);
+    }, [productId, isOwner, router, formData]);
 
     useEffect(() => {
         console.log('🔍 FormData imageUrls updated:', formData.imageUrls);
