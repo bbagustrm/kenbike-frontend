@@ -67,7 +67,7 @@ export function CartItem({
             {/* Image */}
             <Link
                 href={`/products/${item.product.slug}`}
-                className="relative w-20 h-20 flex-shrink-0"
+                className="relative w-16 h-16 flex-shrink-0"
             >
                 <Image
                     src={imageUrl}
