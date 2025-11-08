@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { TranslationProvider } from "@/contexts/translation-context";
 import "./globals.css";
 import { Toaster } from 'sonner';
+import {CartProvider} from "@/contexts/cart-context";
 
 const raleway = Raleway({
     subsets: ['latin'],
@@ -33,12 +34,14 @@ export default function RootLayout({ children, }: Readonly<{
     return (
         <html lang="id" >
         <body className={`${raleway.variable} ${poppins.variable} ${jetbrains_mono.variable}`}>
-        <TranslationProvider>
-            <AuthProvider>
-                {children}
-                <Toaster position="top-right" />
-            </AuthProvider>
-        </TranslationProvider>
+        <AuthProvider>
+            <CartProvider>
+                <TranslationProvider>
+                    {children}
+                    <Toaster position="top-right" />
+                </TranslationProvider>
+            </CartProvider>
+        </AuthProvider>
         </body>
         </html>
     );

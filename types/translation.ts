@@ -158,18 +158,6 @@ export interface Translation {
         logout: string;
     };
 
-    // Cart
-    cart: {
-        title: string;
-        itemsInCart: string;
-        subtotal: string;
-        checkout: string;
-        viewFullCart: string;
-        addToCart: string;
-        removeFromCart: string;
-        emptyCart: string;
-    };
-
     // Notifications
     notifications: {
         title: string;
@@ -342,4 +330,18 @@ export interface Translation {
         rating: string;
         reviewsCount: string;
     };
+
+    cart: {
+        title: string;
+        itemsInCart: string;
+        subtotal: string;
+        checkout: string;
+        viewFullCart: string;
+        addToCart: string;
+        removeFromCart: string;
+        emptyCart: string;
+        emptyMessage: string;
+        clearCart: string;
+    }
+
 }
