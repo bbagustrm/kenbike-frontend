@@ -1,3 +1,4 @@
+// app/products/[slug]/product-detail-page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -27,6 +28,7 @@ import { ProductService } from "@/services/product.service";
 import { Product, ProductVariant, ProductListItem } from "@/types/product";
 import { formatCurrency } from "@/lib/format-currency";
 import { useTranslation } from "@/hooks/use-translation";
+import { useCart } from "@/contexts/cart-context";
 import { handleApiError } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -77,6 +79,7 @@ interface ProductImage {
 export default function ProductDetailPage() {
     const params = useParams();
     const { t, locale } = useTranslation();
+    const { addToCart, isLoading: cartLoading } = useCart();
     const slug = params.slug as string;
 
     const [product, setProduct] = useState<Product | null>(null);
@@ -155,8 +158,7 @@ export default function ProductDetailPage() {
         return productImagesCount;
     };
 
-    // Calculate prices with currency symbol
-    const getCurrencySymbol = () => (locale === "id" ? "Rp" : "$");
+    // Calculate prices
     const basePrice = locale === "id" ? product?.idPrice : product?.enPrice;
     const hasActivePromotion = product?.promotion &&
         product.promotion.endDate &&
@@ -188,21 +190,23 @@ export default function ProductDetailPage() {
         setSelectedImageIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
     };
 
-    // TODO: Implement add to cart logic with cart context/state management
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!selectedVariant) {
-            toast.error("Please select a variant");
+            toast.error(locale === "id" ? "Pilih varian terlebih dahulu" : "Please select a variant");
             return;
         }
 
-        // TODO: Add to cart logic here
-        console.log("Add to cart:", {
-            product,
-            variant: selectedVariant,
-            quantity,
-        });
+        if (selectedVariant.stock === 0) {
+            toast.error(locale === "id" ? "Produk stok habis" : "Product out of stock");
+            return;
+        }
 
-        toast.success(t.productDetail.addToCart + " ✓");
+        try {
+            await addToCart(selectedVariant.id, quantity);
+            // Success toast is handled in cart context
+        } catch (error) {
+            console.error("Failed to add to cart:", error);
+        }
     };
 
     if (isLoading) {
@@ -226,7 +230,10 @@ export default function ProductDetailPage() {
     if (!product) {
         return (
             <div className="container mx-auto px-4 py-12">
-                <EmptyState title="Product not found" description="The product you're looking for doesn't exist." />
+                <EmptyState
+                    title={locale === "id" ? "Produk tidak ditemukan" : "Product not found"}
+                    description={locale === "id" ? "Produk yang Anda cari tidak ada." : "The product you're looking for doesn't exist."}
+                />
             </div>
         );
     }
@@ -340,12 +347,16 @@ export default function ProductDetailPage() {
                                 <div className="flex items-center justify-between px-8">
                                     <div>
                                         <h3 className="font-bold text-lg">{product.promotion.name}</h3>
-                                        <p className="text-sm  ">
-                                            Valid until {new Date(product.promotion.endDate).toLocaleDateString(locale === "id" ? "id-ID" : "en-US", {
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric'
-                                        })}
+                                        <p className="text-sm">
+                                            {locale === "id" ? "Berlaku hingga" : "Valid until"}{" "}
+                                            {new Date(product.promotion.endDate).toLocaleDateString(
+                                                locale === "id" ? "id-ID" : "en-US",
+                                                {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric'
+                                                }
+                                            )}
                                         </p>
                                     </div>
                                     <p className="text-3xl font-bold">-{Math.round(discount * 100)}%</p>
@@ -452,8 +463,8 @@ export default function ProductDetailPage() {
                                                             </div>
                                                         </div>
                                                         <span className="text-sm text-gray-500">
-                              {new Date(review.createdAt).toLocaleDateString()}
-                            </span>
+                                                            {new Date(review.createdAt).toLocaleDateString()}
+                                                        </span>
                                                     </div>
                                                     <p className="text-gray-700">{review.comment}</p>
                                                 </div>
@@ -493,12 +504,12 @@ export default function ProductDetailPage() {
                             {/* Price */}
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-3">
-                                      <span className="text-2xl font-bold text-orange-500">
-                                        {getCurrencySymbol()} {formatCurrency(finalPrice).replace(/^Rp\s*/, "")}
-                                      </span>
+                                    <span className="text-2xl font-bold text-orange-500">
+                                        {formatCurrency(finalPrice, locale === "id" ? "IDR" : "USD")}
+                                    </span>
                                     {hasActivePromotion && (
                                         <span className="text-md text-gray-500 line-through">
-                                          {getCurrencySymbol()} {formatCurrency(basePrice!).replace(/^Rp\s*/, "")}
+                                            {formatCurrency(basePrice!, locale === "id" ? "IDR" : "USD")}
                                         </span>
                                     )}
                                 </div>
@@ -575,8 +586,8 @@ export default function ProductDetailPage() {
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">{t.productDetail.subtotal}</span>
                                     <span className="text-2xl font-bold">
-                                    {getCurrencySymbol()} {formatCurrency(finalPrice * quantity).replace(/^Rp\s*/, "")}
-                                  </span>
+                                        {formatCurrency(finalPrice * quantity, locale === "id" ? "IDR" : "USD")}
+                                    </span>
                                 </div>
 
                                 {/* Add to Cart Button */}
@@ -584,10 +595,10 @@ export default function ProductDetailPage() {
                                     onClick={handleAddToCart}
                                     size="lg"
                                     className="w-full"
-                                    disabled={!selectedVariant || selectedVariant.stock === 0}
+                                    disabled={!selectedVariant || selectedVariant.stock === 0 || cartLoading}
                                 >
                                     <ShoppingCart className="w-5 h-5 mr-2" />
-                                    {t.productDetail.addToCart}
+                                    {cartLoading ? t.common.loading : t.productDetail.addToCart}
                                 </Button>
                             </div>
                         </CardContent>
@@ -609,21 +620,21 @@ export default function ProductDetailPage() {
 
             {/* Custom Scrollbar Styles */}
             <style jsx global>{`
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 6px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: #888;
-          border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: #555;
-        }
-      `}</style>
+                .scrollbar-thin::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 10px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-thumb {
+                    background: #888;
+                    border-radius: 10px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+                    background: #555;
+                }
+            `}</style>
         </div>
     );
 }

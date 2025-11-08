@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useTranslation } from "@/hooks/use-translation";
+import { CartSheet } from "@/components/cart/cart-sheet"; // ADD THIS
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,17 +22,14 @@ import {
 import {
   Search,
   Bell,
-  ShoppingCart,
   Menu,
   X,
   Package,
   LogOut,
   Home,
-  Info,
-  Phone,
+  Grid3x3,
   Tag,
   Percent,
-  Grid3x3,
 } from "lucide-react";
 import {
   Popover,
@@ -39,22 +37,12 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import CheckoutCard from "../checkout-card";
 import { getUserInitials } from "@/lib/auth-utils";
 import { UserAvatar } from "@/components/auth/user-avatar";
 import { CategoryService } from "@/services/category.service";
@@ -85,6 +73,14 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<ProductListItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Mock notifications count
+  const notificationsCount = 5;
+
+  const pages = [
+    { name: t.nav.home, href: "/", icon: Home },
+    { name: "All Products", href: "/search", icon: Package },
+  ];
+
   // Reset search when dialog closes
   useEffect(() => {
     if (!isSearchOpen) {
@@ -92,15 +88,6 @@ export default function Navbar() {
       setSearchResults([]);
     }
   }, [isSearchOpen]);
-
-  // Mock data - replace dengan real data
-  const cartItemsCount = 3;
-  const notificationsCount = 5;
-
-  const pages = [
-    { name: t.nav.home, href: "/", icon: Home },
-    { name: "All Products", href: "/search", icon: Package },
-  ];
 
   // Fetch categories, tags, promotions on mount
   useEffect(() => {
@@ -132,24 +119,17 @@ export default function Navbar() {
         return;
       }
 
-      console.log('🔍 Searching for:', searchQuery);
       setIsSearching(true);
 
       try {
-        // Try backend search first
         const response = await ProductService.getProducts({
           search: searchQuery,
-          limit: 50,  // Get more for client-side filter
+          limit: 50,
         });
-
-        console.log('✅ API Response:', response);
 
         let results = response.data || [];
 
-        // If no results and backend might not support search,
-        // do client-side filtering as fallback
         if (results.length === 0) {
-          console.log('🔄 Trying client-side search fallback...');
           const allProducts = await ProductService.getProducts({
             limit: 100,
           });
@@ -157,16 +137,11 @@ export default function Navbar() {
           results = allProducts.data.filter((product) =>
               product.name.toLowerCase().includes(searchQuery.toLowerCase())
           );
-
-          console.log('📦 Client-side results:', results.length);
         }
 
-        // Limit to 5 results
         setSearchResults(results.slice(0, 5));
-        console.log('✅ Final results:', results.slice(0, 5).length);
-
       } catch (error) {
-        console.error('❌ Search failed:', error);
+        console.error("Search failed:", error);
         setSearchResults([]);
       } finally {
         setIsSearching(false);
@@ -177,18 +152,13 @@ export default function Navbar() {
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
-  // Filter categories, tags, promotions based on search query
+  // Filter functions
   const getFilteredCategories = () => {
     if (!searchQuery) return categories;
-
     const query = searchQuery.toLowerCase();
-
-    // Show all if searching for "category" keyword
     if (query.includes('category') || query.includes('kategori')) {
       return categories;
     }
-
-    // Filter by name
     return categories.filter(cat =>
         cat.name.toLowerCase().includes(query)
     );
@@ -196,15 +166,10 @@ export default function Navbar() {
 
   const getFilteredTags = () => {
     if (!searchQuery) return tags.slice(0, 5);
-
     const query = searchQuery.toLowerCase();
-
-    // Show all if searching for "tag" keyword
     if (query.includes('tag')) {
       return tags;
     }
-
-    // Filter by name
     return tags.filter(tag =>
         tag.name.toLowerCase().includes(query)
     );
@@ -212,15 +177,10 @@ export default function Navbar() {
 
   const getFilteredPromotions = () => {
     if (!searchQuery) return promotions.slice(0, 3);
-
     const query = searchQuery.toLowerCase();
-
-    // Show all if searching for "promotion/promo" keyword
     if (query.includes('promo') || query.includes('discount') || query.includes('sale')) {
       return promotions;
     }
-
-    // Filter by name
     return promotions.filter(promo =>
         promo.name.toLowerCase().includes(query)
     );
@@ -351,61 +311,8 @@ export default function Navbar() {
                   </Popover>
               )}
 
-              {/* Cart */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button
-                      variant="ghost"
-                      size="icon"
-                      className="relative"
-                      aria-label="Cart"
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    {cartItemsCount > 0 && (
-                        <Badge
-                            variant="destructive"
-                            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                        >
-                          {cartItemsCount}
-                        </Badge>
-                    )}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-full sm:w-[400px] flex flex-col">
-                  <SheetHeader>
-                    <SheetTitle>{t.cart.title}</SheetTitle>
-                    <SheetDescription>
-                      {cartItemsCount} {t.cart.itemsInCart}
-                    </SheetDescription>
-                  </SheetHeader>
-
-                  <div className="flex-1 overflow-y-auto py-4 space-y-3">
-                    <CheckoutCard
-                        name="Bullmoose Bar"
-                        price={320000}
-                        color="Black"
-                        image="/images/bullmoose.png"
-                        stock="ready"
-                        qty={1}
-                    />
-                  </div>
-
-                  <SheetFooter className="border-t pt-4 space-y-3">
-                    <div className="w-full space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">{t.cart.subtotal}</span>
-                        <span className="font-semibold">Rp 960.000</span>
-                      </div>
-                      <Button className="w-full" size="lg">
-                        {t.cart.checkout}
-                      </Button>
-                      <Button variant="outline" className="w-full" size="sm" asChild>
-                        <Link href="/cart">{t.cart.viewFullCart}</Link>
-                      </Button>
-                    </div>
-                  </SheetFooter>
-                </SheetContent>
-              </Sheet>
+              {/* Cart - REPLACE OLD CART WITH CartSheet */}
+              <CartSheet />
 
               {/* User Menu */}
               {isAuthenticated ? (
@@ -601,7 +508,6 @@ export default function Navbar() {
               {isSearching ? "Searching..." : searchQuery ? "No results found" : "Start typing to search..."}
             </CommandEmpty>
 
-            {/* Quick Links - Show when no search query */}
             {!searchQuery && (
                 <CommandGroup heading="Quick Links">
                   {pages.map((page) => (
@@ -616,7 +522,6 @@ export default function Navbar() {
                 </CommandGroup>
             )}
 
-            {/* Product Search Results - Show when searching or has results */}
             {searchQuery && searchResults.length > 0 && (
                 <>
                   <CommandSeparator />
@@ -631,9 +536,9 @@ export default function Navbar() {
                           <div className="flex flex-col flex-1">
                             <span className="font-medium">{product.name}</span>
                             <span className="text-xs text-muted-foreground">
-                          {formatCurrency(product.idPrice)}
+                        {formatCurrency(product.idPrice)}
                               {product.category && ` • ${product.category.name}`}
-                        </span>
+                      </span>
                           </div>
                         </CommandItem>
                     ))}
@@ -643,13 +548,12 @@ export default function Navbar() {
                         className="justify-center text-primary"
                     >
                       <Search className="mr-2 h-4 w-4" />
-                      <span>View all results for {"}{searchQuery}{"}</span>
+                      <span>View all results for "{searchQuery}"</span>
                     </CommandItem>
                   </CommandGroup>
                 </>
             )}
 
-            {/* Categories - Show filtered results */}
             {filteredCategories.length > 0 && (
                 <>
                   <CommandSeparator />
@@ -668,7 +572,6 @@ export default function Navbar() {
                 </>
             )}
 
-            {/* Tags - Show filtered results */}
             {filteredTags.length > 0 && (
                 <>
                   <CommandSeparator />
@@ -687,7 +590,6 @@ export default function Navbar() {
                 </>
             )}
 
-            {/* Promotions - Show filtered results */}
             {filteredPromotions.length > 0 && (
                 <>
                   <CommandSeparator />

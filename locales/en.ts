@@ -151,17 +151,6 @@ export const en: Translation = {
         logout: "Logout",
     },
 
-    cart: {
-        title: "Shopping Cart",
-        itemsInCart: "items in cart",
-        subtotal: "Subtotal",
-        checkout: "Checkout",
-        viewFullCart: "View Full Cart",
-        addToCart: "Add to Cart",
-        removeFromCart: "Remove from Cart",
-        emptyCart: "Cart is empty",
-    },
-
     notifications: {
         title: "Notifications",
         markAllRead: "Mark all as read",
@@ -327,5 +316,18 @@ export const en: Translation = {
         youMayAlsoLike: "You may also like",
         rating: "Rating",
         reviewsCount: "{count} Reviews",
+    },
+
+    cart: {
+        title: "Shopping Cart",
+        itemsInCart: "items in cart",
+        subtotal: "Subtotal",
+        checkout: "Checkout",
+        viewFullCart: "View Full Cart",
+        addToCart: "Add to Cart",
+        removeFromCart: "Remove from Cart",
+        emptyCart: "Cart is empty",
+        emptyMessage: "Your shopping cart is empty. Start adding items!",
+        clearCart: "Clear Cart",
     },
 };

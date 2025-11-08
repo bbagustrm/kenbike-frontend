@@ -151,16 +151,6 @@ export const id: Translation = {
         logout: "Keluar",
     },
 
-    cart: {
-        title: "Keranjang Belanja",
-        itemsInCart: "produk di keranjang",
-        subtotal: "Subtotal",
-        checkout: "Checkout",
-        viewFullCart: "Lihat Keranjang Lengkap",
-        addToCart: "Tambah ke Keranjang",
-        removeFromCart: "Hapus dari Keranjang",
-        emptyCart: "Keranjang kosong",
-    },
 
     notifications: {
         title: "Notifikasi",
@@ -328,5 +318,18 @@ export const id: Translation = {
         youMayAlsoLike: "Mungkin Anda juga suka",
         rating: "Rating",
         reviewsCount: "{count} Ulasan",
+    },
+
+    cart: {
+        title: "Keranjang Belanja",
+        itemsInCart: "produk di keranjang",
+        subtotal: "Subtotal",
+        checkout: "Checkout",
+        viewFullCart: "Lihat Keranjang Lengkap",
+        addToCart: "Tambah ke Keranjang",
+        removeFromCart: "Hapus dari Keranjang",
+        emptyCart: "Keranjang kosong",
+        emptyMessage: "Keranjang belanja Anda kosong. Mulai belanja sekarang!",
+        clearCart: "Kosongkan Keranjang",
     },
 };
