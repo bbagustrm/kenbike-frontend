@@ -10,7 +10,6 @@ import { calculateDiscountedPrice, formatDiscountPercentage } from "@/lib/calcul
 import { getTotalStock } from "@/lib/check-stock";
 import { getImageUrl } from "@/lib/image-utils";
 import { cn } from "@/lib/utils";
-import {Separator} from "@/components/ui/separator";
 
 interface ProductCardProps {
     product: ProductListItem;

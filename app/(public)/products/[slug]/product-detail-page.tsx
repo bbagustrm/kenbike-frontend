@@ -1,13 +1,12 @@
 // app/products/[slug]/product-detail-page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import {useEffect, useState} from "react";
+import {useParams} from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, ShoppingCart, Minus, Plus, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Star} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -16,24 +15,19 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ProductService } from "@/services/product.service";
-import { Product, ProductVariant, ProductListItem } from "@/types/product";
-import { formatCurrency } from "@/lib/format-currency";
-import { useTranslation } from "@/hooks/use-translation";
-import { useCart } from "@/contexts/cart-context";
-import { handleApiError } from "@/lib/api-client";
-import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ProductCard } from "@/components/product/product-card";
+import {Accordion, AccordionContent, AccordionItem, AccordionTrigger,} from "@/components/ui/accordion";
+import {Card, CardContent} from "@/components/ui/card";
+import {cn} from "@/lib/utils";
+import {ProductService} from "@/services/product.service";
+import {Product, ProductListItem, ProductVariant} from "@/types/product";
+import {formatCurrency} from "@/lib/format-currency";
+import {useTranslation} from "@/hooks/use-translation";
+import {useCart} from "@/contexts/cart-context";
+import {handleApiError} from "@/lib/api-client";
+import {toast} from "sonner";
+import {Skeleton} from "@/components/ui/skeleton";
+import {EmptyState} from "@/components/ui/empty-state";
+import {ProductCard} from "@/components/product/product-card";
 
 // Review interface
 interface Review {
@@ -154,8 +148,7 @@ export default function ProductDetailPage() {
 
     // Get variant-specific images start index
     const getVariantImageStartIndex = (): number => {
-        const productImagesCount = product?.images?.length || 0;
-        return productImagesCount;
+        return product?.images?.length || 0;
     };
 
     // Calculate prices
