@@ -85,16 +85,9 @@ export default function OwnerEditProductPage() {
             try {
                 setIsLoadingData(true);
 
-                // Load product data
                 const productRes = await ProductService.getProductById(productId);
                 const product = productRes.data;
 
-                // ✅ TAMBAHKAN DEBUG INI
-                console.log('🔍 Product Data:', product);
-                console.log('🔍 Product Images:', product.images);
-                console.log('🔍 Mapped URLs:', product.images?.map((img) => img.imageUrl));
-
-                // Load categories, tags, promotions
                 const [categoriesRes, tagsRes] = await Promise.all([
                     CategoryService.getAdminCategories({ limit: 100, isActive: true }),
                     TagService.getAdminTags({ limit: 100, isActive: true }),
@@ -111,11 +104,6 @@ export default function OwnerEditProductPage() {
                     setPromotions(promotionsRes.data || []);
                 }
 
-                const imageUrls = Array.isArray(product.images)
-                    ? product.images.map((img: ProductImage) => img.imageUrl)
-                    : [];
-
-                // Populate form with product data
                 setFormData({
                     name: product.name,
                     slug: product.slug,
@@ -123,7 +111,7 @@ export default function OwnerEditProductPage() {
                     enDescription: product.enDescription,
                     idPrice: product.idPrice,
                     enPrice: product.enPrice,
-                    imageUrls: imageUrls,
+                    imageUrls: product.images?.map((img: ProductImage) => img.imageUrl) || [],
                     weight: product.weight,
                     height: product.height,
                     length: product.length,
@@ -151,7 +139,6 @@ export default function OwnerEditProductPage() {
                         _action: undefined,
                     })) || [],
                 });
-                console.log('🔍 FormData after set:', formData);
             } catch (err) {
                 const errorResult = handleApiError(err);
                 toast.error(errorResult.message);
@@ -162,11 +149,7 @@ export default function OwnerEditProductPage() {
         };
 
         loadData();
-    }, [productId, isOwner, router, formData]);
-
-    useEffect(() => {
-        console.log('🔍 FormData imageUrls updated:', formData.imageUrls);
-    }, [formData.imageUrls]);
+    }, [productId, isOwner, router]);
 
 
     const handleChange = (field: keyof UpdateProductData, value: unknown) => {

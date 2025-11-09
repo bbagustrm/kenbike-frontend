@@ -1,5 +1,7 @@
+// components/product/product-card.tsx
 "use client";
 
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
@@ -14,6 +16,7 @@ import { cn } from "@/lib/utils";
 interface ProductCardProps {
     product: ProductListItem;
     className?: string;
+    locale?: "id" | "en"; // Added locale prop
 }
 
 const getVariantColor = (variantName: string): string => {
@@ -46,12 +49,15 @@ const getVariantColor = (variantName: string): string => {
     return "bg-gray-400";
 };
 
-export function ProductCard({ product, className }: ProductCardProps) {
+export function ProductCard({ product, className, locale = "id" }: ProductCardProps) {
     const totalStock = getTotalStock(product.variants);
     const isOutOfStock = totalStock === 0;
     const hasPromotion = !!product.promotion;
 
-    const originalPrice = product.idPrice;
+    // Get price based on locale
+    const originalPrice = locale === "id" ? product.idPrice : product.enPrice;
+    const currency = locale === "id" ? "IDR" : "USD";
+
     const discountedPrice = hasPromotion
         ? calculateDiscountedPrice(originalPrice, product.promotion!.discount)
         : originalPrice;
@@ -65,10 +71,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
         })) || [];
 
     return (
-        <div
+        <motion.div
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-                "relative overflow-hidden group transition-all duration-300",
-                "rounded-sm bg-transparent backdrop-blur-sm hover:scale-[1.02]",
+                "relative overflow-hidden group",
+                "rounded-sm bg-transparent backdrop-blur-sm",
                 isOutOfStock && "opacity-70",
                 className
             )}
@@ -76,28 +84,48 @@ export function ProductCard({ product, className }: ProductCardProps) {
             <Link href={`/products/${product.slug}`} className="block">
                 {/* Image */}
                 <div className="relative aspect-square overflow-hidden rounded-sm border border-border bg-muted/40">
-                    <Image
-                        src={getImageUrl(displayImage) || "/placeholder.png"}
-                        alt={product.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    />
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                        className="w-full h-full"
+                    >
+                        <Image
+                            src={getImageUrl(displayImage) || "/placeholder.png"}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                        />
+                    </motion.div>
 
                     {/* Out of Stock */}
                     {isOutOfStock && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-md">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-md"
+                        >
                             <div className="rounded-md bg-white/90 dark:bg-gray-800/90 px-4 py-1.5 text-xs font-semibold shadow">
                                 Out of Stock
                             </div>
-                        </div>
+                        </motion.div>
                     )}
 
                     {/* Promotion Tag */}
                     {hasPromotion && !isOutOfStock && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r bg-secondary text-secondary-foreground text-xs font-bold font-mono px-2 py-0.5 rounded-full shadow-sm">
+                        <motion.div
+                            initial={{ scale: 0, rotate: -12 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{
+                                type: "spring",
+                                stiffness: 200,
+                                damping: 15,
+                                delay: 0.2
+                            }}
+                            className="absolute top-2 right-2 bg-gradient-to-r bg-accent text-accent-foreground text-xs font-bold font-mono px-2 py-0.5 rounded-full shadow-sm"
+                        >
                             {formatDiscountPercentage(product.promotion!.discount)}
-                        </div>
+                        </motion.div>
                     )}
                 </div>
 
@@ -126,15 +154,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
                         {hasPromotion ? (
                             <>
                                 <p className="text-xs text-muted-foreground line-through leading-none">
-                                    {formatCurrency(originalPrice)}
+                                    {formatCurrency(originalPrice, currency)}
                                 </p>
                                 <p className="text-lg font-bold leading-none">
-                                    {formatCurrency(discountedPrice)}
+                                    {formatCurrency(discountedPrice, currency)}
                                 </p>
                             </>
                         ) : (
                             <p className="text-lg font-bold leading-none">
-                                {formatCurrency(originalPrice)}
+                                {formatCurrency(originalPrice, currency)}
                             </p>
                         )}
                     </div>
@@ -150,22 +178,24 @@ export function ProductCard({ product, className }: ProductCardProps) {
                         {variantColors.length > 0 && (
                             <div className="flex items-center gap-1.5">
                                 {variantColors.map((variant, index) => (
-                                    <div
+                                    <motion.div
                                         key={index}
-                                        className={cn("w-4 h-4 rounded-full ring-1 ring-border", variant.color)}
+                                        whileHover={{ scale: 1.3 }}
+                                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                        className={cn("w-4 h-4 rounded-full ring-1 ring-border cursor-pointer", variant.color)}
                                         title={variant.name}
                                     />
                                 ))}
                                 {product.variants && product.variants.length > 4 && (
                                     <span className="text-[10px] text-muted-foreground">
-                                    +{product.variants.length - 4}
-                                  </span>
+                                        +{product.variants.length - 4}
+                                    </span>
                                 )}
                             </div>
                         )}
                     </div>
                 </div>
             </Link>
-        </div>
+        </motion.div>
     );
 }
