@@ -1,11 +1,10 @@
 // components/providers/smooth-scroll-provider.tsx (OPTIMIZED)
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import Lenis from "lenis";
 
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
-    const [isEnabled, setIsEnabled] = useState(false);
 
     useEffect(() => {
         // Check if device is mobile or has reduced motion preference
@@ -14,11 +13,10 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
 
         // Disable smooth scroll on mobile or if user prefers reduced motion
         if (isMobile || prefersReducedMotion) {
-            setIsEnabled(false);
+
             return;
         }
 
-        setIsEnabled(true);
 
         // Initialize Lenis with optimized settings
         const lenis = new Lenis({

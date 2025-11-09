@@ -91,7 +91,7 @@ export function PriceRangeSlider({
                 document.removeEventListener('touchend', handleEnd);
             };
         }
-    }, [isDragging, value, onValueChange, onValueCommit, min, max, step]);
+    }, [isDragging, value, onValueChange, onValueCommit, min, max, step, getValueFromPosition]);
 
     const handleTrackClick = (e: React.MouseEvent) => {
         if (isDragging) return;
