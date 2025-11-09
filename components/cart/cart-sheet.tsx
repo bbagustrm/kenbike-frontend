@@ -30,6 +30,7 @@ import { CartItem } from "./cart-item";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
+import { useMemo } from "react";
 
 interface CartSheetProps {
     className?: string;
@@ -64,6 +65,45 @@ export function CartSheet({ className }: CartSheetProps) {
     const isEmpty = cartItemsCount === 0;
     const hasUnavailableItems = cart?.summary.hasUnavailableItems || false;
     const currency = locale === "id" ? "IDR" : "USD";
+
+    // Calculate subtotal based on locale for guest cart
+    const guestCartSubtotal = useMemo(() => {
+        if (isAuthenticated) return 0;
+
+        return guestCartWithDetails.reduce((total, item) => {
+            const price = locale === "id"
+                ? item.product?.idPrice ?? 0
+                : item.product?.enPrice ?? 0;
+
+            const discount = item.product?.promotion?.isActive
+                ? item.product?.promotion.discount ?? 0
+                : 0;
+
+            const finalPrice = price * (1 - discount);
+            return total + (finalPrice * item.quantity);
+        }, 0);
+    }, [guestCartWithDetails, locale, isAuthenticated]);
+
+    // Calculate subtotal based on locale for authenticated cart
+    const authenticatedCartSubtotal = useMemo(() => {
+        if (!isAuthenticated || !cart) return 0;
+
+        return cart.items.reduce((total, item) => {
+            const price = locale === "id"
+                ? item.product.idPrice
+                : item.product.enPrice;
+
+            const discount = item.product.promotion?.isActive
+                ? item.product.promotion.discount
+                : 0;
+
+            const finalPrice = price * (1 - discount);
+            return total + (finalPrice * item.quantity);
+        }, 0);
+    }, [cart, locale, isAuthenticated]);
+
+    // Use the correct subtotal based on authentication status
+    const displaySubtotal = isAuthenticated ? authenticatedCartSubtotal : guestCartSubtotal;
 
     return (
         <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -265,8 +305,8 @@ export function CartSheet({ className }: CartSheetProps) {
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Subtotal</span>
                                     <span className="font-semibold">
-                                        {formatCurrency(cartSubtotal, currency)}
-                                      </span>
+                                        {formatCurrency(displaySubtotal, currency)}
+                                    </span>
                                 </div>
                             </div>
 

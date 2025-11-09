@@ -20,7 +20,7 @@ import { toast } from "sonner";
 function SearchPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation(); // Added locale
 
     const [products, setProducts] = useState<ProductListItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -50,11 +50,16 @@ function SearchPageContent() {
         availableOnly: false,
     });
 
-    // Parse sort param
+    // Parse sort param - use locale-based price sorting
     const [sortBy, order] = sortParam.split("-") as [
             "name" | "idPrice" | "enPrice" | "totalSold" | "totalView" | "avgRating" | "createdAt",
             "asc" | "desc"
     ];
+
+    // Adjust sortBy based on locale if it's a price sort
+    const adjustedSortBy = sortBy === "idPrice" || sortBy === "enPrice"
+        ? (locale === "id" ? "idPrice" : "enPrice") as typeof sortBy
+        : sortBy;
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -70,7 +75,7 @@ function SearchPageContent() {
                     maxPrice: filters.maxPrice,
                     hasPromotion: hasPromotion || (promotionId ? true : undefined),
                     isFeatured,
-                    sortBy,
+                    sortBy: adjustedSortBy,
                     order,
                 });
 
@@ -100,7 +105,7 @@ function SearchPageContent() {
         };
 
         fetchProducts();
-    }, [searchQuery, filters, sortParam, page, hasPromotion, isFeatured, promotionId, sortBy, order]);
+    }, [searchQuery, filters, sortParam, page, hasPromotion, isFeatured, promotionId, adjustedSortBy, order]);
 
     const updateURL = (params: Record<string, string | undefined>) => {
         const newParams = new URLSearchParams(searchParams.toString());
@@ -226,8 +231,8 @@ function SearchPageContent() {
             <div className="flex">
                 {/* Desktop Filter Sidebar - Collapsible */}
                 <aside
-                    className={`hidden lg:block mr-12 transition-all duration-300 ${
-                        isFilterVisible ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'
+                    className={`hidden lg:block transition-all duration-300 ${
+                        isFilterVisible ? 'w-64 opacity-100 md:mr-12' : 'w-0 opacity-0 overflow-hidden md:mr-0'
                     }`}
                 >
                     <div className="sticky top-24">
@@ -341,13 +346,13 @@ function SearchPageContent() {
                         </div>
                     ) : products.length > 0 ? (
                         <>
-                            <div className={`grid gap-4 ${
+                            <div className={`grid gap-3 md:gap-4 ${
                                 isFilterVisible
-                                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-                                    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
+                                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+                                    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
                             }`}>
                                 {products.map((product) => (
-                                    <ProductCard key={product.id} product={product} />
+                                    <ProductCard key={product.id} product={product} locale={locale} />
                                 ))}
                             </div>
 

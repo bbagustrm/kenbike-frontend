@@ -646,7 +646,7 @@ export default function Navbar() {
         </CommandDialog>
 
         {/* Floating Cart Button - Mobile */}
-        <div className="bg-accent rounded-full fixed bottom-5 right-5 z-50 md:hidden">
+        <div className="bg-secondary rounded-full fixed bottom-5 right-5 z-50 md:hidden">
           <CartSheet />
         </div>
 

@@ -12,14 +12,14 @@ interface PriceRangeSliderProps {
 }
 
 export function PriceRangeSlider({
-                                     min,
-                                     max,
-                                     step = 1,
-                                     value,
-                                     onValueChange,
-                                     onValueCommit,
-                                     className,
-                                 }: PriceRangeSliderProps) {
+    min,
+    max,
+    step = 1,
+    value,
+    onValueChange,
+    onValueCommit,
+    className,
+}: PriceRangeSliderProps) {
     const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
     const trackRef = useRef<HTMLDivElement>(null);
 
@@ -116,7 +116,7 @@ export function PriceRangeSlider({
             {/* Track */}
             <div
                 ref={trackRef}
-                className="relative h-2 bg-secondary rounded-full cursor-pointer"
+                className="relative h-2 bg-muted rounded-full cursor-pointer"
                 onClick={handleTrackClick}
             >
                 {/* Active Range */}

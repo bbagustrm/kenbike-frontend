@@ -1,6 +1,8 @@
+// components/product/product-carousel.tsx (with animations)
 "use client";
 
 import { useRef } from "react";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "./product-card";
@@ -32,23 +34,35 @@ export function ProductCarousel({ products, className }: ProductCarouselProps) {
     return (
         <div className={cn("relative group", className)}>
             {/* Navigation Buttons */}
-            <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                onClick={() => scroll("left")}
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity"
             >
-                <ChevronLeft className="h-4 w-4" />
-            </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="shadow-lg"
+                    onClick={() => scroll("left")}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+            </motion.div>
 
-            <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                onClick={() => scroll("right")}
+            <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity"
             >
-                <ChevronRight className="h-4 w-4" />
-            </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="shadow-lg"
+                    onClick={() => scroll("right")}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </motion.div>
 
             {/* Scrollable Container */}
             <div
@@ -56,22 +70,30 @@ export function ProductCarousel({ products, className }: ProductCarouselProps) {
                 className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-                {products.map((product) => (
-                    <div
+                {products.map((product, index) => (
+                    <motion.div
                         key={product.id}
+                        initial={{ opacity: 0, x: 50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{
+                            duration: 0.5,
+                            delay: index * 0.05,
+                            ease: [0.22, 1, 0.36, 1],
+                        }}
                         className="flex-none w-[280px] snap-start"
                     >
                         <ProductCard product={product} />
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 
             {/* Hide scrollbar globally */}
             <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
         </div>
     );
 }

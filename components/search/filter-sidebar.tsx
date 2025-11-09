@@ -1,3 +1,4 @@
+// components/search/filter-sidebar.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,16 +35,29 @@ interface FilterSidebarProps {
     onClose?: () => void;
 }
 
-const PRICE_MIN = 0;
-const PRICE_MAX = 500000;
+// Price ranges based on currency
+const PRICE_RANGES = {
+    IDR: {
+        MIN: 0,
+        MAX: 500000,
+        STEP: 10000,
+    },
+    USD: {
+        MIN: 0,
+        MAX: 50,
+        STEP: 1,
+    },
+};
 
 export function FilterSidebar({
-    filters,
-    onFilterChange,
-    className,
-    onClose,
-}: FilterSidebarProps) {
-    const { t } = useTranslation();
+                                  filters,
+                                  onFilterChange,
+                                  className,
+                                  onClose,
+                              }: FilterSidebarProps) {
+    const { t, locale } = useTranslation();
+    const currency = locale === "id" ? "IDR" : "USD";
+    const priceConfig = PRICE_RANGES[currency];
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
@@ -52,17 +66,17 @@ export function FilterSidebar({
 
     // Initialize price range state with proper array format
     const [priceRange, setPriceRange] = useState<[number, number]>([
-        filters.minPrice || PRICE_MIN,
-        filters.maxPrice || PRICE_MAX,
+        filters.minPrice || priceConfig.MIN,
+        filters.maxPrice || priceConfig.MAX,
     ]);
 
-    // Update local state when filters change from outside
+    // Update local state when filters or locale change
     useEffect(() => {
         setPriceRange([
-            filters.minPrice || PRICE_MIN,
-            filters.maxPrice || PRICE_MAX,
+            filters.minPrice || priceConfig.MIN,
+            filters.maxPrice || priceConfig.MAX,
         ]);
-    }, [filters.minPrice, filters.maxPrice]);
+    }, [filters.minPrice, filters.maxPrice, priceConfig.MIN, priceConfig.MAX]);
 
     useEffect(() => {
         const fetchFilters = async () => {
@@ -117,8 +131,8 @@ export function FilterSidebar({
         if (values.length === 2) {
             onFilterChange({
                 ...filters,
-                minPrice: values[0] === PRICE_MIN ? undefined : values[0],
-                maxPrice: values[1] === PRICE_MAX ? undefined : values[1],
+                minPrice: values[0] === priceConfig.MIN ? undefined : values[0],
+                maxPrice: values[1] === priceConfig.MAX ? undefined : values[1],
             });
         }
     };
@@ -131,7 +145,7 @@ export function FilterSidebar({
     };
 
     const handleClearFilters = () => {
-        setPriceRange([PRICE_MIN, PRICE_MAX]);
+        setPriceRange([priceConfig.MIN, priceConfig.MAX]);
         onFilterChange({
             availableOnly: false,
         });
@@ -146,7 +160,7 @@ export function FilterSidebar({
         filters.availableOnly;
 
     return (
-        <div className={cn("space-y-6 p-4 bg-secondary/20 border shadow-sm border-secondary rounded-sm", className)}>
+        <div className={cn("space-y-6 p-4 bg-white border border-border shadow-sm rounded-sm", className)}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.search.filters}</h2>
@@ -266,9 +280,9 @@ export function FilterSidebar({
                         <Label className="text-sm font-semibold">{t.search.priceRange}</Label>
                         <div className="px-2 py-8">
                             <PriceRangeSlider
-                                min={PRICE_MIN}
-                                max={PRICE_MAX}
-                                step={10000}
+                                min={priceConfig.MIN}
+                                max={priceConfig.MAX}
+                                step={priceConfig.STEP}
                                 value={[priceRange[0], priceRange[1]]}
                                 onValueChange={handlePriceRangeChange}
                                 onValueCommit={handlePriceRangeCommit}
@@ -279,21 +293,21 @@ export function FilterSidebar({
                             <div className="flex flex-col">
                                 <span className="text-xs text-muted-foreground mb-1">Min</span>
                                 <span className="text-muted-foreground font-medium">
-                                    {formatCurrency(priceRange[0])}
+                                    {formatCurrency(priceRange[0], currency)}
                                 </span>
                             </div>
                             <span className="text-muted-foreground">-</span>
                             <div className="flex flex-col text-right">
                                 <span className="text-xs text-muted-foreground mb-1">Max</span>
                                 <span className="text-muted-foreground font-medium">
-                                    {formatCurrency(priceRange[1])}
+                                    {formatCurrency(priceRange[1], currency)}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     {/* Available Only Switch */}
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
                         <Label htmlFor="available-only" className="text-sm font-semibold cursor-pointer">
                             {t.search.availableOnly}
                         </Label>
