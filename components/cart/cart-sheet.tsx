@@ -44,7 +44,6 @@ export function CartSheet({ className }: CartSheetProps) {
         cart,
         guestCartWithDetails,
         cartItemsCount,
-        cartSubtotal,
         removeFromCart,
         updateQuantity,
         clearCart,
