@@ -15,6 +15,7 @@ import { ProductListItem } from "@/types/product";
 import { useTranslation } from "@/hooks/use-translation";
 import { handleApiError } from "@/lib/api-client";
 import { getTotalStock } from "@/lib/check-stock";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 function SearchPageContent() {
@@ -298,24 +299,24 @@ function SearchPageContent() {
                                     {(filters.categorySlug || filters.tagSlug || filters.promotionId || hasPromotion) && (
                                         <div className="flex flex-wrap gap-2 mb-2">
                                             {filters.categorySlug && (
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                                <Badge variant="secondary">
                                                     Category: {filters.categorySlug.replace(/-/g, ' ')}
-                                                </span>
+                                                </Badge>
                                             )}
                                             {filters.tagSlug && (
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                                                <Badge variant="outline">
                                                     Tag: {filters.tagSlug.replace(/-/g, ' ')}
-                                                </span>
+                                                </Badge>
                                             )}
                                             {(filters.promotionId || hasPromotion) && (
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-accent/10 text-accent border border-accent/20">
-                                                    🎉 Special Promotion
-                                                </span>
+                                                <Badge variant="promotion">
+                                                    Special Promotion
+                                                </Badge>
                                             )}
                                             {(filters.minPrice || filters.maxPrice) && (
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-600 border border-green-500/20">
+                                                <Badge variant="default">
                                                     Price Range Applied
-                                                </span>
+                                                </Badge>
                                             )}
                                         </div>
                                     )}

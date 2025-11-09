@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Star, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -163,7 +163,12 @@ export default function ProductDetailPage() {
         new Date(product.promotion.endDate) > new Date();
     const discount = hasActivePromotion && product?.promotion ? product.promotion.discount : 0;
     const finalPrice = basePrice ? basePrice * (1 - discount) : 0;
-    const stockWarning = selectedVariant && selectedVariant.stock < 10 && selectedVariant.stock > 0;
+
+    // Stock status helpers
+    const currentStock = selectedVariant?.stock || 0;
+    const isOutOfStock = currentStock === 0;
+    const isLowStock = currentStock > 0 && currentStock <= 10;
+    const isAvailable = currentStock > 10;
 
     const handleVariantSelect = (variant: ProductVariant) => {
         setSelectedVariant(variant);
@@ -192,7 +197,7 @@ export default function ProductDetailPage() {
             return;
         }
         if (selectedVariant.stock === 0) {
-            toast.error(locale === "id" ? "Produk stok habis" : "Product out of stock");
+            toast.error(t.products.outOfStock);
             return;
         }
         try {
@@ -270,7 +275,7 @@ export default function ProductDetailPage() {
                     <ScrollReveal direction="up">
                         <div className="flex gap-4">
                             {/* Vertical Thumbnail Images */}
-                            <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px] pr-2 scrollbar-thin">
+                            <div className="flex flex-col gap-2 overflow-y-auto overflow-x-none max-h-[500px] pr-2">
                                 {allImages.map((image, index) => (
                                     <motion.button
                                         key={image.id}
@@ -278,10 +283,10 @@ export default function ProductDetailPage() {
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         className={cn(
-                                            "flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition",
+                                            "flex-shrink-0 w-20 h-20 rounded-sm overflow-hidden border-4 transition",
                                             selectedImageIndex === index
-                                                ? "border-primary ring-2 ring-primary ring-offset-2"
-                                                : "border-border hover:border-muted-foreground"
+                                                ? "border-accent"
+                                                : "border-border hover:border-accent"
                                         )}
                                     >
                                         <Image
@@ -296,7 +301,7 @@ export default function ProductDetailPage() {
                             </div>
 
                             {/* Main Image with Animation */}
-                            <div className="flex-1 relative aspect-square rounded-lg max-w-[300px] sm:max-w-[400px] md:max-w-[500px] mx-auto bg-muted overflow-hidden">
+                            <div className="flex-1 relative aspect-square rounded-sm max-w-[300px] sm:max-w-[400px] md:max-w-[500px] mx-auto overflow-hidden">
                                 {allImages.length > 0 && (
                                     <AnimatePresence initial={false} custom={imageDirection}>
                                         <motion.div
@@ -367,7 +372,7 @@ export default function ProductDetailPage() {
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ duration: 0.3 }}
                             >
-                                <Card className="bg-orange-500 dark:bg-orange-600 text-white border-2 border-orange-500 dark:border-orange-600 shadow-md py-4">
+                                <Card className="bg-accent dark:bg-accent border-2 border-accent dark:border-accent shadow-md py-4">
                                     <CardContent className="p-0">
                                         <div className="flex items-center justify-between px-8">
                                             <div>
@@ -398,7 +403,7 @@ export default function ProductDetailPage() {
                             <div>
                                 <h2 className="text-xl font-bold mb-4">{t.productDetail.communityGallery}</h2>
                                 <div className="overflow-x-auto pb-2">
-                                    <div className="flex gap-4 min-w-max">
+                                    <div className="flex gap-2 min-w-max overflow-y-hidden">
                                         {product.gallery.map((image, index) => (
                                             <motion.div
                                                 key={image.id}
@@ -407,7 +412,7 @@ export default function ProductDetailPage() {
                                                 viewport={{ once: true }}
                                                 transition={{ delay: index * 0.1 }}
                                                 whileHover={{ scale: 1.05 }}
-                                                className="relative w-[200px] sm:w-[240px] md:w-[280px] aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer flex-shrink-0"
+                                                className="relative w-[200px] sm:w-[240px] md:w-[280px] aspect-3/4 rounded-sm overflow-hidden bg-muted cursor-pointer flex-shrink-0"
                                             >
                                                 <Image
                                                     src={image.imageUrl}
@@ -437,7 +442,7 @@ export default function ProductDetailPage() {
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <div
-                                        className="prose dark:prose-invert max-w-none"
+                                        className="prose dark:prose-invert max-w-none ProseMirror"
                                         dangerouslySetInnerHTML={{
                                             __html: locale === "id" ? product.idDescription : product.enDescription,
                                         }}
@@ -519,7 +524,7 @@ export default function ProductDetailPage() {
                 {/* RIGHT COLUMN: Sticky Product Info Card */}
                 <div className="lg:col-span-3">
                     <ScrollReveal direction="left" delay={0.2} className="sticky top-24">
-                        <Card >
+                        <Card>
                             <CardContent className="px-6 space-y-4">
                                 {/* Tags & Category */}
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -539,7 +544,7 @@ export default function ProductDetailPage() {
                                 {/* Price */}
                                 <div className="space-y-1">
                                     <div className="flex items-baseline gap-3">
-                                        <span className="text-2xl font-bold text-orange-500 dark:text-orange-400">
+                                        <span className="text-2xl font-bold text-accent dark:text-accent">
                                             {formatCurrency(finalPrice, locale === "id" ? "IDR" : "USD")}
                                         </span>
                                         {hasActivePromotion && (
@@ -554,13 +559,28 @@ export default function ProductDetailPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm text-muted-foreground">{t.productDetail.stock}:</span>
-                                        <span className="font-semibold">{selectedVariant?.stock || 0}</span>
+
+                                        {isOutOfStock && (
+                                            <Badge variant="destructive" className="gap-1.5">
+                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                {t.products.outOfStock}
+                                            </Badge>
+                                        )}
+
+                                        {isLowStock && (
+                                            <Badge variant="destructive" className="gap-1.5">
+                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                {t.productDetail.onlyLeftInStock.replace("{count}", currentStock.toString())}
+                                            </Badge>
+                                        )}
+
+                                        {isAvailable && (
+                                            <Badge variant="outline" className="gap-1.5">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                {t.products.inStock}
+                                            </Badge>
+                                        )}
                                     </div>
-                                    {stockWarning && (
-                                        <Badge variant="destructive">
-                                            {t.productDetail.onlyLeftInStock.replace("{count}", selectedVariant?.stock.toString() || "0")}
-                                        </Badge>
-                                    )}
                                 </div>
 
                                 {/* Variant Selection */}
@@ -570,7 +590,7 @@ export default function ProductDetailPage() {
                                             {t.productDetail.chooseColor}:{" "}
                                             <span className="font-normal text-muted-foreground">{selectedVariant?.variantName}</span>
                                         </label>
-                                        <div className="flex gap-3 flex-wrap">
+                                        <div className="flex gap-2 flex-wrap">
                                             {product.variants
                                                 .filter((v) => v.isActive)
                                                 .map((variant) => (
@@ -581,9 +601,7 @@ export default function ProductDetailPage() {
                                                         whileTap={{ scale: 0.9 }}
                                                         className={cn(
                                                             "w-8 h-8 rounded-full border-2 transition-all",
-                                                            selectedVariant?.id === variant.id
-                                                                ? "border-primary ring-2 ring-primary ring-offset-2"
-                                                                : "border-border hover:border-muted-foreground"
+                                                            selectedVariant?.id === variant.id && "ring-2 ring-accent ring-offset-2"
                                                         )}
                                                         style={{ backgroundColor: getColorFromVariantName(variant.variantName) }}
                                                         title={variant.variantName}
@@ -666,7 +684,6 @@ export default function ProductDetailPage() {
                                     transition={{ delay: index * 0.1 }}
                                 >
                                     <ProductCard product={relatedProduct} locale={locale} />
-
                                 </motion.div>
                             ))}
                         </div>
@@ -674,22 +691,6 @@ export default function ProductDetailPage() {
                 </ScrollReveal>
             )}
 
-            <style jsx global>{`
-                .scrollbar-thin::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .scrollbar-thin::-webkit-scrollbar-track {
-                    background: hsl(var(--muted));
-                    border-radius: 10px;
-                }
-                .scrollbar-thin::-webkit-scrollbar-thumb {
-                    background: hsl(var(--muted-foreground));
-                    border-radius: 10px;
-                }
-                .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-                    background: hsl(var(--foreground));
-                }
-            `}</style>
         </div>
     );
 }

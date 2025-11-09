@@ -40,6 +40,7 @@ export function PromotionCarousel() {
     const router = useRouter();
     const [[page, direction], setPage] = useState([0, 0]);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [isHovered, setIsHovered] = useState(false);
 
     const imageIndex = ((page % PROMOTION_IMAGES.length) + PROMOTION_IMAGES.length) % PROMOTION_IMAGES.length;
 
@@ -75,8 +76,14 @@ export function PromotionCarousel() {
     return (
         <div
             className="relative w-full overflow-hidden bg-muted group"
-            onMouseEnter={() => setIsAutoPlaying(false)}
-            onMouseLeave={() => setIsAutoPlaying(true)}
+            onMouseEnter={() => {
+                setIsAutoPlaying(false);
+                setIsHovered(true);
+            }}
+            onMouseLeave={() => {
+                setIsAutoPlaying(true);
+                setIsHovered(false);
+            }}
         >
             {/* Main Image Container */}
             <div className="relative aspect-[21/9] md:aspect-[21/8] lg:aspect-[21/6] cursor-pointer">
@@ -118,45 +125,58 @@ export function PromotionCarousel() {
                 </AnimatePresence>
             </div>
 
-            {/* Navigation Arrows */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-                <Button
-                    variant="secondary"
-                    size="icon"
-                    className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        prevSlide();
-                    }}
-                >
-                    <ChevronLeft className="h-5 w-5" />
-                </Button>
-            </motion.div>
+            {/* Navigation Arrows - Left */}
+            <AnimatePresence>
+                {isHovered && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+                    >
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg rounded-full h-10 w-10"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                prevSlide();
+                            }}
+                        >
+                            <ChevronLeft className="h-5 w-5" />
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-                <Button
-                    variant="secondary"
-                    size="icon"
-                    className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        nextSlide();
-                    }}
-                >
-                    <ChevronRight className="h-5 w-5" />
-                </Button>
-            </motion.div>
+            {/* Navigation Arrows - Right */}
+            <AnimatePresence>
+                {isHovered && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
+                    >
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg rounded-full h-10 w-10"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                nextSlide();
+                            }}
+                        >
+                            <ChevronRight className="h-5 w-5" />
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Dots Indicator */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                 {PROMOTION_IMAGES.map((_, index) => (
                     <motion.button
                         key={index}
@@ -165,10 +185,10 @@ export function PromotionCarousel() {
                             goToSlide(index);
                         }}
                         className={cn(
-                            "h-1.5 rounded-full transition-all",
+                            "h-2 rounded-full transition-all",
                             index === imageIndex
-                                ? "w-6 bg-white"
-                                : "w-1.5 bg-white/60 hover:bg-white/80"
+                                ? "w-8 bg-white shadow-md"
+                                : "w-2 bg-white/60 hover:bg-white/80"
                         )}
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}

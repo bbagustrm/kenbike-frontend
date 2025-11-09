@@ -45,7 +45,7 @@
   --secondary: #d6ff5d; /* neon hijau terang */
   --secondary-foreground: #0a0a0a;
 
-  --accent: #ffa541; /* hijau sedikit lebih gelap untuk hover / fokus */
+  --accent: #ff9727; /* hijau sedikit lebih gelap untuk hover / fokus */
   --accent-foreground: #0a0a0a;
 
   /* === SUPPORT COLORS === */
@@ -184,7 +184,7 @@ code, pre {
 .ProseMirror table th {
   min-width: 1em;
   border: 1px solid #ddd;
-  padding: 8px 12px;
+  padding: 4px 12px;
   vertical-align: top;
   box-sizing: border-box;
   position: relative;

@@ -32,11 +32,11 @@ interface CartItemProps {
 }
 
 export function CartItem({
-                             item,
-                             onUpdateQuantity,
-                             onRemove,
-                             isLoading = false,
-                         }: CartItemProps) {
+    item,
+    onUpdateQuantity,
+    onRemove,
+    isLoading = false,
+}: CartItemProps) {
     const { locale } = useTranslation();
     const [quantity, setQuantity] = useState(item.quantity);
 
@@ -59,7 +59,7 @@ export function CartItem({
     return (
         <div
             className={cn(
-                "flex gap-3 p-3 rounded-lg border border-border",
+                "flex gap-3 p-3 rounded-sm border border-border",
                 !item.isAvailable && "opacity-60 bg-muted"
             )}
         >

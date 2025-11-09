@@ -126,7 +126,7 @@ export function CartSheet({ className }: CartSheetProps) {
                 </Button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-full sm:w-[400px] flex flex-col p-0 bg-card">
+            <SheetContent side="right" className="w-full flex flex-col p-0 bg-card">
                 <SheetHeader className="px-6 py-4 border-b border-border">
                     <SheetTitle>{t.cart.title}</SheetTitle>
                     <SheetDescription>
