@@ -64,7 +64,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const getDashboardTitle = () => {
     if (user?.role === "ADMIN") return "Admin Panel";
-    if (user?.role === "OWNER") return "Owner Dashboard";
+    if (user?.role === "OWNER") return "Owner Panel";
     return "My Account";
   };
 
@@ -85,7 +85,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               href="/"
               className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  "text-muted-foreground hover:bg-gray-100 hover:text-gray-900"
+                  "text-muted-foreground hover:bg-secondary"
               )}
           >
             <Home className="h-5 w-5" />
@@ -103,7 +103,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                         isActive
                             ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-gray-100 hover:text-gray-900"
+                            : "text-muted-foreground hover:bg-secondary"
                     )}
                 >
                   <item.icon className="h-5 w-5" />

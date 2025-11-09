@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Slider } from "@/components/ui/slider";
+import { PriceRangeSlider } from "@/components/ui/price-range-slider";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/use-translation";
@@ -50,10 +50,19 @@ export function FilterSidebar({
     const [promotions, setPromotions] = useState<Promotion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [priceRange, setPriceRange] = useState([
+    // Initialize price range state with proper array format
+    const [priceRange, setPriceRange] = useState<[number, number]>([
         filters.minPrice || PRICE_MIN,
         filters.maxPrice || PRICE_MAX,
     ]);
+
+    // Update local state when filters change from outside
+    useEffect(() => {
+        setPriceRange([
+            filters.minPrice || PRICE_MIN,
+            filters.maxPrice || PRICE_MAX,
+        ]);
+    }, [filters.minPrice, filters.maxPrice]);
 
     useEffect(() => {
         const fetchFilters = async () => {
@@ -99,15 +108,19 @@ export function FilterSidebar({
     };
 
     const handlePriceRangeChange = (values: number[]) => {
-        setPriceRange(values);
+        if (values.length === 2) {
+            setPriceRange([values[0], values[1]]);
+        }
     };
 
     const handlePriceRangeCommit = (values: number[]) => {
-        onFilterChange({
-            ...filters,
-            minPrice: values[0] === PRICE_MIN ? undefined : values[0],
-            maxPrice: values[1] === PRICE_MAX ? undefined : values[1],
-        });
+        if (values.length === 2) {
+            onFilterChange({
+                ...filters,
+                minPrice: values[0] === PRICE_MIN ? undefined : values[0],
+                maxPrice: values[1] === PRICE_MAX ? undefined : values[1],
+            });
+        }
     };
 
     const handleAvailableOnlyChange = (checked: boolean) => {
@@ -133,7 +146,7 @@ export function FilterSidebar({
         filters.availableOnly;
 
     return (
-        <div className={cn("space-y-6", className)}>
+        <div className={cn("space-y-6 p-4 bg-secondary/20 border shadow-sm border-secondary rounded-sm", className)}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.search.filters}</h2>
@@ -251,30 +264,36 @@ export function FilterSidebar({
                     {/* Price Range Filter */}
                     <div className="space-y-4">
                         <Label className="text-sm font-semibold">{t.search.priceRange}</Label>
-                        <div className="px-2 py-6">
-                            <Slider
+                        <div className="px-2 py-8">
+                            <PriceRangeSlider
                                 min={PRICE_MIN}
                                 max={PRICE_MAX}
-                                step={50000}
-                                value={priceRange}
+                                step={10000}
+                                value={[priceRange[0], priceRange[1]]}
                                 onValueChange={handlePriceRangeChange}
                                 onValueCommit={handlePriceRangeCommit}
                                 className="w-full"
-                                minStepsBetweenThumbs={1}
                             />
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground font-medium">
-                                {formatCurrency(priceRange[0])}
-                            </span>
-                            <span className="text-muted-foreground font-medium">
-                                {formatCurrency(priceRange[1])}
-                            </span>
+                        <div className="flex items-center justify-between text-sm gap-2">
+                            <div className="flex flex-col">
+                                <span className="text-xs text-muted-foreground mb-1">Min</span>
+                                <span className="text-muted-foreground font-medium">
+                                    {formatCurrency(priceRange[0])}
+                                </span>
+                            </div>
+                            <span className="text-muted-foreground">-</span>
+                            <div className="flex flex-col text-right">
+                                <span className="text-xs text-muted-foreground mb-1">Max</span>
+                                <span className="text-muted-foreground font-medium">
+                                    {formatCurrency(priceRange[1])}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
                     {/* Available Only Switch */}
-                    <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
                         <Label htmlFor="available-only" className="text-sm font-semibold cursor-pointer">
                             {t.search.availableOnly}
                         </Label>

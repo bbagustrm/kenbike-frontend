@@ -196,12 +196,12 @@ export default function OwnerSettingsPage() {
                             <form onSubmit={handleProfileSubmit} className="space-y-6">
                                 <div className="flex items-center gap-6">
                                     <div className="relative">
-                                        <Avatar className="h-24 w-24 border-2 border-gray-200">
+                                        <Avatar className="bg-secondary h-24 w-24">
                                             <AvatarImage
                                                 src={getDisplayImage()}
                                                 alt={user.username}
                                             />
-                                            <AvatarFallback className="text-2xl">
+                                            <AvatarFallback className="text-2xl bg-secondary/50">
                                                 {getUserInitials(user)}
                                             </AvatarFallback>
                                         </Avatar>
@@ -215,7 +215,7 @@ export default function OwnerSettingsPage() {
                                     <div className="flex-1 space-y-3">
                                         <div className="flex flex-wrap gap-2">
                                             <Label htmlFor="profile_image" className="cursor-pointer">
-                                                <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                                                <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md">
                                                     <Upload className="h-4 w-4" />
                                                     {selectedImage ? t.profile.buttons.changePhoto : t.profile.buttons.uploadPhoto}
                                                 </div>

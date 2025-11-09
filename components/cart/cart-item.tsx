@@ -32,11 +32,11 @@ interface CartItemProps {
 }
 
 export function CartItem({
-    item,
-    onUpdateQuantity,
-    onRemove,
-    isLoading = false,
-}: CartItemProps) {
+                             item,
+                             onUpdateQuantity,
+                             onRemove,
+                             isLoading = false,
+                         }: CartItemProps) {
     const { locale } = useTranslation();
     const [quantity, setQuantity] = useState(item.quantity);
 
@@ -52,7 +52,6 @@ export function CartItem({
     const currency = locale === 'id' ? 'IDR' : 'USD';
     const price = locale === 'id' ? item.product.idPrice : item.product.enPrice;
 
-    // Calculate discount if promotion exists
     const discountedPrice = item.product.promotion?.isActive
         ? price * (1 - item.product.promotion.discount)
         : price;
@@ -60,8 +59,8 @@ export function CartItem({
     return (
         <div
             className={cn(
-                "flex gap-3 p-3 rounded-lg border",
-                !item.isAvailable && "opacity-60 bg-gray-50"
+                "flex gap-3 p-3 rounded-lg border border-border",
+                !item.isAvailable && "opacity-60 bg-muted"
             )}
         >
             {/* Image */}
@@ -94,7 +93,7 @@ export function CartItem({
                     {item.product.name}
                 </Link>
 
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                     {item.variant.variantName}
                 </p>
 
@@ -104,7 +103,7 @@ export function CartItem({
                         {formatCurrency(discountedPrice, currency)}
                     </span>
                     {item.product.promotion?.isActive && (
-                        <span className="text-xs text-gray-400 line-through">
+                        <span className="text-xs text-muted-foreground line-through">
                             {formatCurrency(price, currency)}
                         </span>
                     )}
@@ -113,8 +112,8 @@ export function CartItem({
                 {/* Availability Warning */}
                 {!item.isAvailable && (
                     <div className="flex items-center gap-1 mt-1">
-                        <AlertCircle className="w-3 h-3 text-red-500" />
-                        <span className="text-xs text-red-500">
+                        <AlertCircle className="w-3 h-3 text-red-500 dark:text-red-400" />
+                        <span className="text-xs text-red-500 dark:text-red-400">
                             {item.variant.stock === 0 ? 'Out of stock' : 'Unavailable'}
                         </span>
                     </div>
@@ -122,7 +121,7 @@ export function CartItem({
 
                 {/* Stock Info */}
                 {item.isAvailable && item.variant.stock < 10 && (
-                    <p className="text-xs text-orange-600 mt-1">
+                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                         Only {item.variant.stock} left in stock
                     </p>
                 )}
@@ -170,7 +169,7 @@ export function CartItem({
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-red-500 hover:text-red-600"
+                                className="h-7 w-7 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
                                 onClick={onRemove}
                                 disabled={isLoading}
                             >

@@ -29,7 +29,6 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {EmptyState} from "@/components/ui/empty-state";
 import {ProductCard} from "@/components/product/product-card";
 
-// Review interface
 interface Review {
     id: string;
     rating: number;
@@ -40,7 +39,6 @@ interface Review {
     };
 }
 
-// Color mapping for variants (hardcoded)
 const COLOR_MAP: Record<string, string> = {
     black: "#000000",
     white: "#FFFFFF",
@@ -83,7 +81,6 @@ export default function ProductDetailPage() {
     const [quantity, setQuantity] = useState(1);
     const [relatedProducts, setRelatedProducts] = useState<ProductListItem[]>([]);
 
-    // Fetch product details
     useEffect(() => {
         const fetchProduct = async () => {
             setIsLoading(true);
@@ -91,7 +88,6 @@ export default function ProductDetailPage() {
                 const response = await ProductService.getProductBySlug(slug);
                 setProduct(response.data);
 
-                // Set default variant (first active variant)
                 const defaultVariant = response.data.variants?.find((v) => v.isActive);
                 if (defaultVariant) {
                     setSelectedVariant(defaultVariant);
@@ -107,7 +103,6 @@ export default function ProductDetailPage() {
         fetchProduct();
     }, [slug]);
 
-    // Fetch related products
     useEffect(() => {
         const fetchRelatedProducts = async () => {
             if (!product?.category?.slug) return;
@@ -118,7 +113,6 @@ export default function ProductDetailPage() {
                     limit: 4,
                 });
 
-                // Filter out current product
                 const filtered = response.data.filter((p) => p.id !== product.id);
                 setRelatedProducts(filtered);
             } catch (error) {
@@ -131,7 +125,6 @@ export default function ProductDetailPage() {
         }
     }, [product]);
 
-    // Get all images (product images + selected variant images)
     const getAllImages = (): ProductImage[] => {
         if (!product) return [];
 
@@ -146,12 +139,10 @@ export default function ProductDetailPage() {
 
     const allImages = getAllImages();
 
-    // Get variant-specific images start index
     const getVariantImageStartIndex = (): number => {
         return product?.images?.length || 0;
     };
 
-    // Calculate prices
     const basePrice = locale === "id" ? product?.idPrice : product?.enPrice;
     const hasActivePromotion = product?.promotion &&
         product.promotion.endDate &&
@@ -159,13 +150,10 @@ export default function ProductDetailPage() {
     const discount = hasActivePromotion && product?.promotion ? product.promotion.discount : 0;
     const finalPrice = basePrice ? basePrice * (1 - discount) : 0;
 
-    // Stock warning
     const stockWarning = selectedVariant && selectedVariant.stock < 10 && selectedVariant.stock > 0;
 
-    // Handlers
     const handleVariantSelect = (variant: ProductVariant) => {
         setSelectedVariant(variant);
-        // Jump to first variant image
         const variantStartIndex = getVariantImageStartIndex();
         setSelectedImageIndex(variantStartIndex);
     };
@@ -196,7 +184,6 @@ export default function ProductDetailPage() {
 
         try {
             await addToCart(selectedVariant.id, quantity);
-            // Success toast is handled in cart context
         } catch (error) {
             console.error("Failed to add to cart:", error);
         }
@@ -232,7 +219,7 @@ export default function ProductDetailPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-6 text-primary">
+        <div className="container mx-auto px-4 py-6 text-foreground">
             {/* Breadcrumb */}
             <Breadcrumb className="mb-6">
                 <BreadcrumbList>
@@ -262,12 +249,12 @@ export default function ProductDetailPage() {
 
             {/* Main Product Section */}
             <div className="grid grid-cols-1 lg:grid-cols-8 gap-16 mb-12">
-                {/* LEFT COLUMN: Images, Gallery, Description, Reviews (60% = 5 cols) */}
+                {/* LEFT COLUMN */}
                 <div className="lg:col-span-5 space-y-8">
                     {/* Main Image Gallery */}
                     <div className="flex gap-4">
-                        {/* Vertical Thumbnail Images on LEFT */}
-                        <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                        {/* Vertical Thumbnail Images */}
+                        <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px] pr-2 scrollbar-thin">
                             {allImages.map((image, index) => (
                                 <button
                                     key={image.id}
@@ -276,7 +263,7 @@ export default function ProductDetailPage() {
                                         "flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition",
                                         selectedImageIndex === index
                                             ? "border-primary ring-2 ring-primary ring-offset-2"
-                                            : "border-gray-200 hover:border-gray-300"
+                                            : "border-border hover:border-muted-foreground"
                                     )}
                                 >
                                     <Image
@@ -290,8 +277,8 @@ export default function ProductDetailPage() {
                             ))}
                         </div>
 
-                        {/* Main Image on RIGHT */}
-                        <div className="flex-1 relative aspect-square rounded-lg max-w-[300px] sm:max-w-[400px] md:max-w-[500px] mx-auto">
+                        {/* Main Image */}
+                        <div className="flex-1 relative aspect-square rounded-lg max-w-[300px] sm:max-w-[400px] md:max-w-[500px] mx-auto bg-muted">
                             {allImages.length > 0 && (
                                 <>
                                     <Image
@@ -302,7 +289,6 @@ export default function ProductDetailPage() {
                                         priority
                                     />
 
-                                    {/* Variant Badge */}
                                     {selectedVariant && selectedImageIndex >= getVariantImageStartIndex() && (
                                         <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
                                             {selectedVariant.variantName}
@@ -311,19 +297,18 @@ export default function ProductDetailPage() {
                                 </>
                             )}
 
-                            {/* Navigation Arrows */}
                             {allImages.length > 1 && (
                                 <>
                                     <button
                                         onClick={handlePrevImage}
-                                        className="absolute -left-16 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition"
+                                        className="absolute -left-16 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card p-2 rounded-full shadow-lg transition border border-border"
                                         aria-label="Previous image"
                                     >
                                         <ChevronLeft className="w-6 h-6" />
                                     </button>
                                     <button
                                         onClick={handleNextImage}
-                                        className="absolute -right-16 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition"
+                                        className="absolute -right-16 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card p-2 rounded-full shadow-lg transition border border-border"
                                         aria-label="Next image"
                                     >
                                         <ChevronRight className="w-6 h-6" />
@@ -333,9 +318,9 @@ export default function ProductDetailPage() {
                         </div>
                     </div>
 
-                    {/* Promotion Info - Separate Section */}
+                    {/* Promotion Info */}
                     {hasActivePromotion && product.promotion && (
-                        <Card className="bg-orange-500 text-white border-2 border-orange-500 shadow-md py-4">
+                        <Card className="bg-orange-500 dark:bg-orange-600 text-white border-2 border-orange-500 dark:border-orange-600 shadow-md py-4">
                             <CardContent className="p-0">
                                 <div className="flex items-center justify-between px-8">
                                     <div>
@@ -367,7 +352,7 @@ export default function ProductDetailPage() {
                                     {product.gallery.map((image) => (
                                         <div
                                             key={image.id}
-                                            className="relative w-[200px] sm:w-[240px] md:w-[280px] aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer flex-shrink-0"
+                                            className="relative w-[200px] sm:w-[240px] md:w-[280px] aspect-square rounded-lg overflow-hidden bg-muted group cursor-pointer flex-shrink-0"
                                         >
                                             <Image
                                                 src={image.imageUrl}
@@ -387,14 +372,13 @@ export default function ProductDetailPage() {
 
                     {/* Product Details Accordion */}
                     <Accordion type="single" collapsible defaultValue="description" className="w-full">
-                        {/* Description */}
                         <AccordionItem value="description">
                             <AccordionTrigger className="text-xl font-bold">
                                 {t.productDetail.description}
                             </AccordionTrigger>
                             <AccordionContent>
                                 <div
-                                    className="prose max-w-none"
+                                    className="prose dark:prose-invert max-w-none"
                                     dangerouslySetInnerHTML={{
                                         __html: locale === "id" ? product.idDescription : product.enDescription,
                                     }}
@@ -402,7 +386,6 @@ export default function ProductDetailPage() {
                             </AccordionContent>
                         </AccordionItem>
 
-                        {/* Reviews */}
                         <AccordionItem value="reviews">
                             <AccordionTrigger className="text-xl font-bold">
                                 {t.productDetail.reviews}{" "}
@@ -411,8 +394,7 @@ export default function ProductDetailPage() {
                             <AccordionContent>
                                 {product.reviews && product.reviews.length > 0 ? (
                                     <div className="space-y-6">
-                                        {/* Rating Summary */}
-                                        <div className="flex items-center gap-8 pb-6 border-b">
+                                        <div className="flex items-center gap-8 pb-6 border-b border-border">
                                             <div className="text-center">
                                                 <div className="text-5xl font-bold mb-2">{product.avgRating.toFixed(1)}</div>
                                                 <div className="flex items-center justify-center gap-1 mb-1">
@@ -423,21 +405,20 @@ export default function ProductDetailPage() {
                                                                 "w-5 h-5",
                                                                 star <= product.avgRating
                                                                     ? "fill-yellow-400 text-yellow-400"
-                                                                    : "text-gray-300"
+                                                                    : "text-muted"
                                                             )}
                                                         />
                                                     ))}
                                                 </div>
-                                                <div className="text-sm text-gray-600">
+                                                <div className="text-sm text-muted-foreground">
                                                     {t.productDetail.reviewsCount.replace("{count}", product.reviews.length.toString())}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Review List */}
                                         <div className="space-y-4">
                                             {(product.reviews as Review[]).map((review) => (
-                                                <div key={review.id} className="border-b pb-4 last:border-0">
+                                                <div key={review.id} className="border-b border-border pb-4 last:border-0">
                                                     <div className="flex items-start justify-between mb-2">
                                                         <div>
                                                             <p className="font-semibold">{review.user?.name || "Anonymous"}</p>
@@ -449,17 +430,17 @@ export default function ProductDetailPage() {
                                                                             "w-4 h-4",
                                                                             star <= review.rating
                                                                                 ? "fill-yellow-400 text-yellow-400"
-                                                                                : "text-gray-300"
+                                                                                : "text-muted"
                                                                         )}
                                                                     />
                                                                 ))}
                                                             </div>
                                                         </div>
-                                                        <span className="text-sm text-gray-500">
+                                                        <span className="text-sm text-muted-foreground">
                                                             {new Date(review.createdAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                    <p className="text-gray-700">{review.comment}</p>
+                                                    <p className="text-muted-foreground">{review.comment}</p>
                                                 </div>
                                             ))}
                                         </div>
@@ -475,7 +456,7 @@ export default function ProductDetailPage() {
                     </Accordion>
                 </div>
 
-                {/* RIGHT COLUMN: Sticky Product Info Card (40% = 3 cols) */}
+                {/* RIGHT COLUMN: Sticky Product Info Card */}
                 <div className="lg:col-span-3">
                     <Card className="sticky top-24">
                         <CardContent className="px-6 space-y-4">
@@ -492,16 +473,16 @@ export default function ProductDetailPage() {
                             </div>
 
                             {/* Product Name */}
-                            <h1 className="text-2xl font-bold uppercase text-primary">{product.name}</h1>
+                            <h1 className="text-2xl font-bold uppercase text-foreground">{product.name}</h1>
 
                             {/* Price */}
                             <div className="space-y-1">
                                 <div className="flex items-baseline gap-3">
-                                    <span className="text-2xl font-bold text-orange-500">
+                                    <span className="text-2xl font-bold text-orange-500 dark:text-orange-400">
                                         {formatCurrency(finalPrice, locale === "id" ? "IDR" : "USD")}
                                     </span>
                                     {hasActivePromotion && (
-                                        <span className="text-md text-gray-500 line-through">
+                                        <span className="text-md text-muted-foreground line-through">
                                             {formatCurrency(basePrice!, locale === "id" ? "IDR" : "USD")}
                                         </span>
                                     )}
@@ -511,7 +492,7 @@ export default function ProductDetailPage() {
                             {/* Stock Info */}
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-600">{t.productDetail.stock}:</span>
+                                    <span className="text-sm text-muted-foreground">{t.productDetail.stock}:</span>
                                     <span className="font-semibold">{selectedVariant?.stock || 0}</span>
                                 </div>
                                 {stockWarning && (
@@ -526,7 +507,7 @@ export default function ProductDetailPage() {
                                 <div className="space-y-3">
                                     <label className="text-sm font-semibold block">
                                         {t.productDetail.chooseColor}:{" "}
-                                        <span className="font-normal text-gray-600">{selectedVariant?.variantName}</span>
+                                        <span className="font-normal text-muted-foreground">{selectedVariant?.variantName}</span>
                                     </label>
                                     <div className="flex gap-3 flex-wrap">
                                         {product.variants
@@ -539,7 +520,7 @@ export default function ProductDetailPage() {
                                                         "w-8 h-8 rounded-full border-2 transition-all",
                                                         selectedVariant?.id === variant.id
                                                             ? "border-primary ring-2 ring-primary ring-offset-2"
-                                                            : "border-gray-300 hover:border-gray-400"
+                                                            : "border-border hover:border-muted-foreground"
                                                     )}
                                                     style={{ backgroundColor: getColorFromVariantName(variant.variantName) }}
                                                     title={variant.variantName}
@@ -553,11 +534,11 @@ export default function ProductDetailPage() {
                             {/* Quantity Selector */}
                             <div className="flex justify-between items-center space-x-4">
                                 <label className="text-sm font-semibold block">{t.productDetail.quantity}</label>
-                                <div className="flex items-center border rounded-lg w-fit">
+                                <div className="flex items-center border border-border rounded-lg w-fit">
                                     <button
                                         onClick={() => handleQuantityChange(-1)}
                                         disabled={quantity <= 1}
-                                        className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        className="p-3 hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         aria-label="Decrease quantity"
                                     >
                                         <Minus className="w-4 h-4" />
@@ -566,7 +547,7 @@ export default function ProductDetailPage() {
                                     <button
                                         onClick={() => handleQuantityChange(1)}
                                         disabled={quantity >= (selectedVariant?.stock || 0)}
-                                        className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        className="p-3 hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         aria-label="Increase quantity"
                                     >
                                         <Plus className="w-4 h-4" />
@@ -575,15 +556,14 @@ export default function ProductDetailPage() {
                             </div>
 
                             {/* Subtotal */}
-                            <div className="border-t pt-4 space-y-8">
+                            <div className="border-t border-border pt-4 space-y-8">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">{t.productDetail.subtotal}</span>
+                                    <span className="text-muted-foreground">{t.productDetail.subtotal}</span>
                                     <span className="text-2xl font-bold">
                                         {formatCurrency(finalPrice * quantity, locale === "id" ? "IDR" : "USD")}
                                     </span>
                                 </div>
 
-                                {/* Add to Cart Button */}
                                 <Button
                                     onClick={handleAddToCart}
                                     size="lg"
@@ -611,21 +591,20 @@ export default function ProductDetailPage() {
                 </div>
             )}
 
-            {/* Custom Scrollbar Styles */}
             <style jsx global>{`
                 .scrollbar-thin::-webkit-scrollbar {
                     width: 6px;
                 }
                 .scrollbar-thin::-webkit-scrollbar-track {
-                    background: #f1f1f1;
+                    background: hsl(var(--muted));
                     border-radius: 10px;
                 }
                 .scrollbar-thin::-webkit-scrollbar-thumb {
-                    background: #888;
+                    background: hsl(var(--muted-foreground));
                     border-radius: 10px;
                 }
                 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-                    background: #555;
+                    background: hsl(var(--foreground));
                 }
             `}</style>
         </div>

@@ -1,3 +1,4 @@
+// components/auth/login-form.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
-import { Loader2 } from "lucide-react";
+import {ArrowRight, Loader2} from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";
@@ -73,14 +74,12 @@ export default function LoginForm() {
         } catch (err) {
             const error = err as Error & { fieldErrors?: Record<string, string> };
 
-            // Display main error message
             const errorMessage = error.message || t.auth.login.loginFailed;
             toast.error(errorMessage, {
                 duration: 5000,
                 position: "top-center",
             });
 
-            // Display field-specific errors if available
             if (error.fieldErrors) {
                 Object.entries(error.fieldErrors).forEach(([field, message]) => {
                     toast.error(`${field}: ${message}`, {
@@ -98,8 +97,8 @@ export default function LoginForm() {
 
     return (
         <>
-            <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-                <Card className="w-full max-w-md shadow-md">
+            <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+                <Card className="w-full max-w-md">
                     <CardHeader>
                         <CardTitle className="text-2xl">{t.auth.login.title}</CardTitle>
                         <CardDescription>
@@ -147,15 +146,18 @@ export default function LoginForm() {
                         </CardContent>
 
                         <CardFooter className="flex flex-col space-y-4">
-                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            <Button type="submit" variant="secondary" className="w-full" disabled={isSubmitting}>
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        {t.auth.login.signingIn}
+                                        <h3 className="text-base">{t.auth.login.signingIn}</h3>
                                     </>
                                 ) : (
-                                    t.auth.login.signInButton
-                                )}
+                                    <>
+                                        <h3 className="text-base">{t.auth.login.signInButton}</h3>
+                                        <ArrowRight />
+                                    </>
+                                    )}
                             </Button>
 
                             <p className="text-sm text-center text-muted-foreground">

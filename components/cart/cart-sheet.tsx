@@ -73,6 +73,7 @@ export function CartSheet({ className }: CartSheetProps) {
                     size="icon"
                     className={cn("relative", className)}
                     aria-label="Cart"
+                    onClick={(e) => (e.currentTarget as HTMLElement).blur()}
                 >
                     <ShoppingCart className="w-5 h-5" />
                     {cartItemsCount > 0 && (
@@ -86,8 +87,8 @@ export function CartSheet({ className }: CartSheetProps) {
                 </Button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-full sm:w-[400px] flex flex-col p-0">
-                <SheetHeader className="px-6 py-4 border-b">
+            <SheetContent side="right" className="w-full sm:w-[400px] flex flex-col p-0 bg-card">
+                <SheetHeader className="px-6 py-4 border-b border-border">
                     <SheetTitle>{t.cart.title}</SheetTitle>
                     <SheetDescription>
                         {isEmpty
@@ -98,8 +99,8 @@ export function CartSheet({ className }: CartSheetProps) {
 
                 {isEmpty ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-6">
-                        <Package className="w-16 h-16 text-gray-300 mb-4" />
-                        <p className="text-gray-500 text-center mb-4">{t.cart.emptyMessage}</p>
+                        <Package className="w-16 h-16 text-muted mb-4" />
+                        <p className="text-muted-foreground text-center mb-4">{t.cart.emptyMessage}</p>
                         <Button
                             onClick={() => {
                                 setIsCartOpen(false);
@@ -114,7 +115,6 @@ export function CartSheet({ className }: CartSheetProps) {
                         <ScrollArea className="flex-1 px-6 max-h-[55vh]" aria-orientation={"vertical"}>
                             <div className="space-y-4">
                                 {isAuthenticated && cart ? (
-                                    // Authenticated user cart
                                     cart.items.map((item) => (
                                         <CartItem
                                             key={item.id}
@@ -127,7 +127,6 @@ export function CartSheet({ className }: CartSheetProps) {
                                         />
                                     ))
                                 ) : (
-                                    // Guest cart with product details
                                     guestCartWithDetails.map((item) => {
                                         const imageUrl =
                                             item.variant?.imageUrl ||
@@ -147,9 +146,8 @@ export function CartSheet({ className }: CartSheetProps) {
                                         return (
                                             <div
                                                 key={item.variantId}
-                                                className="flex gap-3 p-3 rounded-lg border"
+                                                className="flex gap-3 p-3 rounded-lg border border-border"
                                             >
-                                                {/* Image */}
                                                 <Link
                                                     href={`/products/${item.product?.slug}`}
                                                     className="relative w-16 h-16 flex-shrink-0"
@@ -170,7 +168,6 @@ export function CartSheet({ className }: CartSheetProps) {
                                                     )}
                                                 </Link>
 
-                                                {/* Product details */}
                                                 <div className="flex-1 min-w-0">
                                                     <Link
                                                         href={`/products/${item.product?.slug}`}
@@ -179,22 +176,21 @@ export function CartSheet({ className }: CartSheetProps) {
                                                         {item.product?.name || "Product"}
                                                     </Link>
 
-                                                    <p className="text-xs text-gray-500 mt-0.5">
+                                                    <p className="text-xs text-muted-foreground mt-0.5">
                                                         {item.variant?.variantName || ""}
                                                     </p>
 
                                                     <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-sm font-semibold">
-                                                      {formatCurrency(finalPrice, currency)}
-                                                    </span>
+                                                        <span className="text-sm font-semibold">
+                                                          {formatCurrency(finalPrice, currency)}
+                                                        </span>
                                                         {discount > 0 && (
-                                                            <span className="text-xs text-gray-400 line-through">
+                                                            <span className="text-xs text-muted-foreground line-through">
                                                                 {formatCurrency(price, currency)}
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    {/* Quantity controls */}
                                                     <div className="flex items-center gap-1 mt-2">
                                                         <Button
                                                             variant="outline"
@@ -236,11 +232,10 @@ export function CartSheet({ className }: CartSheetProps) {
                                                     </div>
                                                 </div>
 
-                                                {/* Remove button */}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 text-red-500 hover:text-red-600"
+                                                    className="h-7 w-7 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
                                                     onClick={() => removeFromCart("", item.variantId)}
                                                     disabled={isLoading}
                                                 >
@@ -253,10 +248,10 @@ export function CartSheet({ className }: CartSheetProps) {
                             </div>
 
                             {hasUnavailableItems && (
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                                <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
                                     <div className="flex items-start gap-2">
-                                        <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-                                        <p className="text-sm text-yellow-800">
+                                        <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
                                             Some items in your cart are unavailable or out of stock.
                                             Please review before checkout.
                                         </p>
@@ -265,18 +260,16 @@ export function CartSheet({ className }: CartSheetProps) {
                             )}
                         </ScrollArea>
 
-                        <SheetFooter className="border-t p-6 space-y-4">
-                            {/* Summary */}
+                        <SheetFooter className="border-t border-border p-6 space-y-4">
                             <div className="w-full space-y-2">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Subtotal</span>
+                                    <span className="text-muted-foreground">Subtotal</span>
                                     <span className="font-semibold">
                                         {formatCurrency(cartSubtotal, currency)}
                                       </span>
                                 </div>
                             </div>
 
-                            {/* Actions */}
                             <div className="space-y-2 pt-2">
                                 <Button
                                     className="w-full"

@@ -1,3 +1,4 @@
+// components/auth/register-form.tsx
 "use client";
 
 import { useState } from "react";
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
-import { Loader2 } from "lucide-react";
+import {ArrowRight, Loader2} from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";
@@ -83,7 +84,6 @@ export default function RegisterForm() {
         setIsSubmitting(true);
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { confirm_password: _, ...registerData } = formData;
             await register(registerData);
             toast.success(t.auth.register.accountCreated, {
@@ -93,14 +93,12 @@ export default function RegisterForm() {
         } catch (err) {
             const error = err as Error & { fieldErrors?: Record<string, string> };
 
-            // Display main error message
             const errorMessage = error.message || t.auth.register.registrationFailed;
             toast.error(errorMessage, {
                 duration: 5000,
                 position: "top-center",
             });
 
-            // Display field-specific errors if available
             if (error.fieldErrors) {
                 Object.entries(error.fieldErrors).forEach(([field, message]) => {
                     toast.error(`${field}: ${message}`, {
@@ -116,8 +114,8 @@ export default function RegisterForm() {
 
     return (
         <>
-            <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4 py-8">
-                <Card className="w-full max-w-2xl shadow-md">
+            <div className="flex items-center justify-center min-h-screen bg-muted/30 px-4 py-8">
+                <Card className="w-full max-w-3xl">
                     <CardHeader>
                         <CardTitle className="text-2xl">{t.auth.register.title}</CardTitle>
                         <CardDescription>
@@ -244,7 +242,6 @@ export default function RegisterForm() {
                                     <Label htmlFor="password">
                                         {t.auth.register.passwordLabel} <span className="text-red-500">*</span>
                                     </Label>
-                                    {/* <-- 2. Ganti Input dengan PasswordInput */}
                                     <PasswordInput
                                         id="password"
                                         name="password"
@@ -260,7 +257,6 @@ export default function RegisterForm() {
                                     <Label htmlFor="confirm_password">
                                         {t.auth.register.confirmPasswordLabel} <span className="text-red-500">*</span>
                                     </Label>
-                                    {/* <-- 3. Ganti Input dengan PasswordInput */}
                                     <PasswordInput
                                         id="confirm_password"
                                         name="confirm_password"
@@ -286,14 +282,17 @@ export default function RegisterForm() {
                         </CardContent>
 
                         <CardFooter className="flex flex-col space-y-4">
-                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            <Button type="submit" variant="secondary" className="w-full" disabled={isSubmitting}>
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        {t.auth.register.creatingAccount}
+                                        <h3 className="text-base">{t.auth.register.creatingAccount}</h3>
                                     </>
                                 ) : (
-                                    t.auth.register.createAccountButton
+                                    <>
+                                        <h3 className="text-base">{t.auth.register.createAccountButton}</h3>
+                                        <ArrowRight />
+                                    </>
                                 )}
                             </Button>
 

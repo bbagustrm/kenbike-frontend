@@ -31,7 +31,7 @@ export function SortSelect({ value, onChange }: SortSelectProps) {
             <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder={t.search.sortBy} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-[200px]">
                 {sortOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                         {option.label}

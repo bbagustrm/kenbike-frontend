@@ -200,7 +200,7 @@ export default function AdminSettingsPage() {
                                                 src={getDisplayImage()}
                                                 alt={user.username}
                                             />
-                                            <AvatarFallback className="text-2xl">
+                                            <AvatarFallback className="text-2xl bg-secondary/50">
                                                 {getUserInitials(user)}
                                             </AvatarFallback>
                                         </Avatar>
@@ -214,7 +214,7 @@ export default function AdminSettingsPage() {
                                     <div className="flex-1 space-y-3">
                                         <div className="flex flex-wrap gap-2">
                                             <Label htmlFor="profile_image" className="cursor-pointer">
-                                                <div className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                                                <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-md">
                                                     <Upload className="h-4 w-4" />
                                                     {selectedImage ? t.profile.buttons.changePhoto : t.profile.buttons.uploadPhoto}
                                                 </div>

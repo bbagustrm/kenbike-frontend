@@ -8,7 +8,6 @@ import { useTranslation } from "@/hooks/use-translation";
 export default function Footer() {
   const { t, locale } = useTranslation();
 
-
   const productCategories = [
     { name: "Stang", href: "/products/stang" },
     { name: "Rack", href: "/products/rack" },
@@ -30,12 +29,12 @@ export default function Footer() {
   ];
 
   const socialMedia = [
-    { name: "Facebook", icon: Facebook, href: "https://www.facebook.com/kenbike.632277/", color: "hover:text-blue-600" },
-    { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/kenbike.id/", color: "hover:text-pink-600" },
+    { name: "Facebook", icon: Facebook, href: "https://www.facebook.com/kenbike.632277/", color: "hover:text-blue-600 dark:hover:text-blue-400" },
+    { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/kenbike.id/", color: "hover:text-pink-600 dark:hover:text-pink-400" },
   ];
 
   return (
-      <footer className="w-full border-t bg-gray-50 text-gray-800">
+      <footer className="w-full border-t border-border bg-background text-foreground">
         {/* Main Footer Content */}
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
@@ -44,7 +43,7 @@ export default function Footer() {
               <Link href="/" className="inline-block mb-4">
                 <Image src="/logo.svg" alt="Kenbike Logo" width={160} height={160} />
               </Link>
-              <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 {locale === "id"
                     ? "Kenbike menyediakan komponen sepeda berkualitas tinggi untuk para penggemar sepeda di Indonesia. Kami berkomitmen memberikan produk terbaik dengan harga terjangkau."
                     : "Kenbike provides high-quality bike components for cycling enthusiasts in Indonesia. We are committed to delivering the best products at affordable prices."}
@@ -53,22 +52,22 @@ export default function Footer() {
               {/* Contact Info */}
               <div className="space-y-2 text-sm">
                 <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-600" />
-                  <span className="text-gray-600">
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                  <span className="text-muted-foreground">
                   {locale === "id"
                       ? "Jl. Contoh No. 123, Jakarta Selatan, Indonesia 12345"
                       : "Jl. Contoh No. 123, South Jakarta, Indonesia 12345"}
                 </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 flex-shrink-0 text-gray-600" />
-                  <a href="tel:+6281234567890" className="text-gray-600 hover:text-primary">
+                  <Phone className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+                  <a href="tel:+6281234567890" className="text-muted-foreground hover:text-primary transition-colors">
                     +62 812-3456-7890
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 flex-shrink-0 text-gray-600" />
-                  <a href="mailto:info@kenbike.com" className="text-gray-600 hover:text-primary">
+                  <Mail className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+                  <a href="mailto:info@kenbike.com" className="text-muted-foreground hover:text-primary transition-colors">
                     info@kenbike.com
                   </a>
                 </div>
@@ -84,7 +83,7 @@ export default function Footer() {
                           href={social.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`w-10 h-10 rounded-full bg-white border flex items-center justify-center transition-colors ${social.color}`}
+                          className={`w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center transition-colors ${social.color}`}
                           aria-label={social.name}
                       >
                         <social.icon className="w-5 h-5" />
@@ -102,7 +101,7 @@ export default function Footer() {
                     <li key={item.name}>
                       <Link
                           href={item.href}
-                          className="text-sm text-gray-600 hover:text-primary transition-colors"
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         {item.name}
                       </Link>
@@ -119,7 +118,7 @@ export default function Footer() {
                     <li key={item.name}>
                       <Link
                           href={item.href}
-                          className="text-sm text-gray-600 hover:text-primary transition-colors"
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         {item.name}
                       </Link>
@@ -136,7 +135,7 @@ export default function Footer() {
                     <li key={item.name}>
                       <Link
                           href={item.href}
-                          className="text-sm text-gray-600 hover:text-primary transition-colors"
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
                       >
                         {item.name}
                       </Link>
@@ -147,7 +146,7 @@ export default function Footer() {
           </div>
 
           {/* Payment & Marketplace */}
-          <div className="mt-12 pt-8 border-t">
+          <div className="mt-12 pt-8 border-t border-border">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Domestic Stores */}
               <div>
@@ -159,7 +158,7 @@ export default function Footer() {
                       href="https://www.tokopedia.com/kenbike"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:border-primary hover:shadow-sm transition-all"
+                      className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all bg-card"
                   >
                     <Image src="/ic-tokopedia.svg" alt="Tokopedia" width={24} height={24} />
                     <span className="text-sm font-medium">Tokopedia</span>
@@ -168,7 +167,7 @@ export default function Footer() {
                       href="https://shopee.co.id/kenbike.id"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:border-primary hover:shadow-sm transition-all"
+                      className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all bg-card"
                   >
                     <Image src="/ic-shopee.svg" alt="Shopee" width={24} height={24} />
                     <span className="text-sm font-medium">Shopee</span>
@@ -201,9 +200,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar - Copyright */}
-        <div className="border-t bg-gray-100">
+        <div className="border-t border-border bg-muted/50">
           <div className="container mx-auto px-4 py-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
               <p>
                 © {new Date().getFullYear()} Kenbike. {t.footer.copyright}.
               </p>

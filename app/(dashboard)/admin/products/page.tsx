@@ -357,7 +357,7 @@ export default function AdminProductsPage() {
                     </SelectContent>
                 </Select>
 
-                <Button onClick={() => router.push("/admin/products/new")}>
+                <Button onClick={() => router.push("/admin/products/new")} variant="secondary">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product
                 </Button>
@@ -375,7 +375,7 @@ export default function AdminProductsPage() {
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg bg-background">
+                    <div className="border rounded-sm bg-white">
                         <Table>
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">
