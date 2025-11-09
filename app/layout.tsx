@@ -1,26 +1,31 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Raleway, Poppins, JetBrains_Mono } from 'next/font/google';
+import localFont from "next/font/local";
+import { Lato, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { TranslationProvider } from "@/contexts/translation-context";
+import { CartProvider } from "@/contexts/cart-context";
+import { Toaster } from "sonner";
 import "./globals.css";
-import { Toaster } from 'sonner';
-import {CartProvider} from "@/contexts/cart-context";
 
-const raleway = Raleway({
-    subsets: ['latin'],
-    weight: ['600'],
-    variable: '--display-family',
+
+const druk = localFont({
+    src: "../public/fonts/Druk.woff",
+    variable: "--font-display",
+    display: "swap",
 });
-const poppins = Poppins({
-    subsets: ['latin'],
-    weight: ['400'],
-    variable: '--body-family',
+
+const lato = Lato({
+    subsets: ["latin"],
+    weight: ["300", "400", "700"],
+    variable: "--font-body",
 });
-const jetbrains_mono = JetBrains_Mono({
-    subsets: ['latin'],
-    weight: ['400'],
-    variable: '--font-mono',
+
+const jetbrains = JetBrains_Mono({
+    subsets: ["latin"],
+    weight: ["400", "600"],
+    variable: "--font-mono",
+    display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -28,12 +33,10 @@ export const metadata: Metadata = {
     description: "Quality bike components for cycling enthusiasts",
 };
 
-export default function RootLayout({ children, }: Readonly<{
-    children: ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: ReactNode }) {
     return (
-        <html lang="id" >
-        <body className={`${raleway.variable} ${poppins.variable} ${jetbrains_mono.variable}`}>
+        <html lang="id" className={`${druk.variable} ${lato.variable} ${jetbrains.variable}`}>
+        <body className="font-body bg-white text-foreground">
         <AuthProvider>
             <CartProvider>
                 <TranslationProvider>

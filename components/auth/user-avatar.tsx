@@ -29,7 +29,6 @@ import Link from "next/link";
 export function UserAvatar() {
     const { user, logout } = useAuth();
 
-    // ✅ Early return jika user belum ada
     if (!user) return null;
 
     const handleLogout = async () => {
@@ -43,7 +42,7 @@ export function UserAvatar() {
             case "OWNER":
                 return "bg-purple-100 text-purple-700 border-purple-200";
             default:
-                return "bg-gray-100 text-gray-700 border-gray-200";
+                return "bg-muted text-muted-foreground border-border";
         }
     };
 
@@ -56,7 +55,7 @@ export function UserAvatar() {
                             src={getImageUrl(user.profile_image)}
                             alt={user.username}
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground">
                             {getUserInitials(user)}
                         </AvatarFallback>
                     </Avatar>
@@ -71,7 +70,7 @@ export function UserAvatar() {
                 </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 bg-card border-border">
                 <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">
@@ -195,7 +194,10 @@ export function UserAvatar() {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-red-600 focus:text-red-300 hover:bg-red-300 hover:text-primary dark:hover:bg-red-300 dark:hover:text-primary  transition-colors "
+                >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                 </DropdownMenuItem>

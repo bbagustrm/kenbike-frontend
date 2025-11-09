@@ -329,14 +329,14 @@ export default function AdminUsersPage() {
                     </SelectContent>
                 </Select>
 
-                <Button onClick={handleCreateUser}>
+                <Button onClick={handleCreateUser} variant="secondary">
                     <UserPlus className="mr-2 h-4 w-4" />
                     Add User
                 </Button>
             </div>
 
             <TooltipProvider>
-                <div className="border rounded-lg bg-background">
+                <div className="border rounded-sm bg-white">
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">

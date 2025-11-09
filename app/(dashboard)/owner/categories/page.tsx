@@ -368,7 +368,7 @@ export default function OwnerCategoriesPage() {
                     <Button type="submit">Search</Button>
                 </form>
 
-                <Button onClick={handleOpenCreateDialog}>
+                <Button onClick={handleOpenCreateDialog} variant="secondary">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Category
                 </Button>
@@ -388,7 +388,7 @@ export default function OwnerCategoriesPage() {
                 </TabsList>
 
                 <TabsContent value={activeTab} className="mt-6">
-                    <div className="border rounded-lg bg-background">
+                    <div className="border rounded-sm bg-white">
                         <Table>
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">

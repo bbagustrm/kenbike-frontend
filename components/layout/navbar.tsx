@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useTranslation } from "@/hooks/use-translation";
-import { CartSheet } from "@/components/cart/cart-sheet"; // ADD THIS
+import { CartSheet } from "@/components/cart/cart-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,6 @@ export default function Navbar() {
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Search data
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<TagType[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -73,7 +72,6 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<ProductListItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Mock notifications count
   const notificationsCount = 5;
 
   const pages = [
@@ -81,7 +79,6 @@ export default function Navbar() {
     { name: "All Products", href: "/search", icon: Package },
   ];
 
-  // Reset search when dialog closes
   useEffect(() => {
     if (!isSearchOpen) {
       setSearchQuery("");
@@ -89,7 +86,6 @@ export default function Navbar() {
     }
   }, [isSearchOpen]);
 
-  // Fetch categories, tags, promotions on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -111,7 +107,6 @@ export default function Navbar() {
     fetchData();
   }, []);
 
-  // Search products when query changes
   useEffect(() => {
     const searchProducts = async () => {
       if (!searchQuery || searchQuery.length < 2) {
@@ -152,7 +147,6 @@ export default function Navbar() {
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
-  // Filter functions
   const getFilteredCategories = () => {
     if (!searchQuery) return categories;
     const query = searchQuery.toLowerCase();
@@ -243,7 +237,7 @@ export default function Navbar() {
   return (
       <>
         {/* Top Bar */}
-        <div className="sticky top-0 z-50 bg-white w-full border-b">
+        <div className="sticky top-0 z-50 bg-card border-b border-border">
           <div className="container mx-auto flex items-center justify-between py-3 px-4">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
@@ -254,13 +248,13 @@ export default function Navbar() {
             <div className="hidden md:flex flex-1 justify-center px-6">
               <Button
                   variant="outline"
-                  className="relative w-full max-w-xl justify-start text-sm font-normal text-muted-foreground shadow-none"
+                  className="relative w-full max-w-xl justify-start text-sm font-normal"
                   onClick={() => setIsSearchOpen(true)}
                   size="lg"
               >
                 <Search className="mr-2 h-4 w-4" />
                 {t.search.placeholder}
-                <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
                   <span className="text-xs">⌘</span>K
                 </kbd>
               </Button>
@@ -268,7 +262,64 @@ export default function Navbar() {
 
             {/* Right Icons - Desktop */}
             <div className="hidden md:flex items-center gap-4">
-              {/* Notifications */}
+              <div className="flex items-center gap-2 bg-background rounded-full p-1 border shadow-xs border-border">
+                {isAuthenticated && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="relative"
+                            aria-label="Notifications"
+                        >
+                          <Bell className="w-7 h-7" />
+                          {notificationsCount > 0 && (
+                              <Badge
+                                  variant="destructive"
+                                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                              >
+                                {notificationsCount}
+                              </Badge>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 bg-card" align="end">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold">{t.notifications.title}</h4>
+                            <Button variant="ghost" size="sm" className="text-xs">
+                              {t.notifications.markAllRead}
+                            </Button>
+                          </div>
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
+                            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer">
+                              <p className="text-sm font-medium">{t.notifications.orderProcessing}</p>
+                              <p className="text-xs text-muted-foreground mt-1">Order #12345 - 2 {t.common.minutesAgo}</p>
+                            </div>
+                          </div>
+                          <Button variant="outline" className="w-full" size="sm">
+                            {t.notifications.viewAll}
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                )}
+                <CartSheet />
+              </div>
+              {isAuthenticated ? (
+                  <UserAvatar />
+              ) : (
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" className="min-w-20 px-4 font-medium" asChild>
+                      <Link href="/login">{t.auth.titleLogin}</Link>
+                    </Button>
+                    <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-medium">
+                      <Link href="/register">{t.auth.titleRegister}</Link>
+                    </Button>
+                  </div>
+              )}
+            </div>
+            <div className="flex items-center md:hidden gap-2 bg-background rounded-full p-1.5 ">
               {isAuthenticated && (
                   <Popover>
                     <PopoverTrigger asChild>
@@ -278,7 +329,7 @@ export default function Navbar() {
                           className="relative"
                           aria-label="Notifications"
                       >
-                        <Bell className="w-5 h-5" />
+                        <Bell className="w-7 h-7" />
                         {notificationsCount > 0 && (
                             <Badge
                                 variant="destructive"
@@ -289,7 +340,7 @@ export default function Navbar() {
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80" align="end">
+                    <PopoverContent className="w-80 bg-card" align="end">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold">{t.notifications.title}</h4>
@@ -298,9 +349,9 @@ export default function Navbar() {
                           </Button>
                         </div>
                         <div className="space-y-2 max-h-96 overflow-y-auto">
-                          <div className="p-3 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer">
+                          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer">
                             <p className="text-sm font-medium">{t.notifications.orderProcessing}</p>
-                            <p className="text-xs text-gray-500 mt-1">Order #12345 - 2 {t.common.minutesAgo}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Order #12345 - 2 {t.common.minutesAgo}</p>
                           </div>
                         </div>
                         <Button variant="outline" className="w-full" size="sm">
@@ -310,36 +361,15 @@ export default function Navbar() {
                     </PopoverContent>
                   </Popover>
               )}
-
-              {/* Cart - REPLACE OLD CART WITH CartSheet */}
-              <CartSheet />
-
-              {/* User Menu */}
-              {isAuthenticated ? (
-                  <UserAvatar />
-              ) : (
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" className="min-w-20 px-4 font-medium" asChild>
-                      <Link href="/login">
-                        {t.auth.titleLogin}
-                      </Link>
-                    </Button>
-                    <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-medium">
-                      <Link href="/register">{t.auth.titleRegister}</Link>
-                    </Button>
-                  </div>
-              )}
+              {/* Mobile Menu Button */}
+              <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
             </div>
-
-            {/* Mobile Menu Button */}
-            <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
           </div>
 
           {/* Search Button - Mobile */}
@@ -358,7 +388,7 @@ export default function Navbar() {
         {/* Bottom Navigation Bar - Desktop */}
         <div
             className={cn(
-                "hidden md:block border-b bg-white transition-all duration-300",
+                "hidden md:block border-b border-border bg-card transition-all duration-300",
                 isBottomNavVisible
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 -translate-y-full pointer-events-none"
@@ -371,7 +401,7 @@ export default function Navbar() {
                   <Link
                       key={item.href}
                       href={item.href}
-                      className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                      className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                   >
                     {item.name}
                   </Link>
@@ -379,7 +409,7 @@ export default function Navbar() {
             </div>
 
             <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
-              <SelectTrigger className="w-[150px] shadow-none ml-4 flex-shrink-0">
+              <SelectTrigger className="w-[150px] shadow-none ml-4 flex-shrink-0 bg-card">
                 <div className="flex items-center gap-3">
                   <Image
                       src={locale === "id" ? "/ic-flag-id.svg" : "/ic-flag-uk.svg"}
@@ -391,7 +421,7 @@ export default function Navbar() {
                   <span>{locale === "id" ? "Indonesia" : "English"}</span>
                 </div>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card">
                 <SelectItem value="id">
                   <div className="flex items-center gap-3">
                     <Image src="/ic-flag-id.svg" alt="Indonesia" width={20} height={20} className="rounded-sm" />
@@ -411,10 +441,10 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-            <div className="md:hidden border-t bg-white">
+            <div className="md:hidden border-t border-border bg-card">
               <div className="container mx-auto py-4 px-4 space-y-4">
                 {isAuthenticated ? (
-                    <div className="flex items-center gap-3 pb-4 border-b">
+                    <div className="flex items-center gap-3 pb-4 border-b border-border">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user?.profile_image} />
                         <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
@@ -423,11 +453,11 @@ export default function Navbar() {
                         <p className="text-sm font-medium">
                           {user?.first_name} {user?.last_name}
                         </p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
+                        <p className="text-xs text-muted-foreground">{user?.email}</p>
                       </div>
                     </div>
                 ) : (
-                    <div className="flex gap-2 pb-4 border-b">
+                    <div className="flex gap-2 pb-4 border-b border-border">
                       <Button variant="outline" className="flex-1" asChild>
                         <Link href="/login">{t.auth.titleLogin}</Link>
                       </Button>
@@ -451,10 +481,10 @@ export default function Navbar() {
                 </nav>
 
                 {isAuthenticated && (
-                    <div className="pt-4 border-t space-y-2">
+                    <div className="pt-4 border-t border-border space-y-2">
                       <button
                           onClick={handleLogout}
-                          className="flex items-center gap-3 py-2 text-sm text-red-600 w-full"
+                          className="flex items-center gap-3 py-2 text-sm text-red-600 dark:text-red-400 w-full"
                       >
                         <LogOut className="h-4 w-4" />
                         {t.user.logout}
@@ -462,9 +492,9 @@ export default function Navbar() {
                     </div>
                 )}
 
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t border-border">
                   <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full bg-card">
                       <div className="flex items-center gap-3">
                         <Image
                             src={locale === "id" ? "/ic-flag-id.svg" : "/ic-flag-uk.svg"}
@@ -476,7 +506,7 @@ export default function Navbar() {
                         <span>{locale === "id" ? "Indonesia" : "English"}</span>
                       </div>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card">
                       <SelectItem value="id">
                         <div className="flex items-center gap-3">
                           <Image src="/ic-flag-id.svg" alt="Indonesia" width={20} height={20} className="rounded-sm" />
@@ -496,7 +526,7 @@ export default function Navbar() {
             </div>
         )}
 
-        {/* Enhanced Command Dialog for Search */}
+        {/* Command Dialog for Search */}
         <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
           <CommandInput
               placeholder="Search products, categories, tags..."
@@ -614,6 +644,11 @@ export default function Navbar() {
             )}
           </CommandList>
         </CommandDialog>
+
+        {/* Floating Cart Button - Mobile */}
+        <div className="bg-accent rounded-full fixed bottom-5 right-5 z-50 md:hidden">
+          <CartSheet />
+        </div>
 
         <style jsx global>{`
           .scrollbar-hide::-webkit-scrollbar {

@@ -474,10 +474,10 @@ export default function OwnerPromotionsPage() {
                             className="pl-10"
                         />
                     </div>
-                    <Button type="submit" variant="secondary">Search</Button>
+                    <Button type="submit">Search</Button>
                 </form>
 
-                <Button onClick={() => router.push("/owner/promotions/new")}>
+                <Button onClick={() => router.push("/owner/promotions/new")} variant="secondary">
                     <Plus className="mr-2 h-4 w-4" />
                     New Promotion
                 </Button>
@@ -498,7 +498,7 @@ export default function OwnerPromotionsPage() {
                 </TabsList>
 
                 <TabsContent value={activeTab} className="space-y-4">
-                    <div className="rounded-lg border bg-card">
+                    <div className="rounded-sm border bg-card">
                         <Table>
                             <TableHeader>
                                 <TableRow>

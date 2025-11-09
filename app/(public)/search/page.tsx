@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, SlidersHorizontal } from "lucide-react";
+import { Loader2, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/product/product-card";
@@ -27,6 +27,7 @@ function SearchPageContent() {
     const [totalPages, setTotalPages] = useState(0);
     const [total, setTotal] = useState(0);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+    const [isFilterVisible, setIsFilterVisible] = useState(true);
 
     // Get params from URL
     const searchQuery = searchParams.get("search") || "";
@@ -75,14 +76,12 @@ function SearchPageContent() {
 
                 let filteredProducts = response.data;
 
-                // Filter by promotion ID if specified
                 if (promotionId) {
                     filteredProducts = filteredProducts.filter(
                         (p) => p.promotion?.id === promotionId
                     );
                 }
 
-                // Client-side filter for available stock only
                 if (filters.availableOnly) {
                     filteredProducts = filteredProducts.filter(
                         (p) => getTotalStock(p.variants) > 0
@@ -114,7 +113,6 @@ function SearchPageContent() {
             }
         });
 
-        // Reset to page 1 when filters change
         if (!params.page) {
             newParams.set("page", "1");
         }
@@ -224,59 +222,14 @@ function SearchPageContent() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* Page Header */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h1 className="text-3xl font-bold mb-2">
-                            {searchQuery ? `Search results for "${searchQuery}"` :
-                                hasPromotion ? "Special Promotions" :
-                                    categorySlug ? "Products" :
-                                        "All Products"}
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            {isLoading ? (
-                                <span>{t.common.loading}</span>
-                            ) : (
-                                <span>
-                                    {total} {total === 1 ? "product" : "products"} found
-                                </span>
-                            )}
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {/* Mobile Filter Button */}
-                        <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
-                            <SheetTrigger asChild>
-                                <Button variant="outline" size="sm" className="lg:hidden">
-                                    <SlidersHorizontal className="h-4 w-4 mr-2" />
-                                    Filters
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                                <SheetHeader>
-                                    <SheetTitle>Filters</SheetTitle>
-                                </SheetHeader>
-                                <div className="mt-6">
-                                    <FilterSidebar
-                                        filters={filters}
-                                        onFilterChange={handleFilterChange}
-                                        onClose={() => setIsMobileFilterOpen(false)}
-                                    />
-                                </div>
-                            </SheetContent>
-                        </Sheet>
-
-                        <SortSelect value={sortParam} onChange={handleSortChange} />
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Desktop Filter Sidebar */}
-                <aside className="hidden lg:block">
+            {/* Main Content - Two Column Layout */}
+            <div className="flex">
+                {/* Desktop Filter Sidebar - Collapsible */}
+                <aside
+                    className={`hidden lg:block mr-12 transition-all duration-300 ${
+                        isFilterVisible ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'
+                    }`}
+                >
                     <div className="sticky top-24">
                         <FilterSidebar
                             filters={filters}
@@ -285,21 +238,119 @@ function SearchPageContent() {
                     </div>
                 </aside>
 
-                {/* Product Grid */}
-                <div className="lg:col-span-3">
+                {/* Right Content Area */}
+                <div className="flex-1">
+                    {/* Header with Filter Toggle, Title and Sort */}
+                    <div className="mb-6">
+                        <div className="flex items-start justify-between gap-4">
+                            {/* Left Side: Filter Toggle + Title */}
+                            <div className="flex items-start gap-3 flex-1">
+                                {/* Desktop Filter Toggle */}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsFilterVisible(!isFilterVisible)}
+                                    className="hidden lg:flex mt-1 shrink-0"
+                                >
+                                    {isFilterVisible ? (
+                                        <X className="h-4 w-4" />
+                                    ) : (
+                                        <SlidersHorizontal className="h-4 w-4" />
+                                    )}
+                                </Button>
+
+                                {/* Mobile Filter Toggle */}
+                                <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
+                                    <SheetTrigger asChild>
+                                        <Button variant="outline" size="sm" className="lg:hidden mt-1 shrink-0">
+                                            <SlidersHorizontal className="h-4 w-4 mr-2" />
+                                            Filters
+                                        </Button>
+                                    </SheetTrigger>
+                                    <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-card">
+                                        <SheetHeader>
+                                            <SheetTitle>Filters</SheetTitle>
+                                        </SheetHeader>
+                                        <div className="mt-6">
+                                            <FilterSidebar
+                                                filters={filters}
+                                                onFilterChange={handleFilterChange}
+                                                onClose={() => setIsMobileFilterOpen(false)}
+                                            />
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
+
+                                {/* Title and Count */}
+                                <div className="flex-1 min-w-0">
+                                    <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-foreground">
+                                        {searchQuery
+                                            ? `Search results for "${searchQuery}"`
+                                            : "All Products"}
+                                    </h1>
+
+                                    {/* Active Filters Badges */}
+                                    {(filters.categorySlug || filters.tagSlug || filters.promotionId || hasPromotion) && (
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {filters.categorySlug && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                                    Category: {filters.categorySlug.replace(/-/g, ' ')}
+                                                </span>
+                                            )}
+                                            {filters.tagSlug && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                                                    Tag: {filters.tagSlug.replace(/-/g, ' ')}
+                                                </span>
+                                            )}
+                                            {(filters.promotionId || hasPromotion) && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-accent/10 text-accent border border-accent/20">
+                                                    🎉 Special Promotion
+                                                </span>
+                                            )}
+                                            {(filters.minPrice || filters.maxPrice) && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-600 border border-green-500/20">
+                                                    Price Range Applied
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <p className="text-sm text-muted-foreground">
+                                        {isLoading ? (
+                                            <span>{t.common.loading}</span>
+                                        ) : (
+                                            <span>
+                                                {total} {total === 1 ? "product" : "products"} found
+                                            </span>
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Sort Select */}
+                            <div className="shrink-0">
+                                <SortSelect value={sortParam} onChange={handleSortChange} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Product Grid */}
                     {isLoading ? (
                         <div className="flex items-center justify-center py-20">
-                            <Loader2 className="h-8 w-8 animate-spin" />
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                     ) : products.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
+                            <div className={`grid gap-4 ${
+                                isFilterVisible
+                                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+                                    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
+                            }`}>
                                 {products.map((product) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
 
-                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="mt-12 flex justify-center">
                                     <Pagination>
@@ -348,7 +399,7 @@ export default function SearchPage() {
             fallback={
                 <div className="container mx-auto px-4 py-8">
                     <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                 </div>
             }

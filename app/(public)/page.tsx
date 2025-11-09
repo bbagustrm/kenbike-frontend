@@ -87,7 +87,7 @@ export default function HomePage() {
   }, []);
 
   return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+      <div className="min-h-screen">
         {/* Hero Section - Full Width Promotion Banner */}
         <section className="bg-muted/30">
           <PromotionCarousel />
@@ -95,15 +95,15 @@ export default function HomePage() {
 
         {/* Promotion Products Section */}
         {(isLoadingPromotion || promotionProducts.length > 0) && (
-            <section className="border-t border-slate-200 dark:border-slate-800">
+            <section className="border-t border-border">
               <div className="container mx-auto px-4 py-10 md:py-14">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-1">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
                       {t.home.promotionProductsTitle}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Limited time offers - Dont miss out!
+                      Limited time offers - Don{''}t miss out!
                     </p>
                   </div>
                   {promotionProducts.length > 0 && (
@@ -133,11 +133,11 @@ export default function HomePage() {
 
         {/* Best Sellers Section */}
         {(isLoadingBestSellers || bestSellers.length > 0) && (
-            <section className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <section className="border-t border-border bg-card">
               <div className="container mx-auto px-4 py-10 md:py-14">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-1">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
                       Best Sellers
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -171,11 +171,11 @@ export default function HomePage() {
 
         {/* Trending Products Section */}
         {(isLoadingTrending || trendingProducts.length > 0) && (
-            <section className="border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50/30 to-white dark:from-slate-900/30 dark:to-slate-950">
+            <section className="border-t border-border bg-muted/20">
               <div className="container mx-auto px-4 py-10 md:py-14">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-1">
+                    <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
                       Trending Now
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -208,11 +208,11 @@ export default function HomePage() {
         )}
 
         {/* Featured Products Section */}
-        <section className="border-t border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-900/50 dark:to-slate-950">
+        <section className="border-t border-border bg-muted/10">
           <div className="container mx-auto px-4 py-10 md:py-14">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-1">
+                <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
                   {t.home.featuredTitle}
                 </h2>
                 <p className="text-sm text-muted-foreground">

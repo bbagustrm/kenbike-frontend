@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         {/* No navbar/footer - just centered auth forms */}
         {children}
       </div>
