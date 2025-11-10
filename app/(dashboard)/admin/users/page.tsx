@@ -38,6 +38,22 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
     Search,
     Loader2,
     UserPlus,
@@ -47,6 +63,9 @@ import {
     CheckCircle,
     LogOut,
     Edit,
+    MoreVertical,
+    RotateCcw,
+    AlertTriangle,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { getUserInitials } from "@/lib/auth-utils";
@@ -63,6 +82,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminUsersPage() {
     const { t } = useTranslation();
@@ -72,13 +92,14 @@ export default function AdminUsersPage() {
 
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
-    // const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
+    const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showHardDeleteDialog, setShowHardDeleteDialog] = useState(false);
     const [showRoleDialog, setShowRoleDialog] = useState(false);
     const [showStatusDialog, setShowStatusDialog] = useState(false);
     const [showUserFormDrawer, setShowUserFormDrawer] = useState(false);
@@ -106,14 +127,23 @@ export default function AdminUsersPage() {
                 limit,
                 sort_by: "created_at",
                 order: "desc",
+                includeDeleted: activeTab === "deleted",
+                onlyDeleted: activeTab === "deleted",
             };
 
             if (search) params.search = search;
             if (roleFilter !== "ALL") params.role = roleFilter;
 
             const response = await UserService.getUsers(params);
-            setUsers(response.data || []);
-            // setTotal(response.meta.total);
+
+            let filteredUsers = response.data || [];
+            if (activeTab === "deleted") {
+                filteredUsers = filteredUsers.filter(u => u.deleted_at !== null);
+            } else {
+                filteredUsers = filteredUsers.filter(u => u.deleted_at === null);
+            }
+
+            setUsers(filteredUsers);
             setTotalPages(response.meta.totalPages);
         } catch (err) {
             const errorResult = handleApiError(err);
@@ -121,7 +151,7 @@ export default function AdminUsersPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, roleFilter, search, limit]);
+    }, [page, roleFilter, search, limit, activeTab]);
 
     useEffect(() => {
         fetchUsers();
@@ -148,7 +178,6 @@ export default function AdminUsersPage() {
         setIsActionLoading(true);
         try {
             await UserService.deleteUser(selectedUser.id, false);
-            // const errorResult = handleApiError(null);
             toast.success(`User ${selectedUser.username} deleted successfully`);
             setShowDeleteDialog(false);
             fetchUsers();
@@ -157,6 +186,35 @@ export default function AdminUsersPage() {
             toast.error(errorResult.message);
         } finally {
             setIsActionLoading(false);
+        }
+    };
+
+    const handleHardDeleteUser = async () => {
+        if (!selectedUser) return;
+        setIsActionLoading(true);
+        try {
+            await UserService.deleteUser(selectedUser.id, true);
+            toast.success(`User ${selectedUser.username} permanently deleted`);
+            setShowHardDeleteDialog(false);
+            fetchUsers();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
+
+    const handleRestoreUser = async (user: User) => {
+        try {
+            // Assuming you have a restore endpoint in your API
+            // If not, you'll need to add this to your UserService
+            await UserService.restoreUser(user.id);
+            toast.success(`User ${user.username} restored successfully`);
+            fetchUsers();
+        } catch (err) {
+            const errorResult = handleApiError(err);
+            toast.error(errorResult.message);
         }
     };
 
@@ -208,7 +266,6 @@ export default function AdminUsersPage() {
         }
     };
 
-    // Generate pagination items
     const getPaginationItems = () => {
         const items = [];
         const maxVisiblePages = 5;
@@ -227,7 +284,6 @@ export default function AdminUsersPage() {
                 );
             }
         } else {
-            // Always show first page
             items.push(
                 <PaginationItem key={1}>
                     <PaginationLink
@@ -239,7 +295,6 @@ export default function AdminUsersPage() {
                 </PaginationItem>
             );
 
-            // Determine if we need ellipsis
             if (page > 3) {
                 items.push(
                     <PaginationItem key="ellipsis-start">
@@ -248,7 +303,6 @@ export default function AdminUsersPage() {
                 );
             }
 
-            // Show pages around current page
             const startPage = Math.max(2, page - 1);
             const endPage = Math.min(totalPages - 1, page + 1);
 
@@ -265,7 +319,6 @@ export default function AdminUsersPage() {
                 );
             }
 
-            // Determine if we need ellipsis at the end
             if (page < totalPages - 2) {
                 items.push(
                     <PaginationItem key="ellipsis-end">
@@ -274,7 +327,6 @@ export default function AdminUsersPage() {
                 );
             }
 
-            // Always show last page
             items.push(
                 <PaginationItem key={totalPages}>
                     <PaginationLink
@@ -335,187 +387,234 @@ export default function AdminUsersPage() {
                 </Button>
             </div>
 
-            <TooltipProvider>
-                <div className="border rounded-sm bg-white">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                                <TableHead className="pl-4">User</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Created</TableHead>
-                                <TableHead className="text-center">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8">
-                                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                                    </TableCell>
-                                </TableRow>
-                            ) : users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8">
-                                        No users found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                users.map((user) => (
-                                    <TableRow key={user.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar>
-                                                    <AvatarImage src={getImageUrl(user.profile_image)} />
-                                                    <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium">
-                                                        {user.first_name} {user.last_name}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        @{user.username}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className={getRoleColor(user.role)}>
-                                                {user.role}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {user.is_active ? (
-                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                                    Active
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                                                    Suspended
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {new Date(user.created_at).toLocaleDateString()}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleEditUser(user)}
-                                                            className="hover:bg-transparent"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Edit User</p></TooltipContent>
-                                                </Tooltip>
+            <Tabs
+                value={activeTab}
+                onValueChange={(v) => {
+                    setActiveTab(v as "active" | "deleted");
+                    setPage(1);
+                }}
+            >
+                <TabsList>
+                    <TabsTrigger value="active" className="min-w-20">Active</TabsTrigger>
+                    <TabsTrigger value="deleted" className="min-w-20">Deleted</TabsTrigger>
+                </TabsList>
 
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                setSelectedUser(user);
-                                                                setNewRole(user.role);
-                                                                setShowRoleDialog(true);
-                                                            }}
-                                                            className="hover:bg-transparent"
-                                                        >
-                                                            <Shield className="h-4 w-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Change Role</p></TooltipContent>
-                                                </Tooltip>
-
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                setSelectedUser(user);
-                                                                setShowStatusDialog(true);
-                                                            }}
-                                                            className="hover:bg-transparent"
-                                                        >
-                                                            {user.is_active ? (
-                                                                <Ban className="h-4 w-4" />
-                                                            ) : (
-                                                                <CheckCircle className="h-4 w-4" />
-                                                            )}
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>{user.is_active ? "Suspend" : "Activate"}</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleForceLogout(user)}
-                                                            className="hover:bg-transparent"
-                                                        >
-                                                            <LogOut className="h-4 w-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Force Logout</p></TooltipContent>
-                                                </Tooltip>
-
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                setSelectedUser(user);
-                                                                setShowDeleteDialog(true);
-                                                            }}
-                                                            className="hover:bg-transparent"
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-red-500" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent><p>Delete User</p></TooltipContent>
-                                                </Tooltip>
-                                            </div>
-                                        </TableCell>
+                <TabsContent value={activeTab} className="mt-6">
+                    <TooltipProvider>
+                        <div className="border rounded-sm bg-white">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="pl-4">User</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Role</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Created</TableHead>
+                                        <TableHead className="text-center">Actions</TableHead>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </TooltipProvider>
+                                </TableHeader>
+                                <TableBody>
+                                    {isLoading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8">
+                                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : users.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8">
+                                                No users found
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        users.map((user) => (
+                                            <TableRow key={user.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar>
+                                                            <AvatarImage src={getImageUrl(user.profile_image)} />
+                                                            <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                {user.first_name} {user.last_name}
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">
+                                                                @{user.username}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{user.email}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className={getRoleColor(user.role)}>
+                                                        {user.role}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {activeTab === "active" ? (
+                                                        user.is_active ? (
+                                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                                                Active
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                                                Suspended
+                                                            </Badge>
+                                                        )
+                                                    ) : (
+                                                        <Badge variant="destructive">Deleted</Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(user.created_at).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        {activeTab === "active" ? (
+                                                            <>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => handleEditUser(user)}
+                                                                            className="hover:bg-transparent"
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent><p>Edit User</p></TooltipContent>
+                                                                </Tooltip>
 
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                onClick={() => setPage(page - 1)}
-                                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                            />
-                        </PaginationItem>
-                        {getPaginationItems()}
-                        <PaginationItem>
-                            <PaginationNext
-                                onClick={() => setPage(page + 1)}
-                                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </div>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                setSelectedUser(user);
+                                                                                setNewRole(user.role);
+                                                                                setShowRoleDialog(true);
+                                                                            }}
+                                                                            className="hover:bg-transparent"
+                                                                        >
+                                                                            <Shield className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent><p>Change Role</p></TooltipContent>
+                                                                </Tooltip>
+
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                setSelectedUser(user);
+                                                                                setShowStatusDialog(true);
+                                                                            }}
+                                                                            className="hover:bg-transparent"
+                                                                        >
+                                                                            {user.is_active ? (
+                                                                                <Ban className="h-4 w-4" />
+                                                                            ) : (
+                                                                                <CheckCircle className="h-4 w-4" />
+                                                                            )}
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>{user.is_active ? "Suspend" : "Activate"}</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => handleForceLogout(user)}
+                                                                            className="hover:bg-transparent"
+                                                                        >
+                                                                            <LogOut className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent><p>Force Logout</p></TooltipContent>
+                                                                </Tooltip>
+
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                setSelectedUser(user);
+                                                                                setShowDeleteDialog(true);
+                                                                            }}
+                                                                            className="hover:bg-transparent"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent><p>Delete User</p></TooltipContent>
+                                                                </Tooltip>
+                                                            </>
+                                                        ) : (
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="hover:bg-transparent">
+                                                                        <MoreVertical className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onClick={() => handleRestoreUser(user)}>
+                                                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                                                        Restore
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        className="text-destructive"
+                                                                        onClick={() => {
+                                                                            setSelectedUser(user);
+                                                                            setShowHardDeleteDialog(true);
+                                                                        }}
+                                                                    >
+                                                                        <AlertTriangle className="h-4 w-4 mr-2" />
+                                                                        Delete Permanently
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </TooltipProvider>
+
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        onClick={() => setPage(page - 1)}
+                                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+                                {getPaginationItems()}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        onClick={() => setPage(page + 1)}
+                                        className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
+                </TabsContent>
+            </Tabs>
 
             <UserFormDrawer
                 open={showUserFormDrawer}
@@ -524,6 +623,7 @@ export default function AdminUsersPage() {
                 onSuccess={fetchUsers}
             />
 
+            {/* Soft Delete Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <DialogContent>
                     <DialogHeader>
@@ -542,6 +642,35 @@ export default function AdminUsersPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Hard Delete Dialog */}
+            <AlertDialog open={showHardDeleteDialog} onOpenChange={setShowHardDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Permanently Delete User</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete user {selectedUser?.username}? This action cannot be undone and will remove all data associated with this user.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleHardDeleteUser}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isActionLoading}
+                        >
+                            {isActionLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                "Delete Permanently"
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
                 <DialogContent>

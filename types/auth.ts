@@ -15,6 +15,7 @@ export interface User {
     last_login?: string;
     created_at: string;
     updated_at: string;
+    deleted_at?: string | null;
 }
 
 export interface LoginCredentials {
@@ -98,10 +99,12 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 export interface GetUsersParams {
     page?: number;
     limit?: number;
-    role?: UserRole;
     search?: string;
+    role?: UserRole;
     sort_by?: string;
     order?: "asc" | "desc";
+    includeDeleted?: boolean;
+    onlyDeleted?: boolean;
 }
 
 export interface CreateUserData extends RegisterData {

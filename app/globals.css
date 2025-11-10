@@ -21,6 +21,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 }
 
 :root {
@@ -54,6 +57,10 @@
   --border: #e6e6e6;
   --input: #f0f0f0;
   --ring: #d6ff5d;
+
+  /* === DESTRUCTIVE COLORS (NEW) === */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
   --radius: 1.5rem;
 }

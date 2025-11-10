@@ -65,11 +65,17 @@ export class UserService {
         return response.data;
     }
 
-    // Delete user
+    // Delete user (soft or hard delete)
     static async deleteUser(id: string, permanent: boolean = false): Promise<ApiResponse> {
         const response = await apiClient.delete<ApiResponse>(`/admin/users/${id}`, {
             params: { permanent },
         });
+        return response.data;
+    }
+
+    // Restore deleted user
+    static async restoreUser(id: string): Promise<ApiResponse<User>> {
+        const response = await apiClient.post<ApiResponse<User>>(`/admin/users/${id}/restore`);
         return response.data;
     }
 
