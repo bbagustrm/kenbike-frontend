@@ -16,26 +16,57 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Mail, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, Copy, CheckCircle2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [resetToken, setResetToken] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setIsSubmitting(true);
+        setResetToken(null);
 
         try {
-            await AuthService.forgotPassword({ email });
+            const response = await AuthService.forgotPassword({ email });
             setSuccess(true);
+
+            // For development: if token is returned in response, show it
+            if (response.data && typeof response.data === 'object') {
+                if ('token' in response.data) {
+                    setResetToken(response.data.token as string);
+                    console.log("🔑 Reset Token:", response.data.token);
+                }
+                if ('reset_link' in response.data) {
+                    console.log("🔗 Reset Link:", response.data.reset_link);
+                }
+            }
         } catch (err) {
             setError(handleApiError(err).message);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleCopyToken = () => {
+        if (resetToken) {
+            navigator.clipboard.writeText(resetToken);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleCopyResetLink = () => {
+        if (resetToken) {
+            const resetLink = `${window.location.origin}/reset-password?token=${resetToken}`;
+            navigator.clipboard.writeText(resetLink);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
         }
     };
 
@@ -61,7 +92,7 @@ export default function ForgotPasswordPage() {
                     </CardContent>
                     <CardFooter>
                         <Link href="/login" className="w-full">
-                            <Button variant="outline" className="w-full">
+                            <Button variant="secondary" className="w-full">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to login
                             </Button>
@@ -82,7 +113,7 @@ export default function ForgotPasswordPage() {
                     </CardDescription>
                 </CardHeader>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-8">
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email address</Label>
@@ -117,7 +148,7 @@ export default function ForgotPasswordPage() {
                         </Button>
 
                         <Link href="/login" className="w-full">
-                            <Button variant="ghost" className="w-full">
+                            <Button variant="outline" className="w-full">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to login
                             </Button>
