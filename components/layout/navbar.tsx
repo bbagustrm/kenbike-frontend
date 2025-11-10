@@ -484,7 +484,7 @@ export default function Navbar() {
                     <div className="pt-4 border-t border-border space-y-2">
                       <button
                           onClick={handleLogout}
-                          className="flex items-center gap-3 py-2 text-sm text-red-600 dark:text-red-400 w-full"
+                          className="flex items-center gap-3 py-2 text-sm text-destructive dark:text-destructive-foreground w-full"
                       >
                         <LogOut className="h-4 w-4" />
                         {t.user.logout}
