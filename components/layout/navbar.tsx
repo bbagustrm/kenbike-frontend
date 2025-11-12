@@ -506,7 +506,7 @@ export default function Navbar() {
                         <span>{locale === "id" ? "Indonesia" : "English"}</span>
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="bg-card">
+                    <SelectContent>
                       <SelectItem value="id">
                         <div className="flex items-center gap-3">
                           <Image src="/ic-flag-id.svg" alt="Indonesia" width={20} height={20} className="rounded-sm" />
