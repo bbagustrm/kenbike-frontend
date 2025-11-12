@@ -33,36 +33,34 @@ export const metadata: Metadata = {
     title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
     description:
         "Toko online sepeda terpercaya. Temukan komponen, sparepart, dan aksesoris sepeda terbaik dengan harga bersaing di Kenbike Store!",
-    keywords: [
-        "toko sepeda",
-        "komponen sepeda",
-        "sparepart sepeda",
-        "aksesoris sepeda",
-        "Kenbike Store",
-    ],
+    alternates: {
+        canonical: "https://kenbike.store/",
+    },
+    robots: {
+        index: true,
+        follow: true,
+        nocache: false,
+    },
+    other: {
+        "hreflang": "id-ID",
+    },
     openGraph: {
         title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
         description:
             "Belanja komponen dan aksesoris sepeda berkualitas di Kenbike Store. Produk original dan harga bersaing.",
-        url: "https://kenbike.com",
+        url: "https://kenbike.store",
         siteName: "Kenbike Store",
-        images: [
-            {
-                url: "https://kenbike.com/og-image.jpg",
-                width: 1200,
-                height: 630,
-                alt: "Kenbike Store - Toko Sepeda Online",
-            },
-        ],
         locale: "id_ID",
         type: "website",
     },
     twitter: {
         card: "summary_large_image",
+        site: "@KenbikeStore",
+        creator: "@KenbikeStore",
         title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
         description:
             "Temukan komponen sepeda terbaik di Kenbike Store. Belanja mudah & cepat!",
-        images: ["https://kenbike.com/og-image.jpg"],
+        images: ["https://kenbike.store/og-image.jpg"],
     },
 };
 

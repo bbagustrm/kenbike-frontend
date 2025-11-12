@@ -127,7 +127,7 @@ export default function HomePage() {
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h1 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
-                        Hot Deals & Trending
+                        Toko Komponen & Aksesoris Sepeda Berkualitas di Indonesia
                       </h1>
                       <p className="text-sm text-muted-foreground">
                         Special promotions and trending products this week
