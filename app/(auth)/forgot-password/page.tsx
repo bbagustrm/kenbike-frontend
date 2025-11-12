@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Mail, ArrowLeft, Copy, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, ArrowLeft} from "lucide-react";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -50,23 +50,6 @@ export default function ForgotPasswordPage() {
             setError(handleApiError(err).message);
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const handleCopyToken = () => {
-        if (resetToken) {
-            navigator.clipboard.writeText(resetToken);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
-    };
-
-    const handleCopyResetLink = () => {
-        if (resetToken) {
-            const resetLink = `${window.location.origin}/reset-password?token=${resetToken}`;
-            navigator.clipboard.writeText(resetLink);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
         }
     };
 
