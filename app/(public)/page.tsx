@@ -173,7 +173,7 @@ export default function HomePage() {
                             >
                               <div className="relative w-full h-full">
                                 <Image
-                                    src={`/banner-category/img${index + 1}.jpg`}
+                                    src={`/banner-category/img${index + 1}.webp`}
                                     alt={category.name}
                                     fill
                                     className={cn(

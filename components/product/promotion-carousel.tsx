@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const PROMOTION_IMAGES = [
-    { id: 1, src: "/promo-1.png", alt: "Promotion 1" },
-    { id: 2, src: "/promo-2.png", alt: "Promotion 2" },
+    { id: 1, src: "/promo-1.webp", alt: "Promotion 1" },
+    { id: 2, src: "/promo-2.webp", alt: "Promotion 2" },
 ];
 
 const slideVariants = {

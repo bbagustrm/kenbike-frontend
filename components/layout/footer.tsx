@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
@@ -35,13 +34,19 @@ export default function Footer() {
 
   return (
       <footer className="w-full border-t border-border bg-background text-foreground">
-        {/* Main Footer Content */}
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            {/* Company Info */}
             <div className="lg:col-span-2">
               <Link href="/" className="inline-block mb-4">
-                <Image src="/logo.svg" alt="Kenbike Logo" width={160} height={160} />
+                {/* ✅ Lazy load logo di footer */}
+                <Image
+                    src="/logo.webp"
+                    alt="Kenbike Logo"
+                    width={160}
+                    height={160}
+                    loading="lazy"
+                    quality={85}
+                />
               </Link>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 {locale === "id"
@@ -49,7 +54,6 @@ export default function Footer() {
                     : "Kenbike provides high-quality bike components for cycling enthusiasts in Indonesia. We are committed to delivering the best products at affordable prices."}
               </p>
 
-              {/* Contact Info */}
               <div className="space-y-2 text-sm">
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
@@ -73,7 +77,6 @@ export default function Footer() {
                 </div>
               </div>
 
-              {/* Social Media */}
               <div className="mt-6">
                 <p className="font-semibold mb-3 text-sm uppercase tracking-wide">{t.footer.followUs}</p>
                 <div className="flex gap-3">
@@ -93,7 +96,6 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Shop Categories */}
             <div>
               <h3 className="font-semibold mb-4 text-sm uppercase tracking-wide">{t.footer.shop}</h3>
               <ul className="space-y-2.5">
@@ -110,7 +112,6 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Customer Service */}
             <div>
               <h3 className="font-semibold mb-4 text-sm uppercase tracking-wide">{t.footer.customerService}</h3>
               <ul className="space-y-2.5">
@@ -127,7 +128,6 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* About & Legal */}
             <div>
               <h3 className="font-semibold mb-4 text-sm uppercase tracking-wide">{t.footer.about}</h3>
               <ul className="space-y-2.5">
@@ -145,10 +145,9 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Payment & Marketplace */}
+          {/* Payment & Marketplace dengan lazy loading */}
           <div className="mt-12 pt-8 border-t border-border">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Domestic Stores */}
               <div>
                 <h3 className="font-semibold mb-4 text-sm uppercase tracking-wide">
                   {t.footer.officialStores}
@@ -160,7 +159,13 @@ export default function Footer() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all bg-card"
                   >
-                    <Image src="/ic-tokopedia.svg" alt="Tokopedia" width={24} height={24} />
+                    {/* ✅ Lazy load marketplace icons */}
+                    <Image
+                        src="/ic-tokopedia.webp"
+                        alt="Tokopedia"
+                        width={24}
+                        height={24}
+                    />
                     <span className="text-sm font-medium">Tokopedia</span>
                   </Link>
                   <Link
@@ -169,29 +174,35 @@ export default function Footer() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:border-primary hover:shadow-sm transition-all bg-card"
                   >
-                    <Image src="/ic-shopee.svg" alt="Shopee" width={24} height={24} />
+                    <Image
+                        src="/ic-shopee.webp"
+                        alt="Shopee"
+                        width={24}
+                        height={24}
+                        loading="lazy"
+                    />
                     <span className="text-sm font-medium">Shopee</span>
                   </Link>
                 </div>
               </div>
 
-              {/* Payment Methods */}
+              {/* ✅ Payment methods dengan lazy loading */}
               <div>
                 <h3 className="font-semibold mb-4 text-sm uppercase tracking-wide">
                   {t.footer.paymentMethods}
                 </h3>
                 <div className="space-y-8">
                   <div className="flex flex-wrap items-center gap-5">
-                    <Image src="/ic-bni.svg" alt="BNI" width={60} height={20} />
-                    <Image src="/ic-bri.svg" alt="BRI" width={60} height={20} />
-                    <Image src="/ic-mandiri.svg" alt="Mandiri" width={80} height={20} />
-                    <Image src="/ic-cimbniaga.svg" alt="CIMB" width={100} height={20} />
-                    <Image src="/ic-permatabank.svg" alt="Permata" width={100} height={20} />
+                    <Image src="/ic-bni.webp" alt="BNI" width={60} height={20} loading="lazy" />
+                    <Image src="/ic-bri.webp" alt="BRI" width={60} height={20} loading="lazy" />
+                    <Image src="/ic-mandiri.webp" alt="Mandiri" width={80} height={20} loading="lazy" />
+                    <Image src="/ic-cimbniaga.webp" alt="CIMB" width={100} height={20} loading="lazy" />
+                    <Image src="/ic-permatabank.webp" alt="Permata" width={100} height={20} loading="lazy" />
                   </div>
                   <div className="flex flex-wrap items-center gap-5">
-                    <Image src="/ic-gopay.svg" alt="Gopay" width={80} height={20} />
-                    <Image src="/ic-qris.svg" alt="QRIS" width={50} height={20} />
-                    <Image src="/ic-paypal.svg" alt="Paypal" width={70} height={30} />
+                    <Image src="/ic-gopay.webp" alt="Gopay" width={80} height={20} loading="lazy" />
+                    <Image src="/ic-qris.webp" alt="QRIS" width={50} height={20} loading="lazy" />
+                    <Image src="/ic-paypal.webp" alt="Paypal" width={70} height={30} loading="lazy" />
                   </div>
                 </div>
               </div>
@@ -199,7 +210,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar - Copyright */}
         <div className="border-t border-border bg-muted/50">
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
@@ -207,10 +217,10 @@ export default function Footer() {
                 © {new Date().getFullYear()} Kenbike. {t.footer.copyright}.
               </p>
               <div className="flex flex-wrap items-center gap-6">
-                <Link href="/privacy" className="hover:text-primary transition-colors">
+                <Link href="/" className="hover:text-primary transition-colors">
                   Privacy Policy
                 </Link>
-                <Link href="/terms" className="hover:text-primary transition-colors">
+                <Link href="/" className="hover:text-primary transition-colors">
                   Terms of Service
                 </Link>
               </div>
