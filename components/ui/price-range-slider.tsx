@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import { cn } from '@/lib/utils';
 
 interface PriceRangeSliderProps {
@@ -26,7 +26,7 @@ export function PriceRangeSlider({
     const minPercent = ((value[0] - min) / (max - min)) * 100;
     const maxPercent = ((value[1] - min) / (max - min)) * 100;
 
-    const getValueFromPosition = (clientX: number): number => {
+    const getValueFromPosition = useCallback((clientX: number): number => {
         if (!trackRef.current) return min;
 
         const rect = trackRef.current.getBoundingClientRect();
@@ -34,7 +34,7 @@ export function PriceRangeSlider({
         const rawValue = min + percent * (max - min);
         const steppedValue = Math.round(rawValue / step) * step;
         return Math.max(min, Math.min(max, steppedValue));
-    };
+    }, [min, max, step]);
 
     const handleMouseDown = (type: 'min' | 'max') => (e: React.MouseEvent) => {
         e.preventDefault();
