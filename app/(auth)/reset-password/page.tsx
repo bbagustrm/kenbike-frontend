@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
                     </CardDescription>
                 </CardHeader>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-8">
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="new_password">New Password</Label>
