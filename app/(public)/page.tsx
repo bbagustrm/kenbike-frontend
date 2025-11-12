@@ -1,41 +1,56 @@
-// app/(public)/page.tsx - Updated with price translation
+// app/(public)/page.tsx - With Category Section
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PromotionCarousel } from "@/components/product/promotion-carousel";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductCarousel } from "@/components/product/product-carousel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollReveal } from "@/components/animations/scroll-reveal";
 import { FadeInView } from "@/components/animations/fade-in-view";
-import { ParallaxSection } from "@/components/animations/parallax-section";
 import { ProductService } from "@/services/product.service";
+import { CategoryService } from "@/services/category.service";
 import { ProductListItem } from "@/types/product";
+import { Category } from "@/types/category";
 import { useTranslation } from "@/hooks/use-translation";
 import { handleApiError } from "@/lib/api-client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function HomePage() {
-  const { t, locale } = useTranslation(); // Added locale
+  const { t, locale } = useTranslation();
 
   const [promotionProducts, setPromotionProducts] = useState<ProductListItem[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<ProductListItem[]>([]);
-  const [bestSellers, setBestSellers] = useState<ProductListItem[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<ProductListItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [isLoadingPromotion, setIsLoadingPromotion] = useState(true);
   const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
-  const [isLoadingBestSellers, setIsLoadingBestSellers] = useState(true);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+  // Merged products: Promotion first, then Trending (excluding duplicates)
+  const mergedProducts = [
+    ...promotionProducts,
+    ...trendingProducts.filter(
+        (tp) => !promotionProducts.some((pp) => pp.id === tp.id)
+    ),
+  ];
+
+  // Get first 4 categories for banner-category
+  const bannerCategories = categories.slice(0, 4);
 
   useEffect(() => {
     const fetchPromotionProducts = async () => {
       try {
         const response = await ProductService.getProducts({
           hasPromotion: true,
-          limit: 12,
+          limit: 8,
           sortBy: "totalSold",
           order: "desc",
         });
@@ -60,18 +75,6 @@ export default function HomePage() {
       }
     };
 
-    const fetchBestSellers = async () => {
-      try {
-        const response = await ProductService.getBestSellers(12);
-        setBestSellers(response.data);
-      } catch (error) {
-        const errorResult = handleApiError(error);
-        toast.error(errorResult.message);
-      } finally {
-        setIsLoadingBestSellers(false);
-      }
-    };
-
     const fetchTrendingProducts = async () => {
       try {
         const response = await ProductService.getTrendingProducts(12, 7);
@@ -84,11 +87,28 @@ export default function HomePage() {
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await CategoryService.getCategories({
+          limit: 4,
+          isActive: true
+        });
+        setCategories(response.data || []);
+      } catch (error) {
+        const errorResult = handleApiError(error);
+        toast.error(errorResult.message);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
     fetchPromotionProducts();
     fetchFeaturedProducts();
-    fetchBestSellers();
     fetchTrendingProducts();
+    fetchCategories();
   }, []);
+
+  const isLoadingMerged = isLoadingPromotion || isLoadingTrending;
 
   return (
       <div className="min-h-screen">
@@ -99,21 +119,21 @@ export default function HomePage() {
           </FadeInView>
         </section>
 
-        {/* Promotion Products Section */}
-        {(isLoadingPromotion || promotionProducts.length > 0) && (
-            <section className="border-t border-border">
+        {/* Merged Promotion & Trending Section with Carousel */}
+        {(isLoadingMerged || mergedProducts.length > 0) && (
+            <section className="border-t border-border bg-gradient-to-b from-muted/5 to-transparent">
               <div className="container mx-auto px-4 py-10 md:py-14">
                 <ScrollReveal direction="up">
                   <div className="flex items-center justify-between mb-8">
                     <div>
                       <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
-                        {t.home.promotionProductsTitle}
+                        🔥 Hot Deals & Trending
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        Limited time offers - Dont miss out!
+                        Special promotions and trending products this week
                       </p>
                     </div>
-                    {promotionProducts.length > 0 && (
+                    {mergedProducts.length > 0 && (
                         <Button asChild variant="ghost" className="group hidden md:flex">
                           <Link href="/search?hasPromotion=true" className="flex items-center gap-1">
                             {t.home.seeAll}
@@ -124,102 +144,72 @@ export default function HomePage() {
                   </div>
                 </ScrollReveal>
 
-                {isLoadingPromotion ? (
+                {isLoadingMerged ? (
                     <div className="flex items-center justify-center py-20">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
-                ) : promotionProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                      {promotionProducts.map((product, index) => (
-                          <ScrollReveal key={product.id} delay={index * 0.05} direction="up">
-                            <ProductCard product={product} locale={locale} />
-                          </ScrollReveal>
-                      ))}
-                    </div>
+                ) : mergedProducts.length > 0 ? (
+                    <ProductCarousel products={mergedProducts}/>
                 ) : null}
               </div>
             </section>
         )}
 
-        {/* Best Sellers Section with Parallax */}
-        {(isLoadingBestSellers || bestSellers.length > 0) && (
-            <ParallaxSection speed={-0.2}>
-              <section className="border-t border-border bg-card">
-                <div className="container mx-auto px-4 py-10 md:py-14">
-                  <ScrollReveal direction="up">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
-                          Best Sellers
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                          Most popular products loved by our customers
-                        </p>
-                      </div>
-                      {bestSellers.length > 0 && (
-                          <Button asChild variant="ghost" className="group hidden md:flex">
-                            <Link href="/search?sortBy=totalSold&order=desc" className="flex items-center gap-1">
-                              {t.home.seeAll}
-                              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                            </Link>
-                          </Button>
-                      )}
-                    </div>
-                  </ScrollReveal>
-
-                  {isLoadingBestSellers ? (
-                      <div className="flex items-center justify-center py-20">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      </div>
-                  ) : bestSellers.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                        {bestSellers.map((product, index) => (
-                            <FadeInView key={product.id} delay={index * 0.05}>
-                              <ProductCard product={product} locale={locale} />
-                            </FadeInView>
-                        ))}
-                      </div>
-                  ) : null}
-                </div>
-              </section>
-            </ParallaxSection>
-        )}
-
-        {/* Trending Products Section */}
-        {(isLoadingTrending || trendingProducts.length > 0) && (
-            <section className="border-t border-border bg-muted/20">
-              <div className="container mx-auto px-4 py-10 md:py-14">
-                <ScrollReveal direction="up">
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
-                        Trending Now
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        Hot products trending this week
-                      </p>
-                    </div>
-                    {trendingProducts.length > 0 && (
-                        <Button asChild variant="ghost" className="group hidden md:flex">
-                          <Link href="/search?sortBy=totalView&order=desc" className="flex items-center gap-1">
-                            {t.home.seeAll}
-                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                          </Link>
-                        </Button>
-                    )}
-                  </div>
-                </ScrollReveal>
-
-                {isLoadingTrending ? (
+        {/* Category Banner Section */}
+        {(isLoadingCategories || bannerCategories.length > 0) && (
+            <section className="border-t border-border bg-background">
+              <div className="w-full">
+                {isLoadingCategories ? (
                     <div className="flex items-center justify-center py-20">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
-                ) : trendingProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                      {trendingProducts.map((product, index) => (
-                          <ScrollReveal key={product.id} delay={index * 0.05} direction="left">
-                            <ProductCard product={product} locale={locale} />
-                          </ScrollReveal>
+                ) : bannerCategories.length > 0 ? (
+                    <div className="grid grid-cols-2">
+                      {bannerCategories.map((category, index) => (
+                          <FadeInView key={category.id} delay={index * 0.1}>
+                            <Link
+                                href={`/search?category=${category.slug}`}
+                                className="group relative block overflow-hidden aspect-[4/3] md:aspect-[16/9]"
+                            >
+                              <div className="relative w-full h-full">
+                                <Image
+                                    src={`/banner-category/img${index + 1}.jpg`}
+                                    alt={category.name}
+                                    fill
+                                    className={cn(
+                                        "object-cover transition-all duration-500",
+                                        "brightness-100 group-hover:brightness-50 group-hover:scale-105"
+                                    )}
+                                    sizes="(max-width: 768px) 50vw, 50vw"
+                                />
+                                {/* Overlay Gradient */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+                                {/* Category Name */}
+                                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                                  <h3 className="text-white font-bold text-lg md:text-2xl uppercase tracking-wide drop-shadow-lg">
+                                    {category.name}
+                                  </h3>
+                                  <div className="relative mt-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-white border-white hover:bg-white/10 transition-opacity duration-300 group-hover:opacity-0"
+                                    >
+                                      Shop Now
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="absolute top-0 left-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                                    >
+                                      Shop Now
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </Link>
+                          </FadeInView>
                       ))}
                     </div>
                 ) : null}
