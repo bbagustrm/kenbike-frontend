@@ -30,37 +30,28 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Kenbike Store | Toko Komponen & Aksesoris Sepeda Terlengkap di Indonesia",
+    title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
     description:
-        "Belanja online komponen, sparepart, dan aksesoris sepeda terbaik hanya di Kenbike Store. Produk original, harga bersaing, dan pengiriman cepat ke seluruh Indonesia. Temukan perlengkapan sepeda roadbike, MTB, lipat, dan lainnya di sini!",
+        "Toko online sepeda terpercaya. Temukan komponen, sparepart, dan aksesoris sepeda terbaik dengan harga bersaing di Kenbike Store!",
     keywords: [
-        "toko sepeda online",
+        "toko sepeda",
         "komponen sepeda",
         "sparepart sepeda",
         "aksesoris sepeda",
-        "toko sepeda Indonesia",
         "Kenbike Store",
-        "sepeda roadbike",
-        "sepeda MTB",
-        "aksesoris sepeda murah",
-        "belanja sepeda online",
     ],
-    authors: [{ name: "Kenbike Store", url: "https://kenbike.com" }],
-    alternates: {
-        canonical: "https://kenbike.com",
-    },
     openGraph: {
-        title: "Kenbike Store | Toko Komponen & Aksesoris Sepeda Terlengkap di Indonesia",
+        title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
         description:
-            "Kenbike Store adalah toko sepeda online terpercaya yang menyediakan sparepart dan aksesoris sepeda lengkap. Dapatkan produk terbaik untuk roadbike, MTB, dan sepeda lipat dengan harga bersaing.",
+            "Belanja komponen dan aksesoris sepeda berkualitas di Kenbike Store. Produk original dan harga bersaing.",
         url: "https://kenbike.com",
         siteName: "Kenbike Store",
         images: [
             {
-                url: "https://kenbike.com/og-image.png",
+                url: "https://kenbike.com/og-image.jpg",
                 width: 1200,
                 height: 630,
-                alt: "Kenbike Store - Toko Komponen & Aksesoris Sepeda Online",
+                alt: "Kenbike Store - Toko Sepeda Online",
             },
         ],
         locale: "id_ID",
@@ -68,15 +59,13 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Kenbike Store | Toko Komponen & Aksesoris Sepeda Terlengkap di Indonesia",
+        title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
         description:
-            "Belanja sparepart dan aksesoris sepeda dengan harga terbaik di Kenbike Store. Kualitas original dan pengiriman cepat!",
-        creator: "@kenbike",
+            "Temukan komponen sepeda terbaik di Kenbike Store. Belanja mudah & cepat!",
         images: ["https://kenbike.com/og-image.jpg"],
     },
-    metadataBase: new URL("https://kenbike.com"),
-    category: "E-commerce Sepeda",
 };
+
 
 
 export default function RootLayout({ children }: { children: ReactNode }) {
