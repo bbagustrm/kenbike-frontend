@@ -126,9 +126,9 @@ export default function HomePage() {
                 <ScrollReveal direction="up">
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
-                        🔥 Hot Deals & Trending
-                      </h2>
+                      <h1 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">
+                        Hot Deals & Trending
+                      </h1>
                       <p className="text-sm text-muted-foreground">
                         Special promotions and trending products this week
                       </p>
