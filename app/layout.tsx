@@ -36,14 +36,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
-        <html lang="id" className={`${druk.variable} ${lato.variable} ${jetbrains.variable}`}>
+        <html
+            lang="id"
+            className={`${druk.variable} ${lato.variable} ${jetbrains.variable}`}
+        >
+        <head>
+            <link rel="preconnect" href="https://api.kenbike.store" crossOrigin="" />
+            <link rel="dns-prefetch" href="https://api.kenbike.store" />
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+            <title>Kenbike Store</title>
+        </head>
         <body className="font-body bg-white text-foreground">
         <AuthProvider>
             <CartProvider>
                 <TranslationProvider>
-                    <SmoothScrollProvider>
-                        {children}
-                    </SmoothScrollProvider>
+                    <SmoothScrollProvider>{children}</SmoothScrollProvider>
                     <Toaster position="top-right" />
                 </TranslationProvider>
             </CartProvider>
