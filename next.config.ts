@@ -73,12 +73,6 @@ const nextConfig: NextConfig = {
                 : false,
     },
 
-    // ✅ Experimental Features (Turbopack-friendly)
-    experimental: {
-        optimizeCss: true,
-        optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
-    },
-
     // ✅ Optional Source Maps
     productionBrowserSourceMaps: false,
 };
