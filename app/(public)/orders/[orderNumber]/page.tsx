@@ -12,6 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { OrderStatusBadge } from '@/components/order/order-status-badge';
+import { OrderTimeline } from '@/components/order/order-timeline'; // Tambahkan import ini
+import { OrderTracking } from '@/components/order/order-tracking'; // Tambahkan import ini
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/payment-utils';
 import { canCancelOrder, canPayOrder, hasShippingLabel } from '@/lib/order-utils';
@@ -57,8 +59,13 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
             // Redirect to payment URL
             window.location.href = response.data.paymentUrl;
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to create payment');
+        } catch (error: unknown) { // Ganti any dengan unknown
+            // Lakukan type guard untuk memastikan error adalah instance dari Error
+            let errorMessage = locale === 'id' ? 'Gagal membuat pembayaran' : 'Failed to create payment';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            toast.error(errorMessage);
             setIsRedirecting(false);
         }
     };
@@ -123,6 +130,23 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column */}
                         <div className="lg:col-span-2 space-y-6">
+                            {/* Timeline */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>
+                                        {locale === 'id' ? 'Status Pesanan' : 'Order Status'}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <OrderTimeline order={order} locale={locale} />
+                                </CardContent>
+                            </Card>
+
+                            {/* Tracking (if shipped) */}
+                            {['SHIPPED', 'DELIVERED', 'COMPLETED'].includes(order.status) && (
+                                <OrderTracking orderNumber={order.orderNumber} locale={locale} />
+                            )}
+
                             {/* Items */}
                             <Card>
                                 <CardHeader>
