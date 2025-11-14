@@ -37,8 +37,14 @@ export default function PaymentFailedPage() {
 
             // Redirect to payment URL
             window.location.href = response.data.paymentUrl;
-        } catch (error: Error) {
-            toast.error(error.message || 'Failed to retry payment');
+        } catch (error) { // Tidak ada anotasi tipe, TypeScript akan menganggapnya 'unknown'
+            // Lakukan pemeriksaan tipe (type guard)
+            if (error instanceof Error) {
+                toast.error(error.message || 'Failed to retry payment');
+            } else {
+                // Tangani kasus di mana error bukanlah objek Error
+                toast.error('An unknown error occurred while retrying payment.');
+            }
             setIsRetrying(false);
         }
     };
