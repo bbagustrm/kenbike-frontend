@@ -25,7 +25,7 @@ export interface PaymentStatusData {
     paymentProvider?: string;
     paymentId?: string;
     paidAt?: string;
-    paymentDetails?: any;
+    paymentDetails?: unknown;
 }
 
 export interface PaymentStatusResponse {
