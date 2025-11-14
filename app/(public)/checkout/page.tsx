@@ -84,8 +84,8 @@ export default function CheckoutPage() {
                 imageUrl: item.variant!.imageUrl,
                 sku: item.variant!.sku,
                 stock: item.variant!.stock,
-                isActive: item.variant?.isActive, // Menggunakan optional chaining
-                isDeleted: item.variant?.isDeleted, // Menggunakan optional chaining
+                isActive: 'isActive' in item.variant! ? item.variant!.isActive : undefined,
+                isDeleted: 'isDeleted' in item.variant! ? item.variant!.isDeleted : undefined,
             },
         }));
 
