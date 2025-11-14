@@ -4,28 +4,10 @@
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/payment-utils';
-
-interface CartItem {
-    quantity: number;
-    product: {
-        id: string;
-        name: string;
-        idPrice: number;
-        enPrice: number;
-        imageUrl: string | null;
-        promotion?: {
-            isActive: boolean;
-            discount: number;
-        } | null;
-    };
-    variant: {
-        variantName: string;
-        imageUrl: string | null;
-    };
-}
+import { CheckoutCartItem } from '@/types/checkout';
 
 interface CartReviewProps {
-    items: CartItem[];
+    items: CheckoutCartItem[];
     locale?: 'id' | 'en';
 }
 

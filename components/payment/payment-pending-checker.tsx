@@ -17,11 +17,11 @@ interface PaymentPendingCheckerProps {
 }
 
 export function PaymentPendingChecker({
-    orderNumber,
-    autoCheck = true,
-    checkInterval = 5000, // 5 seconds
-    locale = 'en'
-}: PaymentPendingCheckerProps) {
+                                          orderNumber,
+                                          autoCheck = true,
+                                          checkInterval = 5000, // 5 seconds
+                                          locale = 'en'
+                                      }: PaymentPendingCheckerProps) {
     const router = useRouter();
     const [isChecking, setIsChecking] = useState(false);
     const [lastChecked, setLastChecked] = useState<Date | null>(null);
@@ -43,8 +43,12 @@ export function PaymentPendingChecker({
                 setLastChecked(new Date());
                 setCheckCount(prev => prev + 1);
             }
-        } catch (error: Error) {
+        } catch (error: unknown) { // Ganti Error dengan unknown
             console.error('Failed to check payment status:', error);
+            // Jika perlu menampilkan pesan error ke pengguna, tambahkan type guard:
+            // if (error instanceof Error) {
+            //     toast.error(error.message);
+            // }
         } finally {
             setIsChecking(false);
         }

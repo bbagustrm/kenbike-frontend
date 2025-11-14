@@ -10,18 +10,20 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Package, Clock, DollarSign } from 'lucide-react';
 import { ShippingOption } from '@/types/shipping';
+import { ShippingType } from '@/types/order';
 import { INTERNATIONAL_COUNTRIES } from '@/lib/shipping-utils';
 import { formatCurrency } from '@/lib/payment-utils';
 import { cn } from '@/lib/utils';
 
 interface ShippingCalculatorProps {
-    shippingType: 'DOMESTIC' | 'INTERNATIONAL';
+    shippingType: ShippingType;
     shippingOptions: ShippingOption[];
     selectedShipping?: ShippingOption;
     isCalculating: boolean;
     locale?: 'id' | 'en';
-    onShippingTypeChange: (type: 'DOMESTIC' | 'INTERNATIONAL') => void;
-    onCalculate: (destination: { postalCode?: string; country?: string }) => void;
+    onShippingTypeChange: (type: ShippingType) => void;
+    // Fix: Tambahkan parameter destinationType
+    onCalculate: (destinationType: ShippingType, destination: { postalCode?: string; country?: string }) => void;
     onSelectShipping: (option: ShippingOption) => void;
 }
 
@@ -44,13 +46,15 @@ export function ShippingCalculator({
                 alert(locale === 'id' ? 'Masukkan kode pos 5 digit' : 'Enter 5-digit postal code');
                 return;
             }
-            onCalculate({ postalCode });
+            // Pass destinationType sebagai parameter pertama
+            onCalculate('DOMESTIC', { postalCode });
         } else {
             if (!country) {
                 alert(locale === 'id' ? 'Pilih negara tujuan' : 'Select destination country');
                 return;
             }
-            onCalculate({ country });
+            // Pass destinationType sebagai parameter pertama
+            onCalculate('INTERNATIONAL', { country });
         }
     };
 
@@ -73,7 +77,7 @@ export function ShippingCalculator({
                 <CardContent className="pt-6">
                     <RadioGroup
                         value={shippingType}
-                        onValueChange={(value) => onShippingTypeChange(value as 'DOMESTIC' | 'INTERNATIONAL')}
+                        onValueChange={(value) => onShippingTypeChange(value as ShippingType)}
                         className="grid grid-cols-2 gap-4"
                     >
                         <Label
@@ -88,11 +92,11 @@ export function ShippingCalculator({
                             <RadioGroupItem value="DOMESTIC" id="domestic" className="sr-only" />
                             <Package className="w-6 h-6" />
                             <span className="font-semibold">
-                {locale === 'id' ? 'Domestik' : 'Domestic'}
-              </span>
+                                {locale === 'id' ? 'Domestik' : 'Domestic'}
+                            </span>
                             <span className="text-xs text-muted-foreground text-center">
-                {locale === 'id' ? 'Dalam Indonesia' : 'Within Indonesia'}
-              </span>
+                                {locale === 'id' ? 'Dalam Indonesia' : 'Within Indonesia'}
+                            </span>
                         </Label>
 
                         <Label
@@ -107,11 +111,11 @@ export function ShippingCalculator({
                             <RadioGroupItem value="INTERNATIONAL" id="international" className="sr-only" />
                             <Package className="w-6 h-6" />
                             <span className="font-semibold">
-                {locale === 'id' ? 'Internasional' : 'International'}
-              </span>
+                                {locale === 'id' ? 'Internasional' : 'International'}
+                            </span>
                             <span className="text-xs text-muted-foreground text-center">
-                {locale === 'id' ? 'Luar Indonesia' : 'Outside Indonesia'}
-              </span>
+                                {locale === 'id' ? 'Luar Indonesia' : 'Outside Indonesia'}
+                            </span>
                         </Label>
                     </RadioGroup>
                 </CardContent>
@@ -197,8 +201,8 @@ export function ShippingCalculator({
                                         <div className="flex items-center gap-2">
                                             <Package className="w-4 h-4 text-primary" />
                                             <span className="font-semibold">
-                        {option.courierName} - {option.description}
-                      </span>
+                                                {option.courierName} - {option.description}
+                                            </span>
                                         </div>
                                         <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">

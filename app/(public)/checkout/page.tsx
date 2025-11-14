@@ -15,17 +15,9 @@ import { OrderSummary } from '@/components/checkout/order-summary';
 import { determineCurrency } from '@/lib/payment-utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
+import { ShippingAddress } from '@/types/order';
+import { CheckoutCartItem } from '@/types/checkout';
 
-interface ShippingAddressData {
-    recipientName: string;
-    recipientPhone: string;
-    shippingAddress: string;
-    shippingCity: string;
-    shippingProvince: string;
-    shippingCountry: string;
-    shippingPostalCode: string;
-    shippingNotes: string;
-}
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -46,8 +38,7 @@ export default function CheckoutPage() {
         createOrder,
     } = useCheckout();
 
-    // Ganti any dengan ShippingAddressData
-    const [addressData, setAddressData] = useState<ShippingAddressData | null>(null);
+    const [addressData, setAddressData] = useState<ShippingAddress | null>(null);
 
     // Redirect if cart is empty
     useEffect(() => {
@@ -69,6 +60,34 @@ export default function CheckoutPage() {
     }
 
     const currency = determineCurrency(state.shippingType);
+
+
+    const checkoutItems: CheckoutCartItem[] = cartItems
+        .filter(item => item.product && item.variant)
+        .map(item => ({
+            quantity: item.quantity,
+            product: {
+                id: item.product!.id,
+                name: item.product!.name,
+                slug: item.product!.slug,
+                idPrice: item.product!.idPrice,
+                enPrice: item.product!.enPrice,
+                imageUrl: item.product!.imageUrl,
+                promotion: item.product!.promotion ? {
+                    isActive: item.product!.promotion.isActive,
+                    discount: item.product!.promotion.discount,
+                } : null,
+            },
+            variant: {
+                id: item.variant!.id,
+                variantName: item.variant!.variantName,
+                imageUrl: item.variant!.imageUrl,
+                sku: item.variant!.sku,
+                stock: item.variant!.stock,
+                isActive: item.variant?.isActive, // Menggunakan optional chaining
+                isDeleted: item.variant?.isDeleted, // Menggunakan optional chaining
+            },
+        }));
 
     const handleNext = () => {
         if (state.currentStep === 'address') {
@@ -112,7 +131,7 @@ export default function CheckoutPage() {
                     {/* Left: Steps Content */}
                     <div className="lg:col-span-2 space-y-6">
                         {state.currentStep === 'review' && (
-                            <CartReview items={cartItems} locale={locale} />
+                            <CartReview items={checkoutItems} locale={locale} />
                         )}
 
                         {state.currentStep === 'shipping' && (
@@ -171,7 +190,7 @@ export default function CheckoutPage() {
                     {/* Right: Order Summary */}
                     <div className="lg:col-span-1">
                         <OrderSummary
-                            items={cartItems}
+                            items={checkoutItems}
                             selectedShipping={state.selectedShipping}
                             currency={currency}
                             locale={locale}
