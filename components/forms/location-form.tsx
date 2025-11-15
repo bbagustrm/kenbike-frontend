@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface LocationFormProps {
     value: LocationData;
@@ -103,7 +104,13 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
     const fetchBiteshipAreas = async (query: string, province: string) => {
         setLoadingAreas(true);
         try {
-            const biteshipApiKey = process.env.NEXT_PUBLIC_BITESHIP_API_KEY;
+            const biteshipApiKey = process.env.BITESHIP_API_KEY;
+
+            if (!biteshipApiKey) {
+                console.error("Biteship API key is not configured");
+                toast.error("Location search is not configured. Please contact administrator.");
+                return;
+            }
 
             // Search with province + query for more accurate results
             const searchInput = `${query}, ${province}`;
@@ -112,10 +119,19 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                 `https://api.biteship.com/v1/maps/areas?countries=ID&input=${encodeURIComponent(searchInput)}&type=single`,
                 {
                     headers: {
-                        Authorization: biteshipApiKey || "",
+                        "Authorization": biteshipApiKey,
+                        "Content-Type": "application/json",
                     },
                 }
             );
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error("Invalid API key. Please check your Biteship configuration.");
+                }
+                throw new Error(`API request failed: ${response.status}`);
+            }
+
             const data = await response.json();
 
             if (data.success && data.areas) {
@@ -128,6 +144,9 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             }
         } catch (error) {
             console.error("Error fetching Biteship areas:", error);
+            if (error instanceof Error) {
+                toast.error(error.message);
+            }
         } finally {
             setLoadingAreas(false);
         }
