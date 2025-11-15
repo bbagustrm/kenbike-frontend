@@ -20,7 +20,7 @@ import { getUserInitials } from "@/lib/auth-utils";
 import { toast } from "sonner";
 import { useTranslation } from "@/hooks/use-translation";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
-import { UpdateProfileData } from "@/types/auth";
+import { UpdateProfilePayload } from "@/types/auth";
 
 export default function ProfilePage() {
   const { user, isLoading, updateProfile, updatePassword, deleteProfileImage } = useAuth();
@@ -34,15 +34,14 @@ export default function ProfilePage() {
   const [locationData, setLocationData] = useState<LocationData>(() => {
     if (!user) return { country: "Indonesia" };
 
-    const isIndonesia = user.country === "Indonesia" || user.province;
+    const isIndonesia = user.country === "Indonesia" || !!user.province;
     return {
       country: isIndonesia ? "Indonesia" : "Global",
-      province_name: user.province || undefined,
-      city_name: user.city || undefined,
+      province: user.province || undefined,
+      city: user.city || undefined,
+      district: undefined,
       postal_code: user.postal_code || undefined,
       country_name: !isIndonesia ? user.country : undefined,
-      province: !isIndonesia ? user.province : undefined,
-      city: !isIndonesia ? user.city : undefined,
       address: user.address || undefined,
     };
   });
@@ -96,21 +95,10 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!passwordData.old_password.trim()) {
-      toast.error("Current password is required.");
-      return;
-    }
-
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      toast.error("New passwords do not match.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const updateData: UpdateProfileData = {
+      const updateData: UpdateProfilePayload = {
         phone_number: profileData.phone_number || undefined,
         address: locationData.address,
       };
@@ -118,8 +106,8 @@ export default function ProfilePage() {
       // Add location data based on country
       if (locationData.country === "Indonesia") {
         updateData.country = "Indonesia";
-        updateData.province = locationData.province_name;
-        updateData.city = locationData.city_name;
+        updateData.province = locationData.province;
+        updateData.city = locationData.city;
         updateData.postal_code = locationData.postal_code;
       } else {
         updateData.country = locationData.country_name;
