@@ -36,117 +36,110 @@ export interface LocationData {
     address?: string;
 }
 
-interface BiteshipArea {
-    id: string;
-    name: string;
-    administrative_division_level_1_name: string;
-    administrative_division_level_2_name: string;
-    administrative_division_level_3_name: string;
-    postal_code: number;
+interface KodePosArea {
+    code: number;
+    village: string;
+    district: string;
+    regency: string;
+    province: string;
+    latitude?: number;
+    longitude?: number;
+    elevation?: number;
+    timezone?: string;
 }
 
-// 34 Provinsi Indonesia (Updated 2024)
+// 34 Provinsi Indonesia
 const INDONESIA_PROVINCES = [
     "Aceh",
-    "Sumatera Utara",
-    "Sumatera Barat",
-    "Riau",
-    "Kepulauan Riau",
-    "Jambi",
-    "Sumatera Selatan",
-    "Kepulauan Bangka Belitung",
-    "Bengkulu",
-    "Lampung",
-    "DKI Jakarta",
+    "Bali",
     "Banten",
+    "Bengkulu",
+    "DI Yogyakarta",
+    "DKI Jakarta",
+    "Gorontalo",
+    "Jambi",
     "Jawa Barat",
     "Jawa Tengah",
-    "DI Yogyakarta",
     "Jawa Timur",
-    "Bali",
-    "Nusa Tenggara Barat",
-    "Nusa Tenggara Timur",
     "Kalimantan Barat",
-    "Kalimantan Tengah",
     "Kalimantan Selatan",
+    "Kalimantan Tengah",
     "Kalimantan Timur",
     "Kalimantan Utara",
-    "Sulawesi Utara",
-    "Gorontalo",
-    "Sulawesi Tengah",
-    "Sulawesi Barat",
-    "Sulawesi Selatan",
-    "Sulawesi Tenggara",
+    "Kepulauan Bangka Belitung",
+    "Kepulauan Riau",
+    "Lampung",
     "Maluku",
     "Maluku Utara",
+    "Nusa Tenggara Barat",
+    "Nusa Tenggara Timur",
     "Papua",
     "Papua Barat",
+    "Papua Barat Daya",
+    "Papua Pegunungan",
+    "Papua Selatan",
+    "Papua Tengah",
+    "Riau",
+    "Sulawesi Barat",
+    "Sulawesi Selatan",
+    "Sulawesi Tengah",
+    "Sulawesi Tenggara",
+    "Sulawesi Utara",
+    "Sumatera Barat",
+    "Sumatera Selatan",
+    "Sumatera Utara",
 ];
 
 export function LocationForm({ value, onChange, disabled, required }: LocationFormProps) {
-    const [biteshipAreas, setBiteshipAreas] = useState<BiteshipArea[]>([]);
+    const [areas, setAreas] = useState<KodePosArea[]>([]);
     const [loadingAreas, setLoadingAreas] = useState(false);
     const [openAreaCombobox, setOpenAreaCombobox] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Fetch Biteship areas when province is selected and user searches
+    // Fetch areas when province is selected and user searches
     useEffect(() => {
         if (value.country === "Indonesia" && value.province && searchQuery.length >= 3) {
             const timer = setTimeout(() => {
-                fetchBiteshipAreas(searchQuery, value.province!);
+                fetchAreas(searchQuery, value.province!);
             }, 500);
             return () => clearTimeout(timer);
         } else {
-            setBiteshipAreas([]);
+            setAreas([]);
         }
     }, [searchQuery, value.province, value.country]);
 
-    const fetchBiteshipAreas = async (query: string, province: string) => {
+    const fetchAreas = async (query: string, province: string) => {
         setLoadingAreas(true);
         try {
-            const biteshipApiKey = process.env.BITESHIP_API_KEY;
-
-            if (!biteshipApiKey) {
-                console.error("Biteship API key is not configured");
-                toast.error("Location search is not configured. Please contact administrator.");
-                return;
-            }
-
-            // Search with province + query for more accurate results
-            const searchInput = `${query}, ${province}`;
-
+            // Search by city or district name
             const response = await fetch(
-                `https://api.biteship.com/v1/maps/areas?countries=ID&input=${encodeURIComponent(searchInput)}&type=single`,
-                {
-                    headers: {
-                        "Authorization": biteshipApiKey,
-                        "Content-Type": "application/json",
-                    },
-                }
+                `https://kodepos.vercel.app/search/?q=${encodeURIComponent(query)}`
             );
 
             if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error("Invalid API key. Please check your Biteship configuration.");
-                }
-                throw new Error(`API request failed: ${response.status}`);
+                console.error(`API request failed: ${response.status}`);
+                toast.error("Failed to search location. Please try again.");
+                setLoadingAreas(false);
+                return;
             }
 
-            const data = await response.json();
+            const result = await response.json();
 
-            if (data.success && data.areas) {
+            // API returns { statusCode, code, data }
+            if (result.data && Array.isArray(result.data)) {
                 // Filter results to only show areas from selected province
-                const filteredAreas = data.areas.filter(
-                    (area: BiteshipArea) =>
-                        area.administrative_division_level_1_name.toLowerCase() === province.toLowerCase()
+                const filteredAreas = result.data.filter(
+                    (area: KodePosArea) =>
+                        area.province.toLowerCase() === province.toLowerCase()
                 );
-                setBiteshipAreas(filteredAreas);
+                setAreas(filteredAreas);
+            } else {
+                setAreas([]);
             }
         } catch (error) {
-            console.error("Error fetching Biteship areas:", error);
-            if (error instanceof Error) {
-                toast.error(error.message);
-            }
+            console.error("Error fetching areas:", error);
+            toast.error("Failed to search location. Please try again.");
+            setAreas([]);
         } finally {
             setLoadingAreas(false);
         }
@@ -164,7 +157,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             address: undefined,
         });
         setSearchQuery("");
-        setBiteshipAreas([]);
+        setAreas([]);
     };
 
     const handleProvinceChange = (province: string) => {
@@ -176,16 +169,16 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             postal_code: undefined,
         });
         setSearchQuery("");
-        setBiteshipAreas([]);
+        setAreas([]);
     };
 
-    const handleAreaSelect = (area: BiteshipArea) => {
+    const handleAreaSelect = (area: KodePosArea) => {
         onChange({
             ...value,
-            province: area.administrative_division_level_1_name,
-            city: area.administrative_division_level_2_name,
-            district: area.administrative_division_level_3_name,
-            postal_code: area.postal_code.toString(),
+            province: area.province,
+            city: area.regency,
+            district: area.district,
+            postal_code: area.code.toString(),
         });
         setSearchQuery("");
         setOpenAreaCombobox(false);
@@ -271,7 +264,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                             value={searchQuery}
                                             onValueChange={setSearchQuery}
                                         />
-                                        <CommandList>
+                                        <CommandList className="w-[80vw]">
                                             <CommandEmpty>
                                                 {loadingAreas ? (
                                                     <div className="flex items-center justify-center py-6">
@@ -289,10 +282,10 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                                 )}
                                             </CommandEmpty>
                                             <CommandGroup className="max-h-[300px] overflow-auto">
-                                                {biteshipAreas.map((area) => (
+                                                {areas.map((area, index) => (
                                                     <CommandItem
-                                                        key={area.id}
-                                                        value={area.name}
+                                                        key={`${area.code}-${index}`}
+                                                        value={`${area.district} ${area.regency}`}
                                                         onSelect={() => handleAreaSelect(area)}
                                                         className="flex flex-col items-start py-3"
                                                     >
@@ -300,18 +293,18 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                                             <Check
                                                                 className={cn(
                                                                     "mr-2 h-4 w-4 shrink-0",
-                                                                    value.district === area.administrative_division_level_3_name &&
-                                                                    value.postal_code === area.postal_code.toString()
+                                                                    value.district === area.district &&
+                                                                    value.postal_code === String(area.code)
                                                                         ? "opacity-100"
                                                                         : "opacity-0"
                                                                 )}
                                                             />
                                                             <div className="flex-1">
                                                                 <div className="font-medium">
-                                                                    {area.administrative_division_level_3_name}
+                                                                    {area.village}, {area.district}
                                                                 </div>
                                                                 <div className="text-xs text-muted-foreground">
-                                                                    {area.administrative_division_level_2_name}, {area.administrative_division_level_1_name} • {area.postal_code}
+                                                                    {area.regency}, {area.province} • {area.code}
                                                                 </div>
                                                             </div>
                                                         </div>
