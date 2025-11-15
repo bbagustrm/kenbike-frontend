@@ -1,6 +1,6 @@
 // lib/shipping-utils.ts
 
-import { SHIPPING_ZONES, ShippingZone, getZoneByCountry } from '@/types/shipping';
+import { ShippingZone, getZoneByCountry } from '@/types/shipping';
 
 /**
  * Country list for international shipping selector

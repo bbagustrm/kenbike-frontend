@@ -12,8 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { OrderStatusBadge } from '@/components/order/order-status-badge';
-import { OrderTimeline } from '@/components/order/order-timeline'; // Tambahkan import ini
-import { OrderTracking } from '@/components/order/order-tracking'; // Tambahkan import ini
+import { OrderTimeline } from '@/components/order/order-timeline';
+import { OrderTracking } from '@/components/order/order-tracking';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/payment-utils';
 import { canCancelOrder, canPayOrder, hasShippingLabel } from '@/lib/order-utils';
@@ -40,8 +40,15 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
         try {
             await cancelOrder();
             setShowCancelDialog(false);
-        } catch (error) {
-            // Error handled in hook
+            toast.success(locale === 'id' ? 'Pesanan berhasil dibatalkan' : 'Order successfully cancelled');
+        } catch (error: unknown) {
+            let errorMessage = locale === 'id' ? 'Gagal membatalkan pesanan' : 'Failed to cancel order';
+
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+
+            toast.error(errorMessage);
         } finally {
             setIsCancelling(false);
         }
@@ -144,7 +151,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
                             {/* Tracking (if shipped) */}
                             {['SHIPPED', 'DELIVERED', 'COMPLETED'].includes(order.status) && (
-                                <OrderTracking orderNumber={order.orderNumber} locale={locale} />
+                                <OrderTracking orderNumber={order.orderNumber} locale={locale} country={order.shippingCountry}/>
                             )}
 
                             {/* Items */}

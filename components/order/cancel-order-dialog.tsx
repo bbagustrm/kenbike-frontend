@@ -24,11 +24,11 @@ interface CancelOrderDialogProps {
 }
 
 export function CancelOrderDialog({
-                                      onConfirm,
-                                      isLoading = false,
-                                      locale = 'en',
-                                      triggerClassName,
-                                  }: CancelOrderDialogProps) {
+    onConfirm,
+    isLoading = false,
+    locale = 'en',
+    triggerClassName,
+}: CancelOrderDialogProps) {
     const [open, setOpen] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
 
@@ -37,7 +37,7 @@ export function CancelOrderDialog({
         try {
             await onConfirm();
             setOpen(false);
-        } catch (error) {
+        } catch {
             // Error handled by parent
         } finally {
             setIsCancelling(false);
