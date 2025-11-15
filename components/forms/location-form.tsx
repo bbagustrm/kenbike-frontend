@@ -1,4 +1,3 @@
-// components/forms/location-form.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,10 +10,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown} from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LocationFormProps {
@@ -27,65 +26,14 @@ interface LocationFormProps {
 export interface LocationData {
     country: "Indonesia" | "Global";
     // For Indonesia
-    province_id?: string;
-    province_name?: string;
-    city_id?: string; // Tidak lagi digunakan, bisa dihapus jika mau
-    city_name?: string;
-    district_name?: string;
+    province?: string;
+    city?: string;
+    district?: string;
     postal_code?: string;
     // For Global
-    city?: string;
-    province?: string;
     country_name?: string;
     address?: string;
 }
-
-// Array statis provinsi tetap digunakan
-const PROVINCES = [
-    { id: "aceh-darussalam", name: "Aceh Darussalam" },
-    { id: "sumatera-utara", name: "Sumatera Utara" },
-    { id: "sumatera-barat", name: "Sumatera Barat" },
-    { id: "riau", name: "Riau" },
-    { id: "kepulauan-riau", name: "Kepulauan Riau" },
-    { id: "jambi", name: "Jambi" },
-    { id: "bengkulu", name: "Bengkulu" },
-    { id: "sumatera-selatan", name: "Sumatera Selatan" },
-    { id: "lampung", name: "Lampung" },
-    { id: "bangka-belitung", name: "Kepulauan Bangka Belitung" },
-    { id: "dki-jakarta", name: "DKI Jakarta" },
-    { id: "jawa-barat", name: "Jawa Barat" },
-    { id: "banten", name: "Banten" },
-    { id: "jawa-tengah", name: "Jawa Tengah" },
-    { id: "di-yogyakarta", name: "DI Yogyakarta" },
-    { id: "jawa-timur", name: "Jawa Timur" },
-    { id: "bali", name: "Bali" },
-    { id: "nusa-tenggara-barat", name: "Nusa Tenggara Barat" },
-    { id: "nusa-tenggara-timur", name: "Nusa Tenggara Timur" },
-    { id: "kalimantan-barat", name: "Kalimantan Barat" },
-    { id: "kalimantan-tengah", name: "Kalimantan Tengah" },
-    { id: "kalimantan-selatan", name: "Kalimantan Selatan" },
-    { id: "kalimantan-timur", name: "Kalimantan Timur" },
-    { id: "kalimantan-utara", name: "Kalimantan Utara" },
-    { id: "sulawesi-utara", name: "Sulawesi Utara" },
-    { id: "gorontalo", name: "Gorontalo" },
-    { id: "sulawesi-tengah", name: "Sulawesi Tengah" },
-    { id: "sulawesi-barat", name: "Sulawesi Barat" },
-    { id: "sulawesi-selatan", name: "Sulawesi Selatan" },
-    { id: "sulawesi-tenggara", name: "Sulawesi Tenggara" },
-    { id: "maluku", name: "Maluku" },
-    { id: "maluku-utara", name: "Maluku Utara" },
-    { id: "papua-barat", name: "Papua Barat" },
-    { id: "papua", name: "Papua" },
-    { id: "papua-selatan", name: "Papua Selatan" },
-    { id: "papua-tengah", name: "Papua Tengah" },
-    { id: "papua-pegunungan", name: "Papua Pegunungan" },
-];
-
-interface Province {
-    id: string;
-    name: string;
-}
-
 
 interface BiteshipArea {
     id: string;
@@ -96,37 +44,72 @@ interface BiteshipArea {
     postal_code: number;
 }
 
-export function LocationForm({ value, onChange, disabled, required }: LocationFormProps) {
-    const [provinces] = useState<Province[]>(PROVINCES);
+// 34 Provinsi Indonesia (Updated 2024)
+const INDONESIA_PROVINCES = [
+    "Aceh",
+    "Sumatera Utara",
+    "Sumatera Barat",
+    "Riau",
+    "Kepulauan Riau",
+    "Jambi",
+    "Sumatera Selatan",
+    "Kepulauan Bangka Belitung",
+    "Bengkulu",
+    "Lampung",
+    "DKI Jakarta",
+    "Banten",
+    "Jawa Barat",
+    "Jawa Tengah",
+    "DI Yogyakarta",
+    "Jawa Timur",
+    "Bali",
+    "Nusa Tenggara Barat",
+    "Nusa Tenggara Timur",
+    "Kalimantan Barat",
+    "Kalimantan Tengah",
+    "Kalimantan Selatan",
+    "Kalimantan Timur",
+    "Kalimantan Utara",
+    "Sulawesi Utara",
+    "Gorontalo",
+    "Sulawesi Tengah",
+    "Sulawesi Barat",
+    "Sulawesi Selatan",
+    "Sulawesi Tenggara",
+    "Maluku",
+    "Maluku Utara",
+    "Papua",
+    "Papua Barat",
+];
 
-    const [areas, setAreas] = useState<BiteshipArea[]>([]);
+export function LocationForm({ value, onChange, disabled, required }: LocationFormProps) {
+    const [biteshipAreas, setBiteshipAreas] = useState<BiteshipArea[]>([]);
     const [loadingAreas, setLoadingAreas] = useState(false);
     const [openAreaCombobox, setOpenAreaCombobox] = useState(false);
-    const [areaSearchQuery, setAreaSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
+    // Fetch Biteship areas when province is selected and user searches
     useEffect(() => {
-        if (!value.province_name || !areaSearchQuery || areaSearchQuery.length < 3) {
-            setAreas([]);
-            return;
+        if (value.country === "Indonesia" && value.province && searchQuery.length >= 3) {
+            const timer = setTimeout(() => {
+                fetchBiteshipAreas(searchQuery, value.province!);
+            }, 500);
+            return () => clearTimeout(timer);
+        } else {
+            setBiteshipAreas([]);
         }
+    }, [searchQuery, value.province, value.country]);
 
-        const provinceName = value.province_name;
-        const query = areaSearchQuery;
-
-        const timer = setTimeout(() => {
-            searchAreas(query, provinceName);
-        }, 500); // Debounce 500ms
-
-        return () => clearTimeout(timer);
-    }, [areaSearchQuery, value.province_name]);
-
-    const searchAreas = async (query: string, provinceName: string) => {
+    const fetchBiteshipAreas = async (query: string, province: string) => {
         setLoadingAreas(true);
         try {
             const biteshipApiKey = process.env.NEXT_PUBLIC_BITESHIP_API_KEY;
-            const fullQuery = `${query}, ${provinceName}`;
+
+            // Search with province + query for more accurate results
+            const searchInput = `${query}, ${province}`;
+
             const response = await fetch(
-                `https://api.biteship.com/v1/maps/areas?countries=ID&input=${encodeURIComponent(fullQuery)}&type=single`,
+                `https://api.biteship.com/v1/maps/areas?countries=ID&input=${encodeURIComponent(searchInput)}&type=single`,
                 {
                     headers: {
                         Authorization: biteshipApiKey || "",
@@ -134,14 +117,17 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                 }
             );
             const data = await response.json();
+
             if (data.success && data.areas) {
+                // Filter results to only show areas from selected province
                 const filteredAreas = data.areas.filter(
-                    (area: BiteshipArea) => area.administrative_division_level_1_name === provinceName
+                    (area: BiteshipArea) =>
+                        area.administrative_division_level_1_name.toLowerCase() === province.toLowerCase()
                 );
-                setAreas(filteredAreas);
+                setBiteshipAreas(filteredAreas);
             }
         } catch (error) {
-            console.error("Error searching areas:", error);
+            console.error("Error fetching Biteship areas:", error);
         } finally {
             setLoadingAreas(false);
         }
@@ -150,43 +136,39 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
     const handleCountryChange = (country: "Indonesia" | "Global") => {
         onChange({
             country,
-            province_id: undefined,
-            province_name: undefined,
-            city_id: undefined,
-            city_name: undefined,
-            district_name: undefined,
-            postal_code: undefined,
-            city: undefined,
+            // Reset all fields
             province: undefined,
+            city: undefined,
+            district: undefined,
+            postal_code: undefined,
             country_name: undefined,
             address: undefined,
         });
-        setAreaSearchQuery("");
+        setSearchQuery("");
+        setBiteshipAreas([]);
     };
 
-    const handleProvinceSelect = (province: Province) => {
+    const handleProvinceChange = (province: string) => {
         onChange({
             ...value,
-            province_id: province.id,
-            province_name: province.name,
-            city_id: undefined,
-            city_name: undefined,
-            district_name: undefined,
+            province,
+            city: undefined,
+            district: undefined,
             postal_code: undefined,
         });
-        // Reset query pencarian saat provinsi berubah
-        setAreaSearchQuery("");
+        setSearchQuery("");
+        setBiteshipAreas([]);
     };
 
-    // --- PERUBAHAN: handleCitySelect dihapus, diganti handleAreaSelect ---
     const handleAreaSelect = (area: BiteshipArea) => {
         onChange({
             ...value,
-            city_name: area.administrative_division_level_2_name,
-            district_name: area.administrative_division_level_3_name,
+            province: area.administrative_division_level_1_name,
+            city: area.administrative_division_level_2_name,
+            district: area.administrative_division_level_3_name,
             postal_code: area.postal_code.toString(),
         });
-        setAreaSearchQuery(area.name); // Tampilkan nama area lengkap di input
+        setSearchQuery("");
         setOpenAreaCombobox(false);
     };
 
@@ -217,113 +199,132 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                 <>
                     {/* Province */}
                     <div className="space-y-2">
-                        <Label>
+                        <Label htmlFor="province">
                             Province {required && <span className="text-red-500">*</span>}
                         </Label>
-                        <Popover open={openAreaCombobox} onOpenChange={setOpenAreaCombobox}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openAreaCombobox}
-                                    className="w-full justify-between"
-                                    disabled={disabled}
-                                >
-                                    {value.province_name ? (
-                                        value.province_name
-                                    ) : (
-                                        "Select province..."
-                                    )}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0">
-                                <Command>
-                                    <CommandInput placeholder="Search province..." />
-                                    <CommandEmpty>No province found.</CommandEmpty>
-                                    <CommandGroup className="max-h-64 overflow-auto">
-                                        {provinces.map((province) => (
-                                            <CommandItem
-                                                key={province.id}
-                                                value={province.name}
-                                                onSelect={() => handleProvinceSelect(province)}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        value.province_id === province.id ? "opacity-100" : "opacity-0"
-                                                    )}
-                                                />
-                                                {province.name}
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
+                        <Select
+                            value={value.province}
+                            onValueChange={handleProvinceChange}
+                            disabled={disabled}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select province" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                                {INDONESIA_PROVINCES.map((province) => (
+                                    <SelectItem key={province} value={province}>
+                                        {province}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    {/* --- PERUBAHAN: Ganti bagian City dan District dengan satu bagian Pencarian Area --- */}
-                    <div className="space-y-2">
-                        <Label>
-                            City, District & Postal Code {required && <span className="text-red-500">*</span>}
-                        </Label>
-                        <Popover open={openAreaCombobox} onOpenChange={setOpenAreaCombobox}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    aria-expanded={openAreaCombobox}
-                                    className="w-full justify-between text-left font-normal"
-                                    disabled={disabled || !value.province_name}
-                                >
-                                    {value.city_name && value.district_name && value.postal_code ? (
-                                        `${value.city_name}, ${value.district_name}, ${value.postal_code}`
-                                    ) : (
-                                        "Search for city or district..."
-                                    )}
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0">
-                                <Command shouldFilter={false}>
-                                    <CommandInput
-                                        placeholder="Type city name (e.g., Bandung)..."
-                                        value={areaSearchQuery}
-                                        onValueChange={setAreaSearchQuery}
-                                    />
-                                    <CommandEmpty>
-                                        {loadingAreas ? "Searching..." : "No results found. Try typing at least 3 characters."}
-                                    </CommandEmpty>
-                                    <CommandGroup className="max-h-64 overflow-auto">
-                                        {areas.map((area) => (
-                                            <CommandItem
-                                                key={area.id}
-                                                value={area.name}
-                                                onSelect={() => handleAreaSelect(area)}
-                                            >
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">
-                                                        {area.administrative_division_level_3_name}, {area.administrative_division_level_2_name}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {area.postal_code}
-                                                    </span>
-                                                </div>
-                                            </CommandItem>
-                                        ))}
-                                    </CommandGroup>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-                        <p className="text-xs text-muted-foreground">
-                            Start typing to search for a city or district within {value.province_name || 'the selected province'}.
-                        </p>
-                    </div>
+                    {/* City, District & Postal Code Search */}
+                    {value.province && (
+                        <div className="space-y-2">
+                            <Label>
+                                City, District & Postal Code {required && <span className="text-red-500">*</span>}
+                            </Label>
+                            <Popover open={openAreaCombobox} onOpenChange={setOpenAreaCombobox}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={openAreaCombobox}
+                                        className="w-full justify-between text-left font-normal"
+                                        disabled={disabled}
+                                    >
+                                        {value.city && value.district && value.postal_code ? (
+                                            <span className="truncate">
+                                                {value.district}, {value.city}, {value.province} - {value.postal_code}
+                                            </span>
+                                        ) : (
+                                            <span className="text-muted-foreground">Search city or district...</span>
+                                        )}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                                    <Command shouldFilter={false}>
+                                        <CommandInput
+                                            placeholder={`Type city or district in ${value.province}...`}
+                                            value={searchQuery}
+                                            onValueChange={setSearchQuery}
+                                        />
+                                        <CommandList>
+                                            <CommandEmpty>
+                                                {loadingAreas ? (
+                                                    <div className="flex items-center justify-center py-6">
+                                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                        <span className="text-sm text-muted-foreground">Searching...</span>
+                                                    </div>
+                                                ) : searchQuery.length < 3 ? (
+                                                    <div className="py-6 text-center text-sm text-muted-foreground">
+                                                        Type at least 3 characters to search
+                                                    </div>
+                                                ) : (
+                                                    <div className="py-6 text-center text-sm text-muted-foreground">
+                                                        No results found. Try different keywords.
+                                                    </div>
+                                                )}
+                                            </CommandEmpty>
+                                            <CommandGroup className="max-h-[300px] overflow-auto">
+                                                {biteshipAreas.map((area) => (
+                                                    <CommandItem
+                                                        key={area.id}
+                                                        value={area.name}
+                                                        onSelect={() => handleAreaSelect(area)}
+                                                        className="flex flex-col items-start py-3"
+                                                    >
+                                                        <div className="flex items-center w-full">
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4 shrink-0",
+                                                                    value.district === area.administrative_division_level_3_name &&
+                                                                    value.postal_code === area.postal_code.toString()
+                                                                        ? "opacity-100"
+                                                                        : "opacity-0"
+                                                                )}
+                                                            />
+                                                            <div className="flex-1">
+                                                                <div className="font-medium">
+                                                                    {area.administrative_division_level_3_name}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {area.administrative_division_level_2_name}, {area.administrative_division_level_1_name} • {area.postal_code}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
+                            <p className="text-xs text-muted-foreground">
+                                Type city or district name (e.g., Semarang, Menteng, Denpasar)
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Display selected location */}
+                    {value.city && value.district && value.postal_code && (
+                        <div className="rounded-lg border bg-muted/50 p-3 space-y-1">
+                            <div className="text-sm font-medium">Selected Location:</div>
+                            <div className="text-sm text-muted-foreground">
+                                <div>District: <span className="font-medium text-foreground">{value.district}</span></div>
+                                <div>City: <span className="font-medium text-foreground">{value.city}</span></div>
+                                <div>Province: <span className="font-medium text-foreground">{value.province}</span></div>
+                                <div>Postal Code: <span className="font-medium text-foreground">{value.postal_code}</span></div>
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
 
-            {/* Global Form - Tidak berubah */}
+            {/* Global Form */}
             {value.country === "Global" && (
                 <>
                     <div className="space-y-2">
@@ -340,34 +341,36 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="province">State/Province</Label>
-                        <Input
-                            id="province"
-                            value={value.province || ""}
-                            onChange={(e) => onChange({ ...value, province: e.target.value })}
-                            placeholder="e.g., California"
-                            disabled={disabled}
-                            maxLength={100}
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="province_global">State/Province</Label>
+                            <Input
+                                id="province_global"
+                                value={value.province || ""}
+                                onChange={(e) => onChange({ ...value, province: e.target.value })}
+                                placeholder="e.g., California"
+                                disabled={disabled}
+                                maxLength={100}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="city_global">City</Label>
+                            <Input
+                                id="city_global"
+                                value={value.city || ""}
+                                onChange={(e) => onChange({ ...value, city: e.target.value })}
+                                placeholder="e.g., Los Angeles"
+                                disabled={disabled}
+                                maxLength={100}
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="city">City</Label>
+                        <Label htmlFor="postal_code_global">Postal/ZIP Code</Label>
                         <Input
-                            id="city"
-                            value={value.city || ""}
-                            onChange={(e) => onChange({ ...value, city: e.target.value })}
-                            placeholder="e.g., Los Angeles"
-                            disabled={disabled}
-                            maxLength={100}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="postal_code">Postal/ZIP Code</Label>
-                        <Input
-                            id="postal_code"
+                            id="postal_code_global"
                             value={value.postal_code || ""}
                             onChange={(e) => onChange({ ...value, postal_code: e.target.value })}
                             placeholder="e.g., 90001"
@@ -378,7 +381,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                 </>
             )}
 
-            {/* Full Address (Common for both) - Tidak berubah */}
+            {/* Full Address (Common for both) */}
             <div className="space-y-2">
                 <Label htmlFor="address">
                     Full Address {required && <span className="text-red-500">*</span>}
@@ -387,7 +390,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     id="address"
                     value={value.address || ""}
                     onChange={(e) => onChange({ ...value, address: e.target.value })}
-                    placeholder="Street address, building, floor, etc."
+                    placeholder="Street address, building number, floor, etc."
                     disabled={disabled}
                     maxLength={500}
                 />
