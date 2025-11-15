@@ -29,6 +29,7 @@ jobs:
             NEXT_PUBLIC_API_BASE_URL=${{ secrets.PROD_API_BASE_URL }}
             NEXT_PUBLIC_APP_URL=${{ secrets.PROD_APP_URL }}
             NEXT_PUBLIC_IMAGE_BASE_URL=${{ secrets.PROD_IMAGE_BASE_URL }}
+                        NEXT_PUBLIC_BINDERBYTE_API_KEY=${{ secrets.PROD_BINDERBYTE_API_KEY }}
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.10
