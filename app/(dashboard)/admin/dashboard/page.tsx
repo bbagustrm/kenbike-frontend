@@ -11,7 +11,7 @@ export default function AdminDashboardPage() {
         <div className="container mx-auto py-8 px-4">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold mb-2">
-                    Welcome, {user?.first_name || user?.username}! 👋
+                    Welcome Back , {user?.first_name || user?.username}! 👋
                 </h1>
                 <p className="text-muted-foreground">
                     Admin Dashboard - Monitor your business at a glance
