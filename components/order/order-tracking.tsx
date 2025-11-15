@@ -1,7 +1,7 @@
 // components/order/order-tracking.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,23 +13,23 @@ import { toast } from 'sonner';
 interface OrderTrackingProps {
     orderNumber: string;
     locale?: 'id' | 'en';
+    country?: string;
 }
 
-export function OrderTracking({ orderNumber, locale = 'en' }: OrderTrackingProps) {
+export function OrderTracking({ orderNumber, locale = 'en', country }: OrderTrackingProps) {
     const [tracking, setTracking] = useState<TrackingInfo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const fetchTracking = async (showLoading = true) => {
+    const fetchTracking = useCallback(async (showLoading = true) => {
         if (showLoading) setIsLoading(true);
         else setIsRefreshing(true);
 
         try {
             const response = await OrderService.getTracking(orderNumber);
             setTracking(response.data);
-        } catch (error: unknown) { // Gunakan 'unknown' sesuai aturan TS1196
-            // Lakukan type guard untuk memastikan error adalah instance dari Error
-            let errorMessage = 'Failed to fetch tracking';
+        } catch (error: unknown) {
+            let errorMessage = locale === 'id' ? 'Gagal mengambil pelacakan' : 'Failed to fetch tracking';
             if (error instanceof Error) {
                 errorMessage = error.message;
             }
@@ -38,12 +38,18 @@ export function OrderTracking({ orderNumber, locale = 'en' }: OrderTrackingProps
             setIsLoading(false);
             setIsRefreshing(false);
         }
-    };
+    }, [orderNumber, locale]);
 
     useEffect(() => {
         fetchTracking();
-    }, [orderNumber]);
+    }, [fetchTracking]);
 
+    // 2. LAKUKAN PENGECEKAN BERSYARAT SETELAH HOOK DIDEKLARASIKAN
+    if (country !== 'Indonesia') {
+        return null;
+    }
+
+    // 3. SISANYA DARI LOGIKA KOMPONEN TETAP SAMA
     const formatTimestamp = (timestamp: string) => {
         return new Date(timestamp).toLocaleString(
             locale === 'id' ? 'id-ID' : 'en-US',

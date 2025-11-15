@@ -1,7 +1,7 @@
 // components/payment/payment-pending-checker.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { PaymentService } from '@/services/payment.service';
 import { Button } from '@/components/ui/button';
@@ -17,17 +17,17 @@ interface PaymentPendingCheckerProps {
 }
 
 export function PaymentPendingChecker({
-                                          orderNumber,
-                                          autoCheck = true,
-                                          checkInterval = 5000, // 5 seconds
-                                          locale = 'en'
-                                      }: PaymentPendingCheckerProps) {
+    orderNumber,
+    autoCheck = true,
+    checkInterval = 5000, // 5 seconds
+    locale = 'en'
+}: PaymentPendingCheckerProps) {
     const router = useRouter();
     const [isChecking, setIsChecking] = useState(false);
     const [lastChecked, setLastChecked] = useState<Date | null>(null);
     const [checkCount, setCheckCount] = useState(0);
 
-    const checkPaymentStatus = async () => {
+    const checkPaymentStatus = useCallback(async () => {
         setIsChecking(true);
         try {
             const response = await PaymentService.getPaymentStatus(orderNumber);
@@ -43,16 +43,16 @@ export function PaymentPendingChecker({
                 setLastChecked(new Date());
                 setCheckCount(prev => prev + 1);
             }
-        } catch (error: unknown) { // Ganti Error dengan unknown
+        } catch (error: unknown) {
             console.error('Failed to check payment status:', error);
             // Jika perlu menampilkan pesan error ke pengguna, tambahkan type guard:
-            // if (error instanceof Error) {
-            //     toast.error(error.message);
-            // }
+            if (error instanceof Error) {
+                toast.error(error.message);
+            }
         } finally {
             setIsChecking(false);
         }
-    };
+    }, [orderNumber, locale, router]);
 
     useEffect(() => {
         if (!autoCheck) return;
@@ -72,7 +72,7 @@ export function PaymentPendingChecker({
             clearTimeout(initialTimeout);
             clearInterval(interval);
         };
-    }, [orderNumber, autoCheck, checkInterval]);
+    }, [orderNumber, autoCheck, checkInterval, checkPaymentStatus]); // 4. Tambahkan checkPaymentStatus ke dependensi
 
     return (
         <Card>

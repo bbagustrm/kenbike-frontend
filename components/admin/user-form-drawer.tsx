@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { UserService } from "@/services/user.service";
 import { handleApiError } from "@/lib/api-client";
-import { User, UserRole } from "@/types/auth";
+import { User, UserRole, CreateUserData, UpdateUserData } from "@/types/auth";
 import { PasswordInput } from "@/components/ui/password-input";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
 
@@ -118,38 +118,49 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
         setIsSubmitting(true);
 
         try {
-            const baseData: any = {
-                first_name: formData.first_name,
-                last_name: formData.last_name,
-                email: formData.email,
-                phone_number: formData.phone_number || undefined,
+            const locationPayload = {
                 address: locationData.address,
+                ...(locationData.country === "Indonesia"
+                        ? {
+                            country: "Indonesia",
+                            province: locationData.province_name,
+                            city: locationData.city_name,
+                            postal_code: locationData.postal_code,
+                        }
+                        : {
+                            country: locationData.country_name,
+                            province: locationData.province,
+                            city: locationData.city,
+                            postal_code: locationData.postal_code,
+                        }
+                ),
             };
-
-            // Add location data
-            if (locationData.country === "Indonesia") {
-                baseData.country = "Indonesia";
-                baseData.province = locationData.province_name;
-                baseData.city = locationData.city_name;
-                baseData.postal_code = locationData.postal_code;
-            } else {
-                baseData.country = locationData.country_name;
-                baseData.province = locationData.province;
-                baseData.city = locationData.city;
-                baseData.postal_code = locationData.postal_code;
-            }
 
             if (user) {
                 // Update existing user
-                await UserService.updateUser(user.id, baseData);
+                // Gunakan tipe UpdateUserData
+                const updateData: UpdateUserData = {
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                    email: formData.email,
+                    phone_number: formData.phone_number,
+                    ...locationPayload,
+                };
+
+                await UserService.updateUser(user.id, updateData);
                 toast.success("User updated successfully");
             } else {
                 // Create new user
-                const createData: any = {
-                    ...baseData,
+                // Gunakan tipe CreateUserData
+                const createData: CreateUserData = {
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
                     username: formData.username,
-                    role: formData.role,
+                    email: formData.email,
+                    phone_number: formData.phone_number,
                     password: formData.password,
+                    role: formData.role,
+                    ...locationPayload,
                 };
 
                 await UserService.createUser(createData);

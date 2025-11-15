@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { AuthService } from "@/services/auth.service";
 import { handleApiError } from "@/lib/api-client";
@@ -23,14 +23,11 @@ export default function ForgotPasswordPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [resetToken, setResetToken] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setIsSubmitting(true);
-        setResetToken(null);
 
         try {
             const response = await AuthService.forgotPassword({ email });
@@ -39,7 +36,6 @@ export default function ForgotPasswordPage() {
             // For development: if token is returned in response, show it
             if (response.data && typeof response.data === 'object') {
                 if ('token' in response.data) {
-                    setResetToken(response.data.token as string);
                     console.log("🔑 Reset Token:", response.data.token);
                 }
                 if ('reset_link' in response.data) {

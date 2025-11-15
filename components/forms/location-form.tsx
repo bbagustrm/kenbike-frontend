@@ -79,7 +79,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
         if (value.country === "Indonesia" && provinces.length === 0) {
             fetchProvinces();
         }
-    }, [value.country]);
+    }, [provinces.length, value.country]);
 
     // Fetch cities when province changes
     useEffect(() => {
@@ -89,7 +89,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             setCities([]);
             setBiteshipAreas([]);
         }
-    }, [value.province_id]);
+    }, [value.country, value.province_id]);
 
     // Fetch Biteship areas when city changes
     useEffect(() => {
@@ -99,7 +99,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             }, 500);
             return () => clearTimeout(timer);
         }
-    }, [searchQuery, value.city_name]);
+    }, [searchQuery, value.city_name, value.country]);
 
     const fetchProvinces = async () => {
         setLoadingProvinces(true);

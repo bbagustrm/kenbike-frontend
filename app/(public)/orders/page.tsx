@@ -26,7 +26,6 @@ export default function OrdersPage() {
         setStatusFilter,
         setSearch,
         goToPage,
-        refresh,
     } = useOrderList();
 
     const handleSearch = () => {
