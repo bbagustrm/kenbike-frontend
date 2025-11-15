@@ -104,7 +104,8 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
     const fetchProvinces = async () => {
         setLoadingProvinces(true);
         try {
-            const response = await fetch("https://api.binderbyte.com/wilayah/provinsi?api_key=");
+            const apiKey = process.env.NEXT_PUBLIC_BINDERBYTE_API_KEY;
+            const response = await fetch(`https://api.binderbyte.com/wilayah/provinsi?api_key=${apiKey}`);
             const data = await response.json();
             if (data.value) {
                 setProvinces(data.value);
