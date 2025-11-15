@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { UserService } from "@/services/user.service";
 import { handleApiError } from "@/lib/api-client";
-import { User, UserRole, CreateUserData, UpdateUserData } from "@/types/auth";
+import { User, UserRole, UpdateUserData, CreateUserPayload } from "@/types/auth";
 import { PasswordInput } from "@/components/ui/password-input";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
 
@@ -64,15 +64,14 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                 confirm_password: "",
             });
 
-            const isIndonesia = user.country === "Indonesia" || user.province;
+            const isIndonesia = user.country === "Indonesia" || !!user.province;
             setLocationData({
                 country: isIndonesia ? "Indonesia" : "Global",
-                province_name: user.province || undefined,
-                city_name: user.city || undefined,
+                province: user.province || undefined,
+                city: user.city || undefined,
+                district: undefined,
                 postal_code: user.postal_code || undefined,
                 country_name: !isIndonesia ? user.country : undefined,
-                province: !isIndonesia ? user.province : undefined,
-                city: !isIndonesia ? user.city : undefined,
                 address: user.address || undefined,
             });
         } else {
@@ -115,52 +114,62 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
             }
         }
 
+        // Validate location data
+        if (locationData.country === "Indonesia") {
+            if (!locationData.province || !locationData.city) {
+                toast.error("Please select province and complete location search");
+                return;
+            }
+        } else if (locationData.country === "Global") {
+            if (!locationData.country_name) {
+                toast.error("Please enter country name");
+                return;
+            }
+        }
+
         setIsSubmitting(true);
 
         try {
-            const locationPayload = {
-                address: locationData.address,
-                ...(locationData.country === "Indonesia"
-                        ? {
-                            country: "Indonesia",
-                            province: locationData.province_name,
-                            city: locationData.city_name,
-                            postal_code: locationData.postal_code,
-                        }
-                        : {
-                            country: locationData.country_name,
-                            province: locationData.province,
-                            city: locationData.city,
-                            postal_code: locationData.postal_code,
-                        }
-                ),
-            };
-
             if (user) {
-                // Update existing user
-                // Gunakan tipe UpdateUserData
+                // Update existing user - password tidak diupdate
                 const updateData: UpdateUserData = {
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     email: formData.email,
-                    phone_number: formData.phone_number,
-                    ...locationPayload,
+                    phone_number: formData.phone_number || undefined,
+                    address: locationData.address,
                 };
+
+                // Add location data
+                if (locationData.country === "Indonesia") {
+                    updateData.country = "Indonesia";
+                    updateData.province = locationData.province;
+                    updateData.city = locationData.city;
+                    updateData.postal_code = locationData.postal_code;
+                } else {
+                    updateData.country = locationData.country_name;
+                    updateData.province = locationData.province;
+                    updateData.city = locationData.city;
+                    updateData.postal_code = locationData.postal_code;
+                }
 
                 await UserService.updateUser(user.id, updateData);
                 toast.success("User updated successfully");
             } else {
                 // Create new user
-                // Gunakan tipe CreateUserData
-                const createData: CreateUserData = {
+                const createData: CreateUserPayload = {
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     username: formData.username,
                     email: formData.email,
-                    phone_number: formData.phone_number,
                     password: formData.password,
                     role: formData.role,
-                    ...locationPayload,
+                    phone_number: formData.phone_number || undefined,
+                    address: locationData.address,
+                    country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name,
+                    province: locationData.province,
+                    city: locationData.city,
+                    postal_code: locationData.postal_code,
                 };
 
                 await UserService.createUser(createData);

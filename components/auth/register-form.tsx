@@ -87,8 +87,8 @@ export default function RegisterForm() {
 
         // Validate location data
         if (locationData.country === "Indonesia") {
-            if (!locationData.province_name || !locationData.city_name) {
-                toast.error("Please select province and city", {
+            if (!locationData.province || !locationData.city) {
+                toast.error("Please select province and complete location search", {
                     duration: 5000,
                     position: "top-center",
                 });
@@ -113,20 +113,12 @@ export default function RegisterForm() {
             // Prepare register data based on country
             const registerData: RegisterData = {
                 ...baseData,
-                country: locationData.country,
                 address: locationData.address,
+                country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name || "",
+                province: locationData.province,
+                city: locationData.city,
+                postal_code: locationData.postal_code,
             };
-
-            if (locationData.country === "Indonesia") {
-                registerData.province = locationData.province_name;
-                registerData.city = locationData.city_name;
-                registerData.postal_code = locationData.postal_code;
-            } else {
-                registerData.country = locationData.country_name;
-                registerData.province = locationData.province;
-                registerData.city = locationData.city;
-                registerData.postal_code = locationData.postal_code;
-            }
 
             await register(registerData);
             toast.success(t.auth.register.accountCreated, {

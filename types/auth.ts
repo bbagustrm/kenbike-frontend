@@ -141,13 +141,18 @@ export interface ChangeUserStatusData {
     reason?: string;
 }
 
-export interface LocationData {
-    country: string;
-    province_name?: string;
-    city_name?: string;
-    postal_code?: string;
-    country_name?: string;
-    province?: string;
-    city?: string;
+// Extended interface for create user with password
+export interface CreateUserPayload extends RegisterData {
+    role: UserRole;
+}
+
+// Extended interface for update profile with file
+export interface UpdateProfilePayload {
+    phone_number?: string;
     address?: string;
+    country?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
+    profile_image?: File;
 }
