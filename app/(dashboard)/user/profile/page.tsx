@@ -19,6 +19,8 @@ import { getImageUrl, validateImageFile, formatFileSize } from "@/lib/image-util
 import { getUserInitials } from "@/lib/auth-utils";
 import { toast } from "sonner";
 import { useTranslation } from "@/hooks/use-translation";
+import { LocationForm, LocationData } from "@/components/forms/location-form";
+import { UpdateProfileData } from "@/types/auth";
 
 export default function ProfilePage() {
   const { user, isLoading, updateProfile, updatePassword, deleteProfileImage } = useAuth();
@@ -27,9 +29,24 @@ export default function ProfilePage() {
 
   const [profileData, setProfileData] = useState({
     phone_number: user?.phone_number || "",
-    country: user?.country || "",
-    address: user?.address || "",
   });
+
+  const [locationData, setLocationData] = useState<LocationData>(() => {
+    if (!user) return { country: "Indonesia" };
+
+    const isIndonesia = user.country === "Indonesia" || user.province;
+    return {
+      country: isIndonesia ? "Indonesia" : "Global",
+      province_name: user.province || undefined,
+      city_name: user.city || undefined,
+      postal_code: user.postal_code || undefined,
+      country_name: !isIndonesia ? user.country : undefined,
+      province: !isIndonesia ? user.province : undefined,
+      city: !isIndonesia ? user.city : undefined,
+      address: user.address || undefined,
+    };
+  });
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -79,13 +96,43 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!passwordData.old_password.trim()) {
+      toast.error("Current password is required.");
+      return;
+    }
+
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await updateProfile({
-        ...profileData,
-        profile_image: selectedImage || undefined,
-      });
+      const updateData: UpdateProfileData = {
+        phone_number: profileData.phone_number || undefined,
+        address: locationData.address,
+      };
+
+      // Add location data based on country
+      if (locationData.country === "Indonesia") {
+        updateData.country = "Indonesia";
+        updateData.province = locationData.province_name;
+        updateData.city = locationData.city_name;
+        updateData.postal_code = locationData.postal_code;
+      } else {
+        updateData.country = locationData.country_name;
+        updateData.province = locationData.province;
+        updateData.city = locationData.city;
+        updateData.postal_code = locationData.postal_code;
+      }
+
+      if (selectedImage) {
+        updateData.profile_image = selectedImage;
+      }
+
+      await updateProfile(updateData);
 
       toast.success(t.profile.messages.updateSuccess);
       setSelectedImage(null);
@@ -175,6 +222,7 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
+                  {/* Profile Image Section */}
                   <div className="flex items-center gap-6">
                     <div className="relative">
                       <Avatar className="h-24 w-24 border-2 border-gray-200">
@@ -256,29 +304,32 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>{t.profile.fields.firstName}</Label>
-                      <Input value={user.first_name} disabled className="bg-gray-50" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t.profile.fields.lastName}</Label>
-                      <Input value={user.last_name} disabled className="bg-gray-50" />
+                  {/* Personal Information (Read-only) */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>{t.profile.fields.firstName}</Label>
+                        <Input value={user.first_name} disabled className="bg-gray-50" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t.profile.fields.lastName}</Label>
+                        <Input value={user.last_name} disabled className="bg-gray-50" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t.profile.fields.username}</Label>
+                        <Input value={user.username} disabled className="bg-gray-50" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t.profile.fields.email}</Label>
+                        <Input value={user.email} disabled className="bg-gray-50" />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>{t.profile.fields.username}</Label>
-                      <Input value={user.username} disabled className="bg-gray-50" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t.profile.fields.email}</Label>
-                      <Input value={user.email} disabled className="bg-gray-50" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Contact Information */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
                     <div className="space-y-2">
                       <Label htmlFor="phone_number">{t.profile.fields.phone}</Label>
                       <Input
@@ -292,29 +343,14 @@ export default function ProfilePage() {
                           disabled={isSubmitting}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="country">{t.profile.fields.country}</Label>
-                      <Input
-                          id="country"
-                          placeholder={t.profile.placeholders.country}
-                          value={profileData.country}
-                          onChange={(e) =>
-                              setProfileData({ ...profileData, country: e.target.value })
-                          }
-                          disabled={isSubmitting}
-                      />
-                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="address">{t.profile.fields.address}</Label>
-                    <Input
-                        id="address"
-                        placeholder={t.profile.placeholders.address}
-                        value={profileData.address}
-                        onChange={(e) =>
-                            setProfileData({ ...profileData, address: e.target.value })
-                        }
+                  {/* Location Information */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Location Information</h3>
+                    <LocationForm
+                        value={locationData}
+                        onChange={setLocationData}
                         disabled={isSubmitting}
                     />
                   </div>

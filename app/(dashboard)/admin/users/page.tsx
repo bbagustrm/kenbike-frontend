@@ -66,6 +66,7 @@ import {
     MoreVertical,
     RotateCcw,
     AlertTriangle,
+    Eye,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { getUserInitials } from "@/lib/auth-utils";
@@ -103,6 +104,7 @@ export default function AdminUsersPage() {
     const [showRoleDialog, setShowRoleDialog] = useState(false);
     const [showStatusDialog, setShowStatusDialog] = useState(false);
     const [showUserFormDrawer, setShowUserFormDrawer] = useState(false);
+    const [showUserDetailDialog, setShowUserDetailDialog] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
     const [newRole, setNewRole] = useState<UserRole>("USER");
@@ -173,6 +175,11 @@ export default function AdminUsersPage() {
         setShowUserFormDrawer(true);
     };
 
+    const handleViewUser = (user: User) => {
+        setSelectedUser(user);
+        setShowUserDetailDialog(true);
+    };
+
     const handleDeleteUser = async () => {
         if (!selectedUser) return;
         setIsActionLoading(true);
@@ -180,7 +187,7 @@ export default function AdminUsersPage() {
             await UserService.deleteUser(selectedUser.id, false);
             toast.success(`User ${selectedUser.username} deleted successfully`);
             setShowDeleteDialog(false);
-            fetchUsers();
+            await fetchUsers();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -196,7 +203,7 @@ export default function AdminUsersPage() {
             await UserService.deleteUser(selectedUser.id, true);
             toast.success(`User ${selectedUser.username} permanently deleted`);
             setShowHardDeleteDialog(false);
-            fetchUsers();
+            await fetchUsers();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -207,11 +214,9 @@ export default function AdminUsersPage() {
 
     const handleRestoreUser = async (user: User) => {
         try {
-            // Assuming you have a restore endpoint in your API
-            // If not, you'll need to add this to your UserService
             await UserService.restoreUser(user.id);
             toast.success(`User ${user.username} restored successfully`);
-            fetchUsers();
+            await fetchUsers();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -225,7 +230,7 @@ export default function AdminUsersPage() {
             await UserService.changeUserRole(selectedUser.id, { role: newRole });
             toast.success(`User role changed to ${newRole} successfully`);
             setShowRoleDialog(false);
-            fetchUsers();
+            await fetchUsers();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -246,7 +251,7 @@ export default function AdminUsersPage() {
             toast.success(`User ${newStatus ? "activated" : "suspended"} successfully`);
             setShowStatusDialog(false);
             setStatusReason("");
-            fetchUsers();
+            await fetchUsers();
         } catch (err) {
             const errorResult = handleApiError(err);
             toast.error(errorResult.message);
@@ -407,9 +412,9 @@ export default function AdminUsersPage() {
                                     <TableRow className="hover:bg-transparent">
                                         <TableHead className="pl-4">User</TableHead>
                                         <TableHead>Email</TableHead>
+                                        <TableHead>Location</TableHead>
                                         <TableHead>Role</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Created</TableHead>
                                         <TableHead className="text-center">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -447,6 +452,20 @@ export default function AdminUsersPage() {
                                                 </TableCell>
                                                 <TableCell>{user.email}</TableCell>
                                                 <TableCell>
+                                                    <div className="text-sm">
+                                                        {user.city && user.province ? (
+                                                            <>
+                                                                <p className="font-medium">{user.city}</p>
+                                                                <p className="text-muted-foreground">{user.province}</p>
+                                                            </>
+                                                        ) : user.country ? (
+                                                            <p>{user.country}</p>
+                                                        ) : (
+                                                            <p className="text-muted-foreground">-</p>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
                                                     <Badge variant="outline" className={getRoleColor(user.role)}>
                                                         {user.role}
                                                     </Badge>
@@ -466,13 +485,24 @@ export default function AdminUsersPage() {
                                                         <Badge variant="destructive">Deleted</Badge>
                                                     )}
                                                 </TableCell>
-                                                <TableCell>
-                                                    {new Date(user.created_at).toLocaleDateString()}
-                                                </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
                                                         {activeTab === "active" ? (
                                                             <>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            onClick={() => handleViewUser(user)}
+                                                                            className="hover:bg-transparent"
+                                                                        >
+                                                                            <Eye className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent><p>View Details</p></TooltipContent>
+                                                                </Tooltip>
+
                                                                 <Tooltip>
                                                                     <TooltipTrigger asChild>
                                                                         <Button
@@ -567,6 +597,10 @@ export default function AdminUsersPage() {
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end">
+                                                                    <DropdownMenuItem onClick={() => handleViewUser(user)}>
+                                                                        <Eye className="h-4 w-4 mr-2" />
+                                                                        View Details
+                                                                    </DropdownMenuItem>
                                                                     <DropdownMenuItem onClick={() => handleRestoreUser(user)}>
                                                                         <RotateCcw className="h-4 w-4 mr-2" />
                                                                         Restore
@@ -623,6 +657,131 @@ export default function AdminUsersPage() {
                 onSuccess={fetchUsers}
             />
 
+            {/* User Detail Dialog */}
+            <Dialog open={showUserDetailDialog} onOpenChange={setShowUserDetailDialog}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>User Details</DialogTitle>
+                        <DialogDescription>Complete information about the user</DialogDescription>
+                    </DialogHeader>
+                    {selectedUser && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={getImageUrl(selectedUser.profile_image)} />
+                                    <AvatarFallback className="text-xl">{getUserInitials(selectedUser)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <h3 className="text-xl font-semibold">
+                                        {selectedUser.first_name} {selectedUser.last_name}
+                                    </h3>
+                                    <p className="text-muted-foreground">@{selectedUser.username}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-muted-foreground">Email</Label>
+                                    <p className="font-medium">{selectedUser.email}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Phone Number</Label>
+                                    <p className="font-medium">{selectedUser.phone_number || "-"}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Role</Label>
+                                    <div className="mt-1">
+                                        <Badge variant="outline" className={getRoleColor(selectedUser.role)}>
+                                            {selectedUser.role}
+                                        </Badge>
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Status</Label>
+                                    <div className="mt-1">
+                                        {selectedUser.is_active ? (
+                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                                Active
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                                Suspended
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label className="text-muted-foreground text-base">Location Details</Label>
+                                <div className="bg-muted/50 p-4 rounded-lg space-y-3">
+                                    {selectedUser.country === "Indonesia" || selectedUser.province ? (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Country</p>
+                                                    <p className="font-medium">Indonesia</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Province</p>
+                                                    <p className="font-medium">{selectedUser.province || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">City</p>
+                                                    <p className="font-medium">{selectedUser.city || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Postal Code</p>
+                                                    <p className="font-medium">{selectedUser.postal_code || "-"}</p>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Country</p>
+                                                    <p className="font-medium">{selectedUser.country || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">State/Province</p>
+                                                    <p className="font-medium">{selectedUser.province || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">City</p>
+                                                    <p className="font-medium">{selectedUser.city || "-"}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">Postal Code</p>
+                                                    <p className="font-medium">{selectedUser.postal_code || "-"}</p>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                    {selectedUser.address && (
+                                        <div className="pt-2 border-t">
+                                            <p className="text-xs text-muted-foreground mb-1">Full Address</p>
+                                            <p className="font-medium">{selectedUser.address}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                                <div>
+                                    <Label className="text-muted-foreground">Created At</Label>
+                                    <p className="font-medium">{new Date(selectedUser.created_at).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <Label className="text-muted-foreground">Last Updated</Label>
+                                    <p className="font-medium">{new Date(selectedUser.updated_at).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
             {/* Soft Delete Dialog */}
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <DialogContent>
@@ -672,6 +831,7 @@ export default function AdminUsersPage() {
                 </AlertDialogContent>
             </AlertDialog>
 
+            {/* Change Role Dialog */}
             <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
                 <DialogContent>
                     <DialogHeader>
@@ -702,6 +862,7 @@ export default function AdminUsersPage() {
                 </DialogContent>
             </Dialog>
 
+            {/* Change Status Dialog */}
             <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
                 <DialogContent>
                     <DialogHeader>

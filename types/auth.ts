@@ -8,6 +8,9 @@ export interface User {
     email: string;
     phone_number?: string;
     country?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
     address?: string;
     profile_image?: string;
     role: UserRole;
@@ -38,6 +41,9 @@ export interface RegisterData {
     email: string;
     phone_number?: string;
     country?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
     password: string;
     address?: string;
 }
@@ -53,6 +59,9 @@ export interface UpdateProfileData {
     phone_number?: string;
     address?: string;
     country?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
     profile_image?: File;
 }
 
@@ -118,6 +127,9 @@ export interface UpdateUserData {
     phone_number?: string;
     address?: string;
     country?: string;
+    city?: string;
+    province?: string;
+    postal_code?: string;
 }
 
 export interface ChangeUserRoleData {
@@ -127,4 +139,15 @@ export interface ChangeUserRoleData {
 export interface ChangeUserStatusData {
     is_active: boolean;
     reason?: string;
+}
+
+export interface LocationData {
+    country: string;
+    province_name?: string;
+    city_name?: string;
+    postal_code?: string;
+    country_name?: string;
+    province?: string;
+    city?: string;
+    address?: string;
 }
