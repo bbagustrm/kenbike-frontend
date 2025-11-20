@@ -1,24 +1,42 @@
 // lib/image-utils.ts
 
 /**
- * Get full image URL
- * Backend returns: http://localhost:3000/uploads/profiles/uuid.jpg
- * We need to ensure it's accessible from frontend
+ * Get full image URL - Smart handling untuk dev & prod
+ *
+ * Development:
+ * - Backend: http://localhost:3000
+ * - Frontend: http://localhost:3001
+ * - Next.js proxy: http://localhost:3001/uploads/* -> http://localhost:3000/uploads/*
+ *
+ * Production:
+ * - Backend: https://api.kenbike.store
+ * - Frontend: https://kenbike.store
+ * - Direct access: https://api.kenbike.store/uploads/*
  */
 export function getImageUrl(imageUrl: string | null | undefined): string | undefined {
     if (!imageUrl) return undefined;
 
-    // If it's already a full URL (http/https), return as is
+    // Jika sudah full URL (http/https), return as is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl;
     }
 
-    // If it's a relative path, prepend base URL
+    // Jika relative path (/uploads/...)
     if (imageUrl.startsWith('/uploads')) {
-        const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || '';
-        return `${baseUrl}${imageUrl}`;
+        const isDevelopment = process.env.NODE_ENV === 'development';
+
+        if (isDevelopment) {
+            // ✅ Development: Gunakan Next.js proxy (localhost:3001/uploads/...)
+            // Next.js akan proxy request ke backend (localhost:3000)
+            return imageUrl; // Just return the relative path
+        } else {
+            // ✅ Production: Prepend API base URL
+            const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || '';
+            return `${baseUrl}${imageUrl}`;
+        }
     }
 
+    // Fallback: return as is
     return imageUrl;
 }
 
@@ -83,4 +101,34 @@ export function createImagePreview(file: File): Promise<string> {
         reader.onerror = reject;
         reader.readAsDataURL(file);
     });
+}
+
+/**
+ * ✅ NEW: Convert backend response URL to proper format
+ * Backend bisa return:
+ * - "/uploads/products/uuid.webp" (relative)
+ * - "http://localhost:3000/uploads/products/uuid.webp" (absolute dev)
+ * - "https://api.kenbike.store/uploads/products/uuid.webp" (absolute prod)
+ */
+export function normalizeImageUrl(url: string | null | undefined): string | undefined {
+    if (!url) return undefined;
+
+    // Jika sudah full URL, extract pathname
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        try {
+            const urlObj = new URL(url);
+            // Ambil pathname saja: /uploads/products/uuid.webp
+            return urlObj.pathname;
+        } catch (e) {
+            console.error('Invalid URL:', url);
+            return undefined;
+        }
+    }
+
+    // Jika relative, pastikan dimulai dengan /
+    if (!url.startsWith('/')) {
+        return `/${url}`;
+    }
+
+    return url;
 }

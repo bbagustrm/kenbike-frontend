@@ -10,13 +10,13 @@ import { ProductListItem } from "@/types/product";
 import { formatCurrency } from "@/lib/format-currency";
 import { calculateDiscountedPrice, formatDiscountPercentage } from "@/lib/calculate-discount";
 import { getTotalStock } from "@/lib/check-stock";
-import { getImageUrl } from "@/lib/image-utils";
+import { normalizeImageUrl } from "@/lib/image-utils";
 import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
     product: ProductListItem;
     className?: string;
-    locale?: "id" | "en"; // Added locale prop
+    locale?: "id" | "en";
 }
 
 const getVariantColor = (variantName: string): string => {
@@ -62,7 +62,8 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
         ? calculateDiscountedPrice(originalPrice, product.promotion!.discount)
         : originalPrice;
 
-    const displayImage = product.imageUrl || product.images?.[0]?.imageUrl;
+    // ✅ Normalize image URL
+    const displayImage = normalizeImageUrl(product.imageUrl || product.images?.[0]?.imageUrl);
 
     const variantColors =
         product.variants?.slice(0, 4).map((v) => ({
@@ -90,7 +91,7 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                         className="w-full h-full"
                     >
                         <Image
-                            src={getImageUrl(displayImage) || "/placeholder.png"}
+                            src={displayImage || "/placeholder.png"}
                             alt={product.name}
                             fill
                             className="object-cover"

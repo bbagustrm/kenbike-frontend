@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
         minimumCacheTTL: 31536000,
+
+        // ✅ FIX: Add proper domains configuration
+        domains: [
+            'localhost',           // untuk development
+            'api.kenbike.store',   // untuk production
+        ],
+
         remotePatterns: [
             {
                 protocol: 'http',
@@ -61,6 +68,25 @@ const nextConfig: NextConfig = {
                 ],
             },
         ];
+    },
+
+    // ✅ ADD: Rewrites untuk development - Proxy image requests ke backend
+    async rewrites() {
+        // Hanya aktif di development
+        if (process.env.NODE_ENV === 'development') {
+            return [
+                {
+                    source: '/api/:path*',
+                    destination: 'http://localhost:3000/api/:path*',
+                },
+                // ✅ CRITICAL: Proxy uploads request ke backend
+                {
+                    source: '/uploads/:path*',
+                    destination: 'http://localhost:3000/uploads/:path*',
+                },
+            ];
+        }
+        return [];
     },
 
     // ✅ Compress & Optimize Build
