@@ -1,17 +1,15 @@
 // lib/image-utils.ts
 
 /**
- * Get full image URL - Smart handling untuk dev & prod
+ * ✅ FIXED: Get full image URL with proper environment detection
  *
  * Development:
- * - Backend: http://localhost:3000
- * - Frontend: http://localhost:3001
- * - Next.js proxy: http://localhost:3001/uploads/* -> http://localhost:3000/uploads/*
+ * - Return: /uploads/products/uuid.webp (relative)
+ * - Next.js proxy handles the request
  *
  * Production:
- * - Backend: https://api.kenbike.store
- * - Frontend: https://kenbike.store
- * - Direct access: https://api.kenbike.store/uploads/*
+ * - Return: https://api.kenbike.store/uploads/products/uuid.webp (full URL)
+ * - Direct access to backend
  */
 export function getImageUrl(imageUrl: string | null | undefined): string | undefined {
     if (!imageUrl) return undefined;
@@ -23,20 +21,19 @@ export function getImageUrl(imageUrl: string | null | undefined): string | undef
 
     // Jika relative path (/uploads/...)
     if (imageUrl.startsWith('/uploads')) {
+        // ✅ CRITICAL FIX: Production MUST use full URL
         const isDevelopment = process.env.NODE_ENV === 'development';
 
         if (isDevelopment) {
-            // ✅ Development: Gunakan Next.js proxy (localhost:3001/uploads/...)
-            // Next.js akan proxy request ke backend (localhost:3000)
-            return imageUrl; // Just return the relative path
+            // Development: Return relative path (Next.js proxy will handle)
+            return imageUrl;
         } else {
-            // ✅ Production: Prepend API base URL
-            const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || '';
+            // ✅ Production: ALWAYS return full URL
+            const baseUrl = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'https://api.kenbike.store';
             return `${baseUrl}${imageUrl}`;
         }
     }
 
-    // Fallback: return as is
     return imageUrl;
 }
 
@@ -104,20 +101,19 @@ export function createImagePreview(file: File): Promise<string> {
 }
 
 /**
- * ✅ NEW: Convert backend response URL to proper format
- * Backend bisa return:
- * - "/uploads/products/uuid.webp" (relative)
- * - "http://localhost:3000/uploads/products/uuid.webp" (absolute dev)
- * - "https://api.kenbike.store/uploads/products/uuid.webp" (absolute prod)
+ * ✅ FIXED: Normalize URL untuk backend submission
+ *
+ * Backend menyimpan relative paths di database: /uploads/products/uuid.webp
+ * Function ini convert backend response ke format yang konsisten
  */
 export function normalizeImageUrl(url: string | null | undefined): string | undefined {
     if (!url) return undefined;
 
-    // Jika sudah full URL, extract pathname
+    // Jika sudah full URL, extract pathname saja
     if (url.startsWith('http://') || url.startsWith('https://')) {
         try {
             const urlObj = new URL(url);
-            // Ambil pathname saja: /uploads/products/uuid.webp
+            // Return pathname: /uploads/products/uuid.webp
             return urlObj.pathname;
         } catch (e) {
             console.error('Invalid URL:', url);

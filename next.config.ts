@@ -7,10 +7,10 @@ const nextConfig: NextConfig = {
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
         minimumCacheTTL: 31536000,
 
-        // ✅ FIX: Add proper domains configuration
+        // ✅ CRITICAL: Proper domains configuration for production
         domains: [
-            'localhost',           // untuk development
-            'api.kenbike.store',   // untuk production
+            'localhost',           // Development
+            'api.kenbike.store',   // Production ⭐
         ],
 
         remotePatterns: [
@@ -70,22 +70,25 @@ const nextConfig: NextConfig = {
         ];
     },
 
-    // ✅ ADD: Rewrites untuk development - Proxy image requests ke backend
+    // ✅ CRITICAL: Rewrites ONLY for development
     async rewrites() {
-        // Hanya aktif di development
+        // Only apply rewrites in development
         if (process.env.NODE_ENV === 'development') {
             return [
                 {
                     source: '/api/:path*',
                     destination: 'http://localhost:3000/api/:path*',
                 },
-                // ✅ CRITICAL: Proxy uploads request ke backend
+                // ✅ Proxy uploads request ke backend in development
                 {
                     source: '/uploads/:path*',
                     destination: 'http://localhost:3000/uploads/:path*',
                 },
             ];
         }
+
+        // ✅ Production: NO rewrites
+        // Images akan di-serve langsung dari api.kenbike.store
         return [];
     },
 
