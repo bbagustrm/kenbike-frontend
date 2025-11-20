@@ -10,7 +10,7 @@ import { ProductListItem } from "@/types/product";
 import { formatCurrency } from "@/lib/format-currency";
 import { calculateDiscountedPrice, formatDiscountPercentage } from "@/lib/calculate-discount";
 import { getTotalStock } from "@/lib/check-stock";
-import { normalizeImageUrl } from "@/lib/image-utils";
+import { getImageUrl } from "@/lib/image-utils"; // ✅ Use getImageUrl for display
 import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
@@ -62,8 +62,8 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
         ? calculateDiscountedPrice(originalPrice, product.promotion!.discount)
         : originalPrice;
 
-    // ✅ Normalize image URL
-    const displayImage = normalizeImageUrl(product.imageUrl || product.images?.[0]?.imageUrl);
+    // ✅ Get image URL for display (handles dev/prod automatically)
+    const displayImage = getImageUrl(product.imageUrl || product.images?.[0]?.imageUrl);
 
     const variantColors =
         product.variants?.slice(0, 4).map((v) => ({
