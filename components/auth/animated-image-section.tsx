@@ -5,50 +5,64 @@ import Image from "next/image";
 import { FloatingShapes } from "@/components/animations/floating-shapes";
 import { useState, useEffect } from "react";
 
-const images = ["/image1.webp", "/image2.webp", "/image3.webp"];
+const images = [
+    { src: "/image1.webp", alt: "KEN BIKE Product 1" },
+    { src: "/image2.webp", alt: "KEN BIKE Product 2" },
+    { src: "/image3.webp", alt: "KEN BIKE Product 3" },
+];
 
 export function AnimatedImageSection() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
+        setIsLoaded(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % images.length);
         }, 5000); // Change image every 5 seconds
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isLoaded]);
 
     return (
         <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-primary via-accent to-primary">
-            {/* Animated Image Carousel with Ken Burns Effect */}
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={currentImageIndex}
-                    className="absolute inset-0"
-                    initial={{ opacity: 0, scale: 1 }}
-                    animate={{ opacity: 1, scale: 1.1 }}
-                    exit={{ opacity: 0, scale: 1.2 }}
-                    transition={{
-                        opacity: { duration: 1 },
-                        scale: { duration: 20, ease: "easeInOut" },
-                    }}
-                >
-                    <Image
-                        src={images[currentImageIndex]}
-                        alt={`Login visual ${currentImageIndex + 1}`}
-                        fill
-                        className="object-cover"
-                        priority={currentImageIndex === 0}
-                    />
-                </motion.div>
-            </AnimatePresence>
+            {/* Animated Image Carousel */}
+            <div className="absolute inset-0">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentImageIndex}
+                        className="absolute inset-0"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1, scale: 1.05 }}
+                        exit={{ opacity: 0 }}
+                        transition={{
+                            opacity: { duration: 1.5 },
+                            scale: { duration: 10, ease: "easeOut" },
+                        }}
+                    >
+                        <Image
+                            src={images[currentImageIndex].src}
+                            alt={images[currentImageIndex].alt}
+                            fill
+                            className="object-cover"
+                            priority={currentImageIndex === 0}
+                            quality={90}
+                        />
+                    </motion.div>
+                </AnimatePresence>
+            </div>
 
             {/* Brightness Overlay (50% darker) */}
             <div className="absolute inset-0 bg-black/50" />
 
             {/* Gradient Overlay */}
             <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary/60 via-primary/30 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-primary/70 via-primary/40 to-transparent"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1 }}
@@ -58,31 +72,31 @@ export function AnimatedImageSection() {
             <FloatingShapes count={12} />
 
             {/* Content Overlay */}
-            <div className="relative z-10 flex h-full flex-col justify-center p-12 text-white">
+            <div className="relative z-10 flex h-full flex-col justify-center p-8 lg:p-12 text-white">
                 {/* Logo */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="mb-8"
+                    className="mb-6"
                 >
-                    <div className="relative w-72 h-12">
+                    <div className="relative w-72 h-14 mb-4">
                         <Image
                             src="/logo-white.webp"
-                            alt="Logo"
+                            alt="KEN BIKE Logo"
                             fill
-                            className="object-contain"
+                            className="object-contain object-left"
                             priority
                         />
                     </div>
-                    <p className="text-lg text-white/90 max-w-md mt-4">
+                    <p className="text-base lg:text-lg text-white/90 max-w-md leading-relaxed">
                         Sign in to continue your journey with us. Experience the best in class service and products.
                     </p>
                 </motion.div>
 
                 {/* Image Indicators */}
                 <motion.div
-                    className="flex space-x-2 mb-16"
+                    className="flex space-x-3 mb-16"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
@@ -91,14 +105,14 @@ export function AnimatedImageSection() {
                         <button
                             key={index}
                             onClick={() => setCurrentImageIndex(index)}
-                            className="group"
+                            className="group focus:outline-none"
                             aria-label={`Go to image ${index + 1}`}
                         >
                             <div
-                                className={`h-1 rounded-full transition-all duration-300 ${
+                                className={`h-1 rounded-full transition-all duration-500 ${
                                     index === currentImageIndex
-                                        ? "w-12 bg-secondary"
-                                        : "w-8 bg-white/30 group-hover:bg-white/50"
+                                        ? "w-16 bg-secondary shadow-lg shadow-secondary/50"
+                                        : "w-8 bg-white/30 group-hover:bg-white/60 group-hover:w-12"
                                 }`}
                             />
                         </button>
@@ -107,7 +121,7 @@ export function AnimatedImageSection() {
 
                 {/* Animated Stats - Marketplace Ratings */}
                 <motion.div
-                    className="space-y-6"
+                    className="space-y-5"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.6, duration: 0.8 }}
@@ -121,12 +135,12 @@ export function AnimatedImageSection() {
                     >
                         <div className="h-px w-12 bg-secondary mt-3 flex-shrink-0" />
                         <div>
-                            <p className="text-sm text-white/60 uppercase tracking-wide mb-1">
+                            <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
                                 Shopee Store
                             </p>
                             <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl font-bold text-secondary">4.9★</p>
-                                <p className="text-sm text-white/80">(1.6K penilaian)</p>
+                                <p className="text-2xl lg:text-3xl font-bold text-secondary">4.9★</p>
+                                <p className="text-sm lg:text-base text-white/80">(1.6K penilaian)</p>
                             </div>
                         </div>
                     </motion.div>
@@ -140,12 +154,12 @@ export function AnimatedImageSection() {
                     >
                         <div className="h-px w-12 bg-accent mt-3 flex-shrink-0" />
                         <div>
-                            <p className="text-sm text-white/60 uppercase tracking-wide mb-1">
+                            <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
                                 Tokopedia Store
                             </p>
                             <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl font-bold text-accent">5.0★</p>
-                                <p className="text-sm text-white/80">(3.125K penilaian)</p>
+                                <p className="text-2xl lg:text-3xl font-bold text-accent">5.0★</p>
+                                <p className="text-sm lg:text-base text-white/80">(3.125K penilaian)</p>
                             </div>
                         </div>
                     </motion.div>
@@ -159,12 +173,12 @@ export function AnimatedImageSection() {
                     >
                         <div className="h-px w-12 bg-white/50 mt-3 flex-shrink-0" />
                         <div>
-                            <p className="text-sm text-white/60 uppercase tracking-wide mb-1">
+                            <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
                                 Global Export
                             </p>
                             <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">300+</p>
-                                <p className="text-sm text-white/80 leading-relaxed">
+                                <p className="text-2xl lg:text-3xl font-bold text-white">300+</p>
+                                <p className="text-xs lg:text-sm text-white/80 leading-relaxed">
                                     🇫🇷 France • 🇨🇦 Canada • 🇹🇭 Thailand
                                     <br />
                                     🇦🇺 Australia • 🇯🇵 Japan • And more
