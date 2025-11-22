@@ -1,4 +1,3 @@
-// components/auth/register-form.tsx
 "use client";
 
 import { useState } from "react";
@@ -20,6 +19,8 @@ import {ArrowRight, Loader2} from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";
+import { LocationForm, LocationData } from "@/components/forms/location-form";
+import { RegisterData } from "@/types/auth";
 
 export default function RegisterForm() {
     const { register } = useAuth();
@@ -30,11 +31,14 @@ export default function RegisterForm() {
         username: "",
         email: "",
         phone_number: "",
-        country: "",
         password: "",
         confirm_password: "",
-        address: "",
     });
+
+    const [locationData, setLocationData] = useState<LocationData>({
+        country: "Indonesia",
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,11 +85,42 @@ export default function RegisterForm() {
             return;
         }
 
+        // Validate location data
+        if (locationData.country === "Indonesia") {
+            if (!locationData.province || !locationData.city) {
+                toast.error("Please select province and complete location search", {
+                    duration: 5000,
+                    position: "top-center",
+                });
+                return;
+            }
+        } else {
+            if (!locationData.country_name) {
+                toast.error("Please enter country name", {
+                    duration: 5000,
+                    position: "top-center",
+                });
+                return;
+            }
+        }
+
         setIsSubmitting(true);
 
         try {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { confirm_password: _, ...registerData } = formData;
+            const { confirm_password: _, ...baseData } = formData;
+
+            // Prepare register data based on country
+            const registerData: RegisterData = {
+                ...baseData,
+                address: locationData.address,
+                country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name || "",
+                province: locationData.province,
+                city: locationData.city,
+                district: locationData.district,
+                postal_code: locationData.postal_code,
+            };
+
             await register(registerData);
             toast.success(t.auth.register.accountCreated, {
                 duration: 3000,
@@ -125,160 +160,157 @@ export default function RegisterForm() {
                     </CardHeader>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="first_name">
-                                        {t.auth.register.firstNameLabel} <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="first_name"
-                                        name="first_name"
-                                        placeholder={t.auth.register.placeholders.firstName}
-                                        value={formData.first_name}
-                                        onChange={handleChange}
-                                        disabled={isSubmitting}
-                                        required
-                                        minLength={2}
-                                        maxLength={50}
-                                    />
-                                </div>
+                        <CardContent className="space-y-6">
+                            {/* Personal Information */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="first_name">
+                                            {t.auth.register.firstNameLabel} <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="first_name"
+                                            name="first_name"
+                                            placeholder={t.auth.register.placeholders.firstName}
+                                            value={formData.first_name}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                            required
+                                            minLength={2}
+                                            maxLength={50}
+                                        />
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="last_name">
-                                        {t.auth.register.lastNameLabel} <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="last_name"
-                                        name="last_name"
-                                        placeholder={t.auth.register.placeholders.lastName}
-                                        value={formData.last_name}
-                                        onChange={handleChange}
-                                        disabled={isSubmitting}
-                                        required
-                                        minLength={2}
-                                        maxLength={50}
-                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="last_name">
+                                            {t.auth.register.lastNameLabel} <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="last_name"
+                                            name="last_name"
+                                            placeholder={t.auth.register.placeholders.lastName}
+                                            value={formData.last_name}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                            required
+                                            minLength={2}
+                                            maxLength={50}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="username">
-                                    {t.auth.register.usernameLabel} <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="username"
-                                    name="username"
-                                    placeholder={t.auth.register.placeholders.username}
-                                    value={formData.username}
-                                    onChange={handleChange}
+                            {/* Account Information */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4">Account Information</h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="username">
+                                            {t.auth.register.usernameLabel} <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="username"
+                                            name="username"
+                                            placeholder={t.auth.register.placeholders.username}
+                                            value={formData.username}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                            required
+                                            minLength={3}
+                                            maxLength={30}
+                                            pattern="[a-zA-Z0-9_]+"
+                                            title="Username can only contain letters, numbers, and underscores"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">
+                                            {t.auth.register.emailLabel} <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            placeholder={t.auth.register.placeholders.email}
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone_number">{t.auth.register.phoneLabel}</Label>
+                                        <Input
+                                            id="phone_number"
+                                            name="phone_number"
+                                            type="tel"
+                                            placeholder={t.auth.register.placeholders.phone}
+                                            value={formData.phone_number}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Location Information */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4">Location Information</h3>
+                                <LocationForm
+                                    value={locationData}
+                                    onChange={setLocationData}
                                     disabled={isSubmitting}
                                     required
-                                    minLength={3}
-                                    maxLength={30}
-                                    pattern="[a-zA-Z0-9_]+"
-                                    title="Username can only contain letters, numbers, and underscores"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="email">
-                                    {t.auth.register.emailLabel} <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder={t.auth.register.placeholders.email}
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    disabled={isSubmitting}
-                                    required
-                                />
-                            </div>
+                            {/* Password */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4">Password</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password">
+                                            {t.auth.register.passwordLabel} <span className="text-red-500">*</span>
+                                        </Label>
+                                        <PasswordInput
+                                            id="password"
+                                            name="password"
+                                            placeholder={t.auth.register.placeholders.password}
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone_number">{t.auth.register.phoneLabel}</Label>
-                                    <Input
-                                        id="phone_number"
-                                        name="phone_number"
-                                        type="tel"
-                                        placeholder={t.auth.register.placeholders.phone}
-                                        value={formData.phone_number}
-                                        onChange={handleChange}
-                                        disabled={isSubmitting}
-                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="confirm_password">
+                                            {t.auth.register.confirmPasswordLabel} <span className="text-red-500">*</span>
+                                        </Label>
+                                        <PasswordInput
+                                            id="confirm_password"
+                                            name="confirm_password"
+                                            placeholder={t.auth.register.placeholders.password}
+                                            value={formData.confirm_password}
+                                            onChange={handleChange}
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="country">{t.auth.register.countryLabel}</Label>
-                                    <Input
-                                        id="country"
-                                        name="country"
-                                        placeholder={t.auth.register.placeholders.country}
-                                        value={formData.country}
-                                        onChange={handleChange}
-                                        disabled={isSubmitting}
-                                        maxLength={50}
-                                    />
+                                <div className="text-xs text-muted-foreground space-y-1 mt-4">
+                                    <p>{t.auth.register.passwordRequirements.title}</p>
+                                    <ul className="list-disc list-inside space-y-0.5 ml-2">
+                                        <li>{t.auth.register.passwordRequirements.length}</li>
+                                        <li>{t.auth.register.passwordRequirements.uppercase}</li>
+                                        <li>{t.auth.register.passwordRequirements.lowercase}</li>
+                                        <li>{t.auth.register.passwordRequirements.number}</li>
+                                        <li>{t.auth.register.passwordRequirements.special}</li>
+                                    </ul>
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="address">{t.auth.register.addressLabel}</Label>
-                                <Input
-                                    id="address"
-                                    name="address"
-                                    placeholder={t.auth.register.placeholders.address}
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    disabled={isSubmitting}
-                                    maxLength={255}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">
-                                        {t.auth.register.passwordLabel} <span className="text-red-500">*</span>
-                                    </Label>
-                                    <PasswordInput
-                                        id="password"
-                                        name="password"
-                                        placeholder={t.auth.register.placeholders.password}
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        disabled={isSubmitting}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="confirm_password">
-                                        {t.auth.register.confirmPasswordLabel} <span className="text-red-500">*</span>
-                                    </Label>
-                                    <PasswordInput
-                                        id="confirm_password"
-                                        name="confirm_password"
-                                        placeholder={t.auth.register.placeholders.password}
-                                        value={formData.confirm_password}
-                                        onChange={handleChange}
-                                        disabled={isSubmitting}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="text-xs text-muted-foreground space-y-1">
-                                <p>{t.auth.register.passwordRequirements.title}</p>
-                                <ul className="list-disc list-inside space-y-0.5 ml-2">
-                                    <li>{t.auth.register.passwordRequirements.length}</li>
-                                    <li>{t.auth.register.passwordRequirements.uppercase}</li>
-                                    <li>{t.auth.register.passwordRequirements.lowercase}</li>
-                                    <li>{t.auth.register.passwordRequirements.number}</li>
-                                    <li>{t.auth.register.passwordRequirements.special}</li>
-                                </ul>
                             </div>
                         </CardContent>
 

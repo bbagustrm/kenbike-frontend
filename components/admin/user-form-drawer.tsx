@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { User, UserRole, CreateUserData, UpdateUserData } from "@/types/auth";
-import { UserService } from "@/services/user.service";
-import { handleApiError } from "@/lib/api-client";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Sheet,
     SheetContent,
@@ -12,9 +12,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -24,114 +21,108 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { UserService } from "@/services/user.service";
+import { handleApiError } from "@/lib/api-client";
+import { User, UserRole, UpdateUserData, CreateUserPayload } from "@/types/auth";
+import { PasswordInput } from "@/components/ui/password-input";
+import { LocationForm, LocationData } from "@/components/forms/location-form";
 
 interface UserFormDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    user?: User | null; // If provided, it's edit mode
+    user?: User | null;
     onSuccess: () => void;
 }
 
-export function UserFormDrawer({
-    open,
-    onOpenChange,
-    user,
-    onSuccess,
-}: UserFormDrawerProps) {
-    const isEditMode = !!user;
+export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserFormDrawerProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
     const [formData, setFormData] = useState({
         first_name: "",
         last_name: "",
         username: "",
         email: "",
         phone_number: "",
-        country: "",
-        address: "",
+        role: "USER" as UserRole,
         password: "",
         confirm_password: "",
-        role: "USER" as UserRole,
     });
 
-    // Reset or populate form when drawer opens
-    useEffect(() => {
-        if (open) {
-            if (isEditMode && user) {
-                // Edit mode - populate with user data
-                setFormData({
-                    first_name: user.first_name || "",
-                    last_name: user.last_name || "",
-                    username: user.username || "",
-                    email: user.email || "",
-                    phone_number: user.phone_number || "",
-                    country: user.country || "",
-                    address: user.address || "",
-                    password: "",
-                    confirm_password: "",
-                    role: user.role,
-                });
-            } else {
-                // Create mode - reset form
-                setFormData({
-                    first_name: "",
-                    last_name: "",
-                    username: "",
-                    email: "",
-                    phone_number: "",
-                    country: "",
-                    address: "",
-                    password: "",
-                    confirm_password: "",
-                    role: "USER",
-                });
-            }
-            setFieldErrors({});
-        }
-    }, [open, isEditMode, user]);
+    const [locationData, setLocationData] = useState<LocationData>({
+        country: "Indonesia",
+    });
 
-    const handleChange = (field: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        // Clear field error when user starts typing
-        if (fieldErrors[field]) {
-            setFieldErrors((prev) => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                first_name: user.first_name,
+                last_name: user.last_name,
+                username: user.username,
+                email: user.email,
+                phone_number: user.phone_number || "",
+                role: user.role,
+                password: "",
+                confirm_password: "",
+            });
+
+            const isIndonesia = user.country === "Indonesia" || !!user.province;
+            setLocationData({
+                country: isIndonesia ? "Indonesia" : "Global",
+                province: user.province || undefined,
+                city: user.city || undefined,
+                district: user.district || undefined,  // ✅ Include district
+                postal_code: user.postal_code || undefined,
+                country_name: !isIndonesia ? user.country : undefined,
+                address: user.address || undefined,
+            });
+        } else {
+            setFormData({
+                first_name: "",
+                last_name: "",
+                username: "",
+                email: "",
+                phone_number: "",
+                role: "USER",
+                password: "",
+                confirm_password: "",
+            });
+            setLocationData({
+                country: "Indonesia",
             });
         }
-    };
+    }, [user, open]);
 
-    const validatePassword = (password: string): string | null => {
-        if (password.length < 8) return "Password must be at least 8 characters";
-        if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
-        if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
-        if (!/[0-9]/.test(password)) return "Password must contain at least one number";
-        if (!/[!@#$%^&*]/.test(password)) return "Password must contain at least one special character";
-        return null;
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setFieldErrors({});
 
-        // Validation
-        if (!isEditMode) {
-            // Password required for create
+        // Validate password for new users
+        if (!user) {
             if (!formData.password) {
                 toast.error("Password is required");
                 return;
             }
-
             if (formData.password !== formData.confirm_password) {
                 toast.error("Passwords do not match");
                 return;
             }
+            if (formData.password.length < 8) {
+                toast.error("Password must be at least 8 characters");
+                return;
+            }
+        }
 
-            const passwordError = validatePassword(formData.password);
-            if (passwordError) {
-                toast.error(passwordError);
+        // Validate location data
+        if (locationData.country === "Indonesia") {
+            if (!locationData.province || !locationData.city) {
+                toast.error("Please select province and complete location search");
+                return;
+            }
+        } else if (locationData.country === "Global") {
+            if (!locationData.country_name) {
+                toast.error("Please enter country name");
                 return;
             }
         }
@@ -139,49 +130,60 @@ export function UserFormDrawer({
         setIsSubmitting(true);
 
         try {
-            if (isEditMode && user) {
-                // Update user
+            if (user) {
+                // Update existing user - password tidak diupdate
                 const updateData: UpdateUserData = {
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     email: formData.email,
                     phone_number: formData.phone_number || undefined,
-                    country: formData.country || undefined,
-                    address: formData.address || undefined,
+                    address: locationData.address,
                 };
 
+                // Add location data
+                if (locationData.country === "Indonesia") {
+                    updateData.country = "Indonesia";
+                    updateData.province = locationData.province;
+                    updateData.city = locationData.city;
+                    updateData.district = locationData.district;
+                    updateData.postal_code = locationData.postal_code;
+                } else {
+                    updateData.country = locationData.country_name;
+                    updateData.province = locationData.province;
+                    updateData.city = locationData.city;
+                    updateData.district = locationData.district;
+                    updateData.postal_code = locationData.postal_code;
+                }
+
                 await UserService.updateUser(user.id, updateData);
-                toast.success(`User ${formData.username} updated successfully`);
+                toast.success("User updated successfully");
             } else {
-                // Create user
-                const createData: CreateUserData = {
+                // Create new user
+                const createData: CreateUserPayload = {
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
-                    phone_number: formData.phone_number || undefined,
-                    country: formData.country || undefined,
-                    address: formData.address || undefined,
                     role: formData.role,
+                    phone_number: formData.phone_number || undefined,
+                    address: locationData.address,
+                    country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name,
+                    province: locationData.province,
+                    city: locationData.city,
+                    district: locationData.district,
+                    postal_code: locationData.postal_code,
                 };
 
                 await UserService.createUser(createData);
-                toast.success(`User ${formData.username} created successfully`);
+                toast.success("User created successfully");
             }
 
-            onSuccess(); // Refresh user list
-            onOpenChange(false); // Close drawer
+            onSuccess();
+            onOpenChange(false);
         } catch (err) {
             const errorResult = handleApiError(err);
-
-            // Show general error message with toast
             toast.error(errorResult.message);
-
-            // Set field-specific errors
-            if (errorResult.fieldErrors) {
-                setFieldErrors(errorResult.fieldErrors);
-            }
         } finally {
             setIsSubmitting(false);
         }
@@ -189,21 +191,20 @@ export function UserFormDrawer({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="sm:max-w-[540px] overflow-y-auto">
-                <form onSubmit={handleSubmit}>
-                    <SheetHeader>
-                        <SheetTitle>
-                            {isEditMode ? "Edit User" : "Create New User"}
-                        </SheetTitle>
-                        <SheetDescription>
-                            {isEditMode
-                                ? "Update user information. Username and email cannot be changed."
-                                : "Fill in the details below to create a new user account."}
-                        </SheetDescription>
-                    </SheetHeader>
+            <SheetContent className="overflow-y-auto sm:max-w-xl px-8">
+                <SheetHeader>
+                    <SheetTitle>{user ? "Edit User" : "Create New User"}</SheetTitle>
+                    <SheetDescription>
+                        {user
+                            ? "Update user information. Click save when you're done."
+                            : "Fill in the information to create a new user account."}
+                    </SheetDescription>
+                </SheetHeader>
 
-                    <div className="space-y-4 p-4">
-                        {/* First Name & Last Name */}
+                <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+                    {/* Personal Information */}
+                    <div className="space-y-4">
+                        <h3 className="font-semibold text-sm">Personal Information</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="first_name">
@@ -211,18 +212,13 @@ export function UserFormDrawer({
                                 </Label>
                                 <Input
                                     id="first_name"
-                                    placeholder="John"
+                                    name="first_name"
                                     value={formData.first_name}
-                                    onChange={(e) => handleChange("first_name", e.target.value)}
-                                    disabled={isSubmitting}
+                                    onChange={handleChange}
                                     required
                                     minLength={2}
                                     maxLength={50}
-                                    className={fieldErrors.first_name ? "border-red-500" : ""}
                                 />
-                                {fieldErrors.first_name && (
-                                    <p className="text-xs text-red-500">{fieldErrors.first_name}</p>
-                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="last_name">
@@ -230,134 +226,69 @@ export function UserFormDrawer({
                                 </Label>
                                 <Input
                                     id="last_name"
-                                    placeholder="Doe"
+                                    name="last_name"
                                     value={formData.last_name}
-                                    onChange={(e) => handleChange("last_name", e.target.value)}
-                                    disabled={isSubmitting}
+                                    onChange={handleChange}
                                     required
                                     minLength={2}
                                     maxLength={50}
-                                    className={fieldErrors.last_name ? "border-red-500" : ""}
                                 />
-                                {fieldErrors.last_name && (
-                                    <p className="text-xs text-red-500">{fieldErrors.last_name}</p>
-                                )}
                             </div>
                         </div>
+                    </div>
 
-                        {/* Username (only for create) */}
-                        {!isEditMode && (
-                            <div className="space-y-2">
-                                <Label htmlFor="username">
-                                    Username <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="username"
-                                    placeholder="johndoe"
-                                    value={formData.username}
-                                    onChange={(e) => handleChange("username", e.target.value)}
-                                    disabled={isSubmitting}
-                                    required
-                                    minLength={3}
-                                    maxLength={30}
-                                    pattern="[a-zA-Z0-9_]+"
-                                    title="Username can only contain letters, numbers, and underscores"
-                                    className={fieldErrors.username ? "border-red-500" : ""}
-                                />
-                                {fieldErrors.username && (
-                                    <p className="text-xs text-red-500">{fieldErrors.username}</p>
-                                )}
-                            </div>
-                        )}
+                    {/* Account Information */}
+                    <div className="space-y-4">
+                        <h3 className="font-semibold text-sm">Account Information</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="username">
+                                Username <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="username"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                required={!user}
+                                disabled={!!user}
+                                minLength={3}
+                                maxLength={30}
+                                pattern="[a-zA-Z0-9_]+"
+                            />
+                            {user && (
+                                <p className="text-xs text-muted-foreground">
+                                    Username cannot be changed
+                                </p>
+                            )}
+                        </div>
 
-                        {/* Email */}
                         <div className="space-y-2">
                             <Label htmlFor="email">
                                 Email <span className="text-red-500">*</span>
                             </Label>
                             <Input
                                 id="email"
+                                name="email"
                                 type="email"
-                                placeholder="john@example.com"
                                 value={formData.email}
-                                onChange={(e) => handleChange("email", e.target.value)}
-                                disabled={isSubmitting || isEditMode}
+                                onChange={handleChange}
                                 required
-                                className={fieldErrors.email ? "border-red-500" : ""}
-                            />
-                            {fieldErrors.email && (
-                                <p className="text-xs text-red-500">{fieldErrors.email}</p>
-                            )}
-                            {isEditMode && (
-                                <p className="text-xs text-muted-foreground">
-                                    Email cannot be changed
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Phone & Country */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="phone_number">Phone Number</Label>
-                                <Input
-                                    id="phone_number"
-                                    type="tel"
-                                    placeholder="+628123456789"
-                                    value={formData.phone_number}
-                                    onChange={(e) => handleChange("phone_number", e.target.value)}
-                                    disabled={isSubmitting}
-                                    className={fieldErrors.phone_number ? "border-red-500" : ""}
-                                />
-                                {fieldErrors.phone_number && (
-                                    <p className="text-xs text-red-500">{fieldErrors.phone_number}</p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="country">Country</Label>
-                                <Input
-                                    id="country"
-                                    placeholder="Indonesia"
-                                    value={formData.country}
-                                    onChange={(e) => handleChange("country", e.target.value)}
-                                    disabled={isSubmitting}
-                                    maxLength={50}
-                                    className={fieldErrors.country ? "border-red-500" : ""}
-                                />
-                                {fieldErrors.country && (
-                                    <p className="text-xs text-red-500">{fieldErrors.country}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Address */}
-                        <div className="space-y-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Input
-                                id="address"
-                                placeholder="Jl. Example No. 123"
-                                value={formData.address}
-                                onChange={(e) => handleChange("address", e.target.value)}
-                                disabled={isSubmitting}
                                 maxLength={255}
-                                className={fieldErrors.address ? "border-red-500" : ""}
                             />
-                            {fieldErrors.address && (
-                                <p className="text-xs text-red-500">{fieldErrors.address}</p>
-                            )}
                         </div>
 
-                        {/* Role (only for create) */}
-                        {!isEditMode && (
+                        {!user && (
                             <div className="space-y-2">
                                 <Label htmlFor="role">
                                     Role <span className="text-red-500">*</span>
                                 </Label>
                                 <Select
                                     value={formData.role}
-                                    onValueChange={(value) => handleChange("role", value)}
-                                    disabled={isSubmitting}
+                                    onValueChange={(value) =>
+                                        setFormData({ ...formData, role: value as UserRole })
+                                    }
                                 >
-                                    <SelectTrigger className={fieldErrors.role ? "border-red-500" : ""}>
+                                    <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -366,79 +297,68 @@ export function UserFormDrawer({
                                         <SelectItem value="OWNER">Owner</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {fieldErrors.role && (
-                                    <p className="text-xs text-red-500">{fieldErrors.role}</p>
-                                )}
                             </div>
-                        )}
-
-                        {/* Password (only for create) */}
-                        {!isEditMode && (
-                            <>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="password">
-                                            Password <span className="text-red-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="password"
-                                            type="password"
-                                            placeholder="••••••••"
-                                            value={formData.password}
-                                            onChange={(e) => handleChange("password", e.target.value)}
-                                            disabled={isSubmitting}
-                                            required
-                                            className={fieldErrors.password ? "border-red-500" : ""}
-                                        />
-                                        {fieldErrors.password && (
-                                            <p className="text-xs text-red-500">{fieldErrors.password}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="confirm_password">
-                                            Confirm Password <span className="text-red-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="confirm_password"
-                                            type="password"
-                                            placeholder="••••••••"
-                                            value={formData.confirm_password}
-                                            onChange={(e) => handleChange("confirm_password", e.target.value)}
-                                            disabled={isSubmitting}
-                                            required
-                                            className={fieldErrors.confirm_password ? "border-red-500" : ""}
-                                        />
-                                        {fieldErrors.confirm_password && (
-                                            <p className="text-xs text-red-500">{fieldErrors.confirm_password}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="text-xs text-muted-foreground space-y-1">
-                                    <p>Password must contain:</p>
-                                    <ul className="list-disc list-inside space-y-0.5 ml-2">
-                                        <li>At least 8 characters</li>
-                                        <li>One uppercase letter (A-Z)</li>
-                                        <li>One lowercase letter (a-z)</li>
-                                        <li>One number (0-9)</li>
-                                        <li>One special character (!@#$%^&*)</li>
-                                    </ul>
-                                </div>
-                            </>
                         )}
                     </div>
 
-                    <SheetFooter>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    {isEditMode ? "Updating..." : "Creating..."}
-                                </>
-                            ) : (
-                                <>{isEditMode ? "Update User" : "Create User"}</>
-                            )}
-                        </Button>
+                    {/* Password (only for new users) */}
+                    {!user && (
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-sm">Password</h3>
+                            <div className="space-y-2">
+                                <Label htmlFor="password">
+                                    Password <span className="text-red-500">*</span>
+                                </Label>
+                                <PasswordInput
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="confirm_password">
+                                    Confirm Password <span className="text-red-500">*</span>
+                                </Label>
+                                <PasswordInput
+                                    id="confirm_password"
+                                    name="confirm_password"
+                                    value={formData.confirm_password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Contact Information */}
+                    <div className="space-y-4">
+                        <h3 className="font-semibold text-sm">Contact Information</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="phone_number">Phone Number</Label>
+                            <Input
+                                id="phone_number"
+                                name="phone_number"
+                                type="tel"
+                                value={formData.phone_number}
+                                onChange={handleChange}
+                                placeholder="+62 812 3456 7890"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Location Information */}
+                    <div className="space-y-4">
+                        <h3 className="font-semibold text-sm">Location Information</h3>
+                        <LocationForm
+                            value={locationData}
+                            onChange={setLocationData}
+                            disabled={isSubmitting}
+                        />
+                    </div>
+
+                    <SheetFooter className="gap-2">
                         <Button
                             type="button"
                             variant="outline"
@@ -446,6 +366,16 @@ export function UserFormDrawer({
                             disabled={isSubmitting}
                         >
                             Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    {user ? "Updating..." : "Creating..."}
+                                </>
+                            ) : (
+                                <>{user ? "Update User" : "Create User"}</>
+                            )}
                         </Button>
                     </SheetFooter>
                 </form>
