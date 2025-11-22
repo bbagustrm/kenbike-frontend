@@ -53,6 +53,7 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
     const totalStock = getTotalStock(product.variants);
     const isOutOfStock = totalStock === 0;
     const hasPromotion = !!product.promotion;
+    const isPreOrder = !!product.isPreOrder;
 
     // Get price based on locale
     const originalPrice = locale === "id" ? product.idPrice : product.enPrice;
@@ -126,6 +127,23 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                             className="absolute top-2 right-2 bg-gradient-to-r bg-accent text-accent-foreground text-xs font-bold font-mono px-2 py-0.5 rounded-full shadow-sm"
                         >
                             {formatDiscountPercentage(product.promotion!.discount)}
+                        </motion.div>
+                    )}
+
+                    {/* Pre Order Badge */}
+                    {isPreOrder && !isOutOfStock && (
+                        <motion.div
+                            initial={{ scale: 0, x: -10 }}
+                            animate={{ scale: 1, x: 0 }}
+                            transition={{
+                                type: "spring",
+                                stiffness: 200,
+                                damping: 15,
+                                delay: 0.1
+                            }}
+                            className="absolute top-2 left-2 bg-card text-card-foreground text-xs font-bold px-2 py-0.5 rounded-full border-border"
+                        >
+                            Pre Order
                         </motion.div>
                     )}
                 </div>

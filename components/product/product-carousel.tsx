@@ -67,7 +67,7 @@ export function ProductCarousel({ products, className }: ProductCarouselProps) {
             {/* Scrollable Container */}
             <div
                 ref={scrollContainerRef}
-                className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+                className="flex gap-4 overflow-x-auto overflow-auto scrollbar-hide snap-x snap-mandatory"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
                 {products.map((product, index) => (
