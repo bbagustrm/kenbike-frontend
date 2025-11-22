@@ -1,10 +1,9 @@
-// components/auth/login-form.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import {
     Card,
     CardContent,
@@ -13,14 +12,15 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
-import {ArrowRight, Loader2} from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";
+import { AnimatedInput } from "@/components/animations/input-animation";
+import { AnimatedButton } from "@/components/animations/button-ripple";
 
 export default function LoginForm() {
     const { login } = useAuth();
@@ -30,6 +30,7 @@ export default function LoginForm() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
 
     const registered = searchParams.get("registered");
     const redirect = searchParams.get("redirect");
@@ -90,6 +91,11 @@ export default function LoginForm() {
             }
 
             setError(errorMessage);
+
+            // Shake animation on error
+            const form = event.currentTarget;
+            form.classList.add("animate-shake");
+            setTimeout(() => form.classList.remove("animate-shake"), 500);
         } finally {
             setIsSubmitting(false);
         }
@@ -97,79 +103,144 @@ export default function LoginForm() {
 
     return (
         <>
-            <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-                <Card className="w-full max-w-md">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="w-full max-w-md"
+            >
+                <Card className="border-2 shadow-2xl">
                     <CardHeader>
-                        <CardTitle className="text-2xl">{t.auth.login.title}</CardTitle>
-                        <CardDescription>
-                            {t.auth.login.description}
-                        </CardDescription>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <CardTitle className="text-3xl font-display">
+                                {t.auth.login.title}
+                            </CardTitle>
+                            <CardDescription className="text-base mt-2">
+                                {t.auth.login.description}
+                            </CardDescription>
+                        </motion.div>
                     </CardHeader>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email">{t.auth.login.emailLabel}</Label>
-                                <Input
+                        <CardContent className="space-y-6">
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <AnimatedInput
                                     id="email"
+                                    label={t.auth.login.emailLabel}
                                     type="email"
-                                    autoComplete="email"
                                     placeholder={t.auth.login.emailPlaceholder}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={isSubmitting}
                                     required
+                                    autoComplete="email"
                                 />
-                            </div>
+                            </motion.div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password">{t.auth.login.passwordLabel}</Label>
-                                <PasswordInput
-                                    id="password"
-                                    autoComplete="current-password"
-                                    placeholder={t.auth.login.passwordPlaceholder}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    disabled={isSubmitting}
-                                    required
-                                />
-                                <div className="text-xs text-primary flex justify-between items-center">
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="space-y-2"
+                            >
+                                <motion.div
+                                    animate={{
+                                        y: isFocused ? -2 : 0,
+                                    }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Label htmlFor="password">
+                                        {t.auth.login.passwordLabel}
+                                    </Label>
+                                </motion.div>
+                                <motion.div
+                                    animate={{
+                                        scale: isFocused ? 1.01 : 1,
+                                    }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <PasswordInput
+                                        id="password"
+                                        autoComplete="current-password"
+                                        placeholder={t.auth.login.passwordPlaceholder}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onFocus={() => setIsFocused(true)}
+                                        onBlur={() => setIsFocused(false)}
+                                        disabled={isSubmitting}
+                                        required
+                                        className={`transition-all duration-200 ${
+                                            isFocused
+                                                ? "ring-2 ring-secondary shadow-lg shadow-secondary/20"
+                                                : ""
+                                        }`}
+                                    />
+                                </motion.div>
+                                <div className="text-xs text-primary flex justify-between items-center pt-2">
                                     <span></span>
                                     <Link
                                         href="/forgot-password"
-                                        className="hover:underline font-medium"
+                                        className="hover:underline font-medium hover:text-accent transition-colors"
                                     >
                                         {t.auth.login.forgotPassword}
                                     </Link>
                                 </div>
-                            </div>
+                            </motion.div>
                         </CardContent>
 
                         <CardFooter className="flex flex-col space-y-4">
-                            <Button type="submit" variant="secondary" className="w-full" disabled={isSubmitting}>
-                                {isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        <h3 className="text-base">{t.auth.login.signingIn}</h3>
-                                    </>
-                                ) : (
-                                    <>
-                                        <h3 className="text-base">{t.auth.login.signInButton}</h3>
-                                        <ArrowRight />
-                                    </>
+                            <motion.div
+                                className="w-full"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 }}
+                            >
+                                <AnimatedButton
+                                    type="submit"
+                                    variant="secondary"
+                                    className="w-full text-base font-bold"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            {t.auth.login.signingIn}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {t.auth.login.signInButton}
+                                            <ArrowRight className="ml-2 h-5 w-5" />
+                                        </>
                                     )}
-                            </Button>
+                                </AnimatedButton>
+                            </motion.div>
 
-                            <p className="text-sm text-center text-muted-foreground">
+                            <motion.p
+                                className="text-sm text-center text-muted-foreground"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.6 }}
+                            >
                                 {t.auth.login.noAccount}{" "}
-                                <Link href="/register" className="text-primary hover:underline font-medium">
+                                <Link
+                                    href="/register"
+                                    className="text-primary hover:text-accent font-medium hover:underline transition-colors"
+                                >
                                     {t.auth.login.signUpLink}
                                 </Link>
-                            </p>
+                            </motion.p>
                         </CardFooter>
                     </form>
                 </Card>
-            </div>
+            </motion.div>
             <Toaster />
         </>
     );
