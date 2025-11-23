@@ -44,7 +44,7 @@ import {
     EyeOff,
     Star,
     StarOff,
-    AlertTriangle,
+    AlertTriangle, Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -482,6 +482,7 @@ export default function ProductsPage({
                                                                     <Badge
                                                                         className="w-fit bg-accent text-accent-foreground hover:bg-accent/90"
                                                                     >
+                                                                        <Clock className="w-3 h-3" />
                                                                         Pre Order
                                                                     </Badge>
                                                                 )}

@@ -4,7 +4,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import {Clock, Star} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProductListItem } from "@/types/product";
 import { formatCurrency } from "@/lib/format-currency";
@@ -141,8 +141,9 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                                 damping: 15,
                                 delay: 0.1
                             }}
-                            className="absolute top-2 left-2 bg-card text-card-foreground text-xs font-bold px-2 py-0.5 rounded-full border-border"
+                            className="absolute top-2 left-2 bg-background text-card-foreground text-xs font-bold px-2 py-0.5 rounded-full border border-border flex gap-2"
                         >
+                            <Clock className="w-3 h-3" />
                             Pre Order
                         </motion.div>
                     )}

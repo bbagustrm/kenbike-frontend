@@ -28,6 +28,13 @@ import {
   Grid3x3,
   Tag,
   Percent,
+  User,
+  ShoppingCart,
+  LayoutDashboard,
+  Users,
+  Settings,
+  BarChart3,
+  LogOut,
 } from "lucide-react";
 import {
   Popover,
@@ -67,7 +74,7 @@ import {
 
 export default function Navbar() {
   const router = useRouter();
-  const { user, isAuthenticated} = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { t, locale, setLocale } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -87,7 +94,7 @@ export default function Navbar() {
     { name: "All Products", href: "/search", icon: Package },
   ];
 
-  // ✅ Fetch data dengan delay untuk non-critical content
+  // Fetch data dengan delay untuk non-critical content
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -105,7 +112,6 @@ export default function Navbar() {
       }
     };
 
-    // ✅ Delay fetch data untuk prioritaskan LCP
     const timer = setTimeout(fetchData, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -235,18 +241,34 @@ export default function Navbar() {
     callback();
   };
 
+  const handleLogout = async () => {
+    await logout();
+    setIsMobileMenuOpen(false);
+  };
+
+  const getRoleColor = () => {
+    switch (user?.role) {
+      case "ADMIN":
+        return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700";
+      case "OWNER":
+        return "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900 dark:text-purple-300 dark:border-purple-700";
+      default:
+        return "bg-muted text-muted-foreground border-border";
+    }
+  };
+
   return (
       <>
         <div className="sticky top-0 z-50 bg-card border-b border-border">
           <div className="container mx-auto flex items-center justify-between py-3 px-4">
-            {/* ✅ Logo dengan priority untuk LCP */}
+            {/* Logo dengan priority untuk LCP */}
             <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <Image
                   src="/logo.webp"
                   alt="Kenbike Logo"
                   width={160}
                   height={160}
-                  priority // ✅ PENTING: Preload logo
+                  priority
                   quality={95}
               />
             </Link>
@@ -269,7 +291,7 @@ export default function Navbar() {
 
             {/* Right Icons - Desktop */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-background rounded-full p-1 border shadow-xs border-border">
+              <div className="flex items-center gap-2 bg-background rounded-full border shadow-xs border-border">
                 {isAuthenticated && (
                     <Popover>
                       <PopoverTrigger asChild>
@@ -318,17 +340,18 @@ export default function Navbar() {
                   <UserAvatar />
               ) : (
                   <div className="flex items-center gap-2">
-                    <Button size="sm" className="min-w-20 px-4 font-medium" asChild>
+                    <Button variant="secondary" size="sm" className="min-w-20 px-4 font-semibold" asChild>
                       <Link href="/login">{t.auth.titleLogin}</Link>
                     </Button>
-                    <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-medium">
+                    <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-semibold">
                       <Link href="/register">{t.auth.titleRegister}</Link>
                     </Button>
                   </div>
               )}
             </div>
 
-            <div className="flex items-center md:hidden gap-2 bg-background rounded-full p-1.5 ">
+            {/* Mobile Right Icons - FIXED: Added CartSheet */}
+            <div className="flex items-center md:hidden gap-2">
               {isAuthenticated && (
                   <Popover>
                     <PopoverTrigger asChild>
@@ -338,7 +361,7 @@ export default function Navbar() {
                           className="relative"
                           aria-label="Notifications"
                       >
-                        <Bell className="w-7 h-7" />
+                        <Bell className="w-6 h-6" />
                         {notificationsCount > 0 && (
                             <Badge
                                 variant="destructive"
@@ -370,6 +393,10 @@ export default function Navbar() {
                     </PopoverContent>
                   </Popover>
               )}
+
+              {/* Cart Sheet for Mobile */}
+              <CartSheet />
+
               <Button
                   variant="ghost"
                   size="icon"
@@ -393,7 +420,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Bottom Navigation - sama seperti sebelumnya, tapi tambahkan loading="lazy" untuk flag images */}
+        {/* Bottom Navigation - Desktop */}
         <div
             className={cn(
                 "hidden md:block border-b border-border bg-card transition-all duration-300",
@@ -409,7 +436,7 @@ export default function Navbar() {
                   <Link
                       key={item.href}
                       href={item.href}
-                      className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                      className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                   >
                     {item.name}
                   </Link>
@@ -418,7 +445,6 @@ export default function Navbar() {
             <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
               <SelectTrigger className="w-[150px] shadow-none ml-4 flex-shrink-0 bg-card">
                 <div className="flex items-center gap-3">
-                  {/* ✅ Lazy load flag images */}
                   <Image
                       src={locale === "id" ? "/ic-flag-id.webp" : "/ic-flag-uk.webp"}
                       alt={locale === "id" ? "Indonesia" : "English"}
@@ -448,50 +474,205 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu - sama seperti sebelumnya */}
+        {/* Mobile Menu - IMPROVED with border and full menu */}
         {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-border bg-card">
+            <div className="md:hidden border-b-4 border-border bg-card shadow-lg">
               <div className="container mx-auto py-4 px-4 space-y-4">
                 {isAuthenticated ? (
-                    <div className="flex items-center gap-3 pb-4 border-b border-border">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user?.profile_image} />
-                        <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {user?.first_name} {user?.last_name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <>
+                      {/* User Info Section */}
+                      <div className="flex items-center gap-3 pb-4 border-b border-border">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={user?.profile_image} />
+                          <AvatarFallback className="bg-secondary text-secondary-foreground">
+                            {getUserInitials(user)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {user?.first_name} {user?.last_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                          <Badge
+                              variant="outline"
+                              className={`mt-1 w-fit text-xs ${getRoleColor()}`}
+                          >
+                            {user?.role}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
+
+                      {/* Role-based Menu Items */}
+                      <div className="space-y-1 pb-3 border-b border-border">
+                        {user?.role === "USER" && (
+                            <>
+                              <Link
+                                  href="/user/orders"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <ShoppingCart className="h-4 w-4" />
+                                <span className="text-sm font-medium">Orders</span>
+                              </Link>
+                              <Link
+                                  href="/user/profile"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <User className="h-4 w-4" />
+                                <span className="text-sm font-medium">Profile</span>
+                              </Link>
+                            </>
+                        )}
+
+                        {user?.role === "ADMIN" && (
+                            <>
+                              <Link
+                                  href="/admin/dashboard"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <LayoutDashboard className="h-4 w-4" />
+                                <span className="text-sm font-medium">Dashboard</span>
+                              </Link>
+                              <Link
+                                  href="/admin/users"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Users className="h-4 w-4" />
+                                <span className="text-sm font-medium">Users</span>
+                              </Link>
+                              <Link
+                                  href="/admin/products"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Package className="h-4 w-4" />
+                                <span className="text-sm font-medium">Products</span>
+                              </Link>
+                              <Link
+                                  href="/admin/orders"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <ShoppingCart className="h-4 w-4" />
+                                <span className="text-sm font-medium">Orders</span>
+                              </Link>
+                              <Link
+                                  href="/admin/settings"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Settings className="h-4 w-4" />
+                                <span className="text-sm font-medium">Settings</span>
+                              </Link>
+                            </>
+                        )}
+
+                        {user?.role === "OWNER" && (
+                            <>
+                              <Link
+                                  href="/owner/dashboard"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <LayoutDashboard className="h-4 w-4" />
+                                <span className="text-sm font-medium">Dashboard</span>
+                              </Link>
+                              <Link
+                                  href="/owner/users"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Users className="h-4 w-4" />
+                                <span className="text-sm font-medium">Users</span>
+                              </Link>
+                              <Link
+                                  href="/owner/products"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Package className="h-4 w-4" />
+                                <span className="text-sm font-medium">Products</span>
+                              </Link>
+                              <Link
+                                  href="/owner/orders"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <ShoppingCart className="h-4 w-4" />
+                                <span className="text-sm font-medium">Orders</span>
+                              </Link>
+                              <Link
+                                  href="/owner/settings"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Settings className="h-4 w-4" />
+                                <span className="text-sm font-medium">Settings</span>
+                              </Link>
+                              <Link
+                                  href="/owner/analytics"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <BarChart3 className="h-4 w-4" />
+                                <span className="text-sm font-medium">Analytics</span>
+                              </Link>
+                              <Link
+                                  href="/owner/promotions"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Tag className="h-4 w-4" />
+                                <span className="text-sm font-medium">Promotions</span>
+                              </Link>
+                            </>
+                        )}
+                      </div>
+                    </>
                 ) : (
                     <div className="flex gap-2 pb-4 border-b border-border">
-                      <Button variant="outline" className="flex-1" asChild>
+                      <Button variant="secondary" className="flex-1" asChild>
                         <Link href="/login">{t.auth.titleLogin}</Link>
                       </Button>
-                      <Button className="flex-1" asChild>
+                      <Button variant="outline" className="flex-1" asChild>
                         <Link href="/register">{t.auth.signUp}</Link>
                       </Button>
                     </div>
                 )}
-                <nav className="space-y-2">
+
+                {/* Navigation Links */}
+                <nav className="space-y-1 pb-3 border-b border-border">
                   {navigation.map((item) => (
                       <Link
                           key={item.href}
                           href={item.href}
-                          className="block py-2 text-sm font-normal hover:text-primary transition-colors"
+                          className="block py-2.5 px-3 text-sm font-medium hover:bg-muted rounded-md transition-colors"
                           onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.name}
                       </Link>
                   ))}
                 </nav>
+
+                {/* Logout Button for Mobile */}
+                {isAuthenticated && (
+                    <Button
+                        variant="destructive"
+                        className="w-full flex items-center justify-center gap-2"
+                        onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </Button>
+                )}
               </div>
             </div>
         )}
 
-        {/* Command Dialog - Render conditionally */}
+        {/* Command Dialog */}
         {isSearchOpen && (
             <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <CommandInput
@@ -612,22 +793,15 @@ export default function Navbar() {
             </CommandDialog>
         )}
 
-        {/* Floating Cart - Mobile */}
-        <div className="bg-secondary rounded-full fixed bottom-5 right-5 z-50 md:hidden">
-          <CartSheet />
-        </div>
-
         <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </>
   );
 }
-
-

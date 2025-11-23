@@ -133,14 +133,14 @@ export function AnimatedImageSection() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.8 }}
                     >
-                        <div className="h-px w-12 bg-secondary mt-3 flex-shrink-0" />
+                        <div className="h-px w-12 bg-accent mt-3 flex-shrink-0" />
                         <div>
                             <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
-                                Shopee Store
+                                Tokopedia Store
                             </p>
                             <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl lg:text-3xl font-bold text-secondary">4.9★</p>
-                                <p className="text-sm lg:text-base text-white/80">(1.6K penilaian)</p>
+                                <p className="text-2xl lg:text-3xl font-bold text-accent">5.0★</p>
+                                <p className="text-sm lg:text-base text-white/80">(3.125K penilaian)</p>
                             </div>
                         </div>
                     </motion.div>
@@ -152,14 +152,14 @@ export function AnimatedImageSection() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.9 }}
                     >
-                        <div className="h-px w-12 bg-accent mt-3 flex-shrink-0" />
+                        <div className="h-px w-12 bg-secondary mt-3 flex-shrink-0" />
                         <div>
                             <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
-                                Tokopedia Store
+                                Shopee Store
                             </p>
                             <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl lg:text-3xl font-bold text-accent">5.0★</p>
-                                <p className="text-sm lg:text-base text-white/80">(3.125K penilaian)</p>
+                                <p className="text-2xl lg:text-3xl font-bold text-secondary">4.9★</p>
+                                <p className="text-sm lg:text-base text-white/80">(1.6K penilaian)</p>
                             </div>
                         </div>
                     </motion.div>
@@ -177,7 +177,7 @@ export function AnimatedImageSection() {
                                 Global Export
                             </p>
                             <div className="space-y-1">
-                                <p className="text-2xl lg:text-3xl font-bold text-white">300+</p>
+                                <p className="text-2xl lg:text-3xl font-bold text-white">300+ <span className="text-sm lg:text-base text-white/80 font-normal">Order</span></p>
                                 <p className="text-xs lg:text-sm text-white/80 leading-relaxed">
                                     🇫🇷 France • 🇨🇦 Canada • 🇹🇭 Thailand
                                     <br />

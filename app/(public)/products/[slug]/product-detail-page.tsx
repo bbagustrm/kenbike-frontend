@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Star, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minus, Plus, ShoppingCart, Star, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -27,9 +27,10 @@ import { useTranslation } from "@/hooks/use-translation";
 import { useCart } from "@/contexts/cart-context";
 import { handleApiError } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ProductInfoDrawer } from "@/components/product/product-info-drawer";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductDetailSkeleton } from "@/components/product/product-detail-skeleton";
 
 interface Review {
     id: string;
@@ -163,6 +164,7 @@ export default function ProductDetailPage() {
         new Date(product.promotion.endDate) > new Date();
     const discount = hasActivePromotion && product?.promotion ? product.promotion.discount : 0;
     const finalPrice = basePrice ? basePrice * (1 - discount) : 0;
+    const isPreOrder = !!product?.isPreOrder;
 
     // Stock status helpers
     const currentStock = selectedVariant?.stock || 0;
@@ -208,21 +210,7 @@ export default function ProductDetailPage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <Skeleton className="h-8 w-64 mb-6" />
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2">
-                        <Skeleton className="h-[500px] w-full" />
-                    </div>
-                    <div className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="h-24 w-full" />
-                    </div>
-                </div>
-            </div>
-        );
+        return <ProductDetailSkeleton />;
     }
 
     if (!product) {
@@ -273,13 +261,16 @@ export default function ProductDetailPage() {
                 <div className="lg:col-span-5 space-y-8">
                     {/* Main Image Gallery */}
                     <ScrollReveal direction="up">
-                        <div className="flex gap-4">
-                            {/* Vertical Thumbnail Images */}
-                            <div className="flex flex-col gap-2 overflow-y-auto overflow-x-none max-h-[500px] pr-2">
+                        <div className="flex flex-col lg:flex-row gap-4">
+                            {/* Desktop: Vertical Thumbnail Images */}
+                            <div className="hidden lg:flex flex-col gap-2 overflow-y-auto overflow-x-none max-h-[500px] pr-2">
                                 {allImages.map((image, index) => (
                                     <motion.button
                                         key={image.id}
-                                        onClick={() => setSelectedImageIndex(index)}
+                                        onClick={() => {
+                                            setImageDirection(index > selectedImageIndex ? 1 : -1);
+                                            setSelectedImageIndex(index);
+                                        }}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         className={cn(
@@ -300,66 +291,98 @@ export default function ProductDetailPage() {
                                 ))}
                             </div>
 
-                            {/* Main Image with Animation */}
-                            <div className="flex-1 relative aspect-square rounded-sm max-w-[300px] sm:max-w-[400px] md:max-w-[500px] mx-auto overflow-hidden">
-                                {allImages.length > 0 && (
-                                    <AnimatePresence initial={false} custom={imageDirection}>
-                                        <motion.div
-                                            key={selectedImageIndex}
-                                            custom={imageDirection}
-                                            variants={imageVariants}
-                                            initial="enter"
-                                            animate="center"
-                                            exit="exit"
-                                            transition={{
-                                                x: { type: "spring", stiffness: 300, damping: 30 },
-                                                opacity: { duration: 0.2 },
+                            {/* Main Image Container */}
+                            <div className="flex-1 space-y-4">
+                                {/* Main Image with Animation */}
+                                <div className="relative aspect-square rounded-sm w-full max-w-[500px] mx-auto overflow-hidden">
+                                    {allImages.length > 0 && (
+                                        <AnimatePresence initial={false} custom={imageDirection}>
+                                            <motion.div
+                                                key={selectedImageIndex}
+                                                custom={imageDirection}
+                                                variants={imageVariants}
+                                                initial="enter"
+                                                animate="center"
+                                                exit="exit"
+                                                transition={{
+                                                    x: { type: "spring", stiffness: 300, damping: 30 },
+                                                    opacity: { duration: 0.2 },
+                                                }}
+                                                className="absolute inset-0"
+                                            >
+                                                <Image
+                                                    src={allImages[selectedImageIndex].imageUrl}
+                                                    alt={product.name}
+                                                    fill
+                                                    className="object-contain"
+                                                    priority
+                                                />
+                                                {selectedVariant && selectedImageIndex >= getVariantImageStartIndex() && (
+                                                    <motion.div
+                                                        initial={{ scale: 0, opacity: 0 }}
+                                                        animate={{ scale: 1, opacity: 1 }}
+                                                        transition={{ delay: 0.2 }}
+                                                        className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium"
+                                                    >
+                                                        {selectedVariant.variantName}
+                                                    </motion.div>
+                                                )}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    )}
+
+                                    {allImages.length > 1 && (
+                                        <>
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={handlePrevImage}
+                                                className="absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card p-2 rounded-full shadow-lg transition border border-border z-10"
+                                                aria-label="Previous image"
+                                            >
+                                                <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
+                                            </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={handleNextImage}
+                                                className="absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card p-2 rounded-full shadow-lg transition border border-border z-10"
+                                                aria-label="Next image"
+                                            >
+                                                <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
+                                            </motion.button>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Mobile: Horizontal Thumbnail Images */}
+                                <div className="lg:hidden flex gap-2 overflow-x-auto overflow-y-hidden pb-2 px-1">
+                                    {allImages.map((image, index) => (
+                                        <motion.button
+                                            key={image.id}
+                                            onClick={() => {
+                                                setImageDirection(index > selectedImageIndex ? 1 : -1);
+                                                setSelectedImageIndex(index);
                                             }}
-                                            className="absolute inset-0"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className={cn(
+                                                "flex-shrink-0 w-20 h-20 sm:w-16 sm:h-16 rounded-sm overflow-hidden border-4 transition",
+                                                selectedImageIndex === index
+                                                    ? "border-accent"
+                                                    : "border-border hover:border-accent"
+                                            )}
                                         >
                                             <Image
-                                                src={allImages[selectedImageIndex].imageUrl}
-                                                alt={product.name}
-                                                fill
-                                                className="object-contain"
-                                                priority
+                                                src={image.imageUrl}
+                                                alt={`${product.name} ${index + 1}`}
+                                                width={100}
+                                                height={100}
+                                                className="w-full h-full object-cover"
                                             />
-                                            {selectedVariant && selectedImageIndex >= getVariantImageStartIndex() && (
-                                                <motion.div
-                                                    initial={{ scale: 0, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    transition={{ delay: 0.2 }}
-                                                    className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium"
-                                                >
-                                                    {selectedVariant.variantName}
-                                                </motion.div>
-                                            )}
-                                        </motion.div>
-                                    </AnimatePresence>
-                                )}
-
-                                {allImages.length > 1 && (
-                                    <>
-                                        <motion.button
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={handlePrevImage}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card p-2 rounded-full shadow-lg transition border border-border z-10"
-                                            aria-label="Previous image"
-                                        >
-                                            <ChevronLeft className="w-6 h-6" />
                                         </motion.button>
-                                        <motion.button
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                            onClick={handleNextImage}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card p-2 rounded-full shadow-lg transition border border-border z-10"
-                                            aria-label="Next image"
-                                        >
-                                            <ChevronRight className="w-6 h-6" />
-                                        </motion.button>
-                                    </>
-                                )}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </ScrollReveal>
@@ -374,7 +397,7 @@ export default function ProductDetailPage() {
                             >
                                 <Card className="bg-accent dark:bg-accent border-2 border-accent dark:border-accent shadow-md py-4">
                                     <CardContent className="p-0">
-                                        <div className="flex items-center justify-between px-8">
+                                        <div className="flex items-center justify-between px-4 md:px-8">
                                             <div>
                                                 <h3 className="font-bold text-lg">{product.promotion.name}</h3>
                                                 <p className="text-sm">
@@ -395,6 +418,36 @@ export default function ProductDetailPage() {
                                 </Card>
                             </motion.div>
                         </ScrollReveal>
+                    )}
+
+                    {/* Variant Selection */}
+                    {product.variants && product.variants.length > 0 && (
+                        <div className="space-y-3 md:hidden">
+                            <div className="flex gap-2 flex-wrap">
+                                {product.variants
+                                    .filter((v) => v.isActive)
+                                    .map((variant) => (
+                                        <motion.button
+                                            key={variant.id}
+                                            onClick={() => handleVariantSelect(variant)}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            className={cn(
+                                                "flex items-center gap-2 px-2 py-2 rounded-full border-2 transition-all",
+                                                selectedVariant?.id === variant.id && "border-accent"
+                                            )}
+                                        >
+                                        <span
+                                            className="w-6 h-6 rounded-full"
+                                            style={{ backgroundColor: getColorFromVariantName(variant.variantName) }}
+                                            title={variant.variantName}
+                                            aria-label={variant.variantName}
+                                        />
+                                            <span className="text-sm">{variant.variantName}</span>
+                                        </motion.button>
+                                    ))}
+                            </div>
+                        </div>
                     )}
 
                     {/* Community Gallery */}
@@ -522,7 +575,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* RIGHT COLUMN: Sticky Product Info Card */}
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-3 hidden lg:block">
                     <ScrollReveal direction="left" delay={0.2} className="sticky top-24">
                         <Card>
                             <CardContent className="px-6 space-y-4">
@@ -530,6 +583,12 @@ export default function ProductDetailPage() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {product.category && (
                                         <Badge variant="secondary">{product.category.name}</Badge>
+                                    )}
+                                    {isPreOrder && (
+                                        <Badge className="bg-accent text-accent-foreground gap-1">
+                                            <Clock className="w-3 h-3" />
+                                            Pre Order
+                                        </Badge>
                                     )}
                                     {product.tags?.map((tag) => (
                                         <Badge key={tag.id} variant="outline">
@@ -690,7 +749,17 @@ export default function ProductDetailPage() {
                     </div>
                 </ScrollReveal>
             )}
-
+            <ProductInfoDrawer
+                product={product}
+                selectedVariant={selectedVariant}
+                quantity={quantity}
+                finalPrice={finalPrice}
+                isPreOrder={isPreOrder}
+                cartLoading={cartLoading}
+                onVariantSelect={handleVariantSelect}
+                onQuantityChange={handleQuantityChange}
+                onAddToCart={handleAddToCart}
+            />
         </div>
     );
 }
