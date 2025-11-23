@@ -15,7 +15,7 @@ import {
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2} from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";

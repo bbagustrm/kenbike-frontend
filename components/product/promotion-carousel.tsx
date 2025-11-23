@@ -1,4 +1,3 @@
-// components/product/promotion-carousel.tsx (with animations)
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -85,8 +84,8 @@ export function PromotionCarousel() {
                 setIsHovered(false);
             }}
         >
-            {/* Main Image Container */}
-            <div className="relative aspect-[21/9] md:aspect-[21/8] lg:aspect-[21/6] cursor-pointer">
+            {/* Full Screen Image Container */}
+            <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[21/7] lg:aspect-[21/9] xl:aspect-[21/9] cursor-pointer">
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         key={page}
@@ -120,6 +119,7 @@ export function PromotionCarousel() {
                             fill
                             className="object-cover"
                             priority={imageIndex === 0}
+                            quality={95}
                         />
                     </motion.div>
                 </AnimatePresence>
@@ -133,18 +133,18 @@ export function PromotionCarousel() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+                        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10"
                     >
                         <Button
                             variant="secondary"
                             size="icon"
-                            className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg rounded-full h-10 w-10"
+                            className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg rounded-full h-12 w-12"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 prevSlide();
                             }}
                         >
-                            <ChevronLeft className="h-5 w-5" />
+                            <ChevronLeft className="h-6 w-6" />
                         </Button>
                     </motion.div>
                 )}
@@ -158,25 +158,25 @@ export function PromotionCarousel() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10"
+                        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10"
                     >
                         <Button
                             variant="secondary"
                             size="icon"
-                            className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg rounded-full h-10 w-10"
+                            className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg rounded-full h-12 w-12"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 nextSlide();
                             }}
                         >
-                            <ChevronRight className="h-5 w-5" />
+                            <ChevronRight className="h-6 w-6" />
                         </Button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
             {/* Dots Indicator */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-10">
                 {PROMOTION_IMAGES.map((_, index) => (
                     <motion.button
                         key={index}
@@ -185,10 +185,10 @@ export function PromotionCarousel() {
                             goToSlide(index);
                         }}
                         className={cn(
-                            "h-2 rounded-full transition-all",
+                            "h-2 md:h-2.5 rounded-full transition-all",
                             index === imageIndex
-                                ? "w-8 bg-white shadow-md"
-                                : "w-2 bg-white/60 hover:bg-white/80"
+                                ? "w-10 md:w-12 bg-white shadow-md"
+                                : "w-2 md:w-2.5 bg-white/60 hover:bg-white/80"
                         )}
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}

@@ -1,4 +1,3 @@
-// components/search/filter-sidebar.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -35,26 +34,25 @@ interface FilterSidebarProps {
     onClose?: () => void;
 }
 
-// Price ranges based on currency
 const PRICE_RANGES = {
     IDR: {
         MIN: 0,
-        MAX: 500000,
-        STEP: 10000,
+        MAX: 5000000,
+        STEP: 50000,
     },
     USD: {
         MIN: 0,
-        MAX: 50,
-        STEP: 1,
+        MAX: 500,
+        STEP: 10,
     },
 };
 
 export function FilterSidebar({
-                                  filters,
-                                  onFilterChange,
-                                  className,
-                                  onClose,
-                              }: FilterSidebarProps) {
+    filters,
+    onFilterChange,
+    className,
+    onClose,
+}: FilterSidebarProps) {
     const { t, locale } = useTranslation();
     const currency = locale === "id" ? "IDR" : "USD";
     const priceConfig = PRICE_RANGES[currency];
@@ -64,13 +62,11 @@ export function FilterSidebar({
     const [promotions, setPromotions] = useState<Promotion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Initialize price range state with proper array format
     const [priceRange, setPriceRange] = useState<[number, number]>([
         filters.minPrice || priceConfig.MIN,
         filters.maxPrice || priceConfig.MAX,
     ]);
 
-    // Update local state when filters or locale change
     useEffect(() => {
         setPriceRange([
             filters.minPrice || priceConfig.MIN,
@@ -160,14 +156,14 @@ export function FilterSidebar({
         filters.availableOnly;
 
     return (
-        <div className={cn("space-y-6 p-4 bg-white border border-border shadow-sm rounded-sm", className)}>
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">{t.search.filters}</h2>
-                <div className="flex items-center gap-2">
+        <div className={cn("space-y-6 px-4 md:py-4 md:bg-card md:border md:border-border md:rounded-sm", className)}>
+            {/* Desktop Header (no close button) */}
+            {!onClose && (
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold">{t.search.filters}</h2>
                     {hasActiveFilters && (
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={handleClearFilters}
                             className="text-xs"
@@ -175,14 +171,8 @@ export function FilterSidebar({
                             {t.search.clearFilters}
                         </Button>
                     )}
-                    {onClose && (
-                        <Button variant="ghost" size="icon" onClick={onClose}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                    )}
                 </div>
-            </div>
-
+            )}
             {isLoading ? (
                 <div className="space-y-6">
                     <Skeleton className="h-32 w-full" />
@@ -190,19 +180,20 @@ export function FilterSidebar({
                     <Skeleton className="h-32 w-full" />
                 </div>
             ) : (
-                <>
+                <div className="space-y-6">
                     {/* Category Filter */}
                     {categories.length > 0 && (
                         <div className="space-y-3">
-                            <Label className="text-sm font-semibold">{t.search.category}</Label>
+                            <Label className="text-sm font-bold">{t.search.category}</Label>
                             <RadioGroup
                                 value={filters.categorySlug || "all"}
                                 onValueChange={handleCategoryChange}
+                                className="space-y-2"
                             >
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="all" id="category-all" />
-                                    <Label htmlFor="category-all" className="font-normal cursor-pointer">
-                                        {t.search.allCategories || "Semua Kategori"}
+                                    <Label htmlFor="category-all" className="font-normal cursor-pointer text-sm">
+                                        {t.search.allCategories}
                                     </Label>
                                 </div>
                                 {categories.map((category) => (
@@ -210,7 +201,7 @@ export function FilterSidebar({
                                         <RadioGroupItem value={category.slug} id={`category-${category.id}`} />
                                         <Label
                                             htmlFor={`category-${category.id}`}
-                                            className="font-normal cursor-pointer"
+                                            className="font-normal cursor-pointer text-sm"
                                         >
                                             {category.name}
                                         </Label>
@@ -223,21 +214,22 @@ export function FilterSidebar({
                     {/* Tag Filter */}
                     {tags.length > 0 && (
                         <div className="space-y-3">
-                            <Label className="text-sm font-semibold">{t.search.tags}</Label>
+                            <Label className="text-sm font-bold">{t.search.tags}</Label>
                             <RadioGroup
                                 value={filters.tagSlug || "all"}
                                 onValueChange={handleTagChange}
+                                className="space-y-2"
                             >
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="all" id="tag-all" />
-                                    <Label htmlFor="tag-all" className="font-normal cursor-pointer">
-                                        {t.search.allTags || "Semua Tag"}
+                                    <Label htmlFor="tag-all" className="font-normal cursor-pointer text-sm">
+                                        {t.search.allTags}
                                     </Label>
                                 </div>
                                 {tags.map((tag) => (
                                     <div key={tag.id} className="flex items-center space-x-2">
                                         <RadioGroupItem value={tag.slug} id={`tag-${tag.id}`} />
-                                        <Label htmlFor={`tag-${tag.id}`} className="font-normal cursor-pointer">
+                                        <Label htmlFor={`tag-${tag.id}`} className="font-normal cursor-pointer text-sm">
                                             {tag.name}
                                         </Label>
                                     </div>
@@ -249,15 +241,16 @@ export function FilterSidebar({
                     {/* Promotion Filter */}
                     {promotions.length > 0 && (
                         <div className="space-y-3">
-                            <Label className="text-sm font-semibold">{t.search.promotion}</Label>
+                            <Label className="text-sm font-bold">{t.search.promotion}</Label>
                             <RadioGroup
                                 value={filters.promotionId || "all"}
                                 onValueChange={handlePromotionChange}
+                                className="space-y-2"
                             >
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="all" id="promotion-all" />
-                                    <Label htmlFor="promotion-all" className="font-normal cursor-pointer">
-                                        {t.search.allPromotions || "Semua Promosi"}
+                                    <Label htmlFor="promotion-all" className="font-normal cursor-pointer text-sm">
+                                        {t.search.allPromotions}
                                     </Label>
                                 </div>
                                 {promotions.map((promotion) => (
@@ -265,7 +258,7 @@ export function FilterSidebar({
                                         <RadioGroupItem value={promotion.id} id={`promotion-${promotion.id}`} />
                                         <Label
                                             htmlFor={`promotion-${promotion.id}`}
-                                            className="font-normal cursor-pointer"
+                                            className="font-normal cursor-pointer text-sm"
                                         >
                                             {promotion.name} (-{Math.round(promotion.discount * 100)}%)
                                         </Label>
@@ -277,8 +270,8 @@ export function FilterSidebar({
 
                     {/* Price Range Filter */}
                     <div className="space-y-4">
-                        <Label className="text-sm font-semibold">{t.search.priceRange}</Label>
-                        <div className="px-2 py-8">
+                        <Label className="text-sm font-bold">{t.search.priceRange}</Label>
+                        <div className="px-2 py-6">
                             <PriceRangeSlider
                                 min={priceConfig.MIN}
                                 max={priceConfig.MAX}
@@ -289,17 +282,17 @@ export function FilterSidebar({
                                 className="w-full"
                             />
                         </div>
-                        <div className="flex items-center justify-between text-sm gap-2">
+                        <div className="flex items-center justify-between text-xs gap-2">
                             <div className="flex flex-col">
-                                <span className="text-xs text-muted-foreground mb-1">Min</span>
-                                <span className="text-muted-foreground font-medium">
+                                <span className="text-muted-foreground mb-1">Min</span>
+                                <span className="text-foreground font-medium">
                                     {formatCurrency(priceRange[0], currency)}
                                 </span>
                             </div>
                             <span className="text-muted-foreground">-</span>
                             <div className="flex flex-col text-right">
-                                <span className="text-xs text-muted-foreground mb-1">Max</span>
-                                <span className="text-muted-foreground font-medium">
+                                <span className="text-muted-foreground mb-1">Max</span>
+                                <span className="text-foreground font-medium">
                                     {formatCurrency(priceRange[1], currency)}
                                 </span>
                             </div>
@@ -317,7 +310,19 @@ export function FilterSidebar({
                             onCheckedChange={handleAvailableOnlyChange}
                         />
                     </div>
-                </>
+
+                    {/* Clear Filters Button (Mobile only) */}
+                    {onClose && hasActiveFilters && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearFilters}
+                            className="w-full"
+                        >
+                            {t.search.clearFilters}
+                        </Button>
+                    )}
+                </div>
             )}
         </div>
     );

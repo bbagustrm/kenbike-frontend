@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -9,6 +10,7 @@ import { ProductCard } from "@/components/product/product-card";
 import { FilterSidebar, FilterValues } from "@/components/search/filter-sidebar";
 import { SortSelect } from "@/components/search/sort-select";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ProductGridSkeleton } from "@/components/product/product-card-skeleton";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { ProductService } from "@/services/product.service";
 import { ProductListItem } from "@/types/product";
@@ -17,11 +19,12 @@ import { handleApiError } from "@/lib/api-client";
 import { getTotalStock } from "@/lib/check-stock";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { FadeInView } from "@/components/animations/fade-in-view";
 
 function SearchPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { t, locale } = useTranslation(); // Added locale
+    const { t, locale } = useTranslation();
 
     const [products, setProducts] = useState<ProductListItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -51,13 +54,11 @@ function SearchPageContent() {
         availableOnly: false,
     });
 
-    // Parse sort param - use locale-based price sorting
     const [sortBy, order] = sortParam.split("-") as [
             "name" | "idPrice" | "enPrice" | "totalSold" | "totalView" | "avgRating" | "createdAt",
             "asc" | "desc"
     ];
 
-    // Adjust sortBy based on locale if it's a price sort
     const adjustedSortBy = sortBy === "idPrice" || sortBy === "enPrice"
         ? (locale === "id" ? "idPrice" : "enPrice") as typeof sortBy
         : sortBy;
@@ -227,57 +228,71 @@ function SearchPageContent() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            {/* Main Content - Two Column Layout */}
-            <div className="flex">
-                {/* Desktop Filter Sidebar - Collapsible */}
-                <aside
-                    className={`hidden lg:block transition-all duration-300 ${
-                        isFilterVisible ? 'w-64 opacity-100 md:mr-12' : 'w-0 opacity-0 overflow-hidden md:mr-0'
-                    }`}
-                >
-                    <div className="sticky top-24">
-                        <FilterSidebar
-                            filters={filters}
-                            onFilterChange={handleFilterChange}
-                        />
-                    </div>
-                </aside>
+        <div className="container mx-auto px-4 py-6 md:pt-8 md:pb-24">
+            <div className="flex gap-6 lg:gap-8">
+                {/* Desktop Filter Sidebar */}
+                <AnimatePresence>
+                    {isFilterVisible && (
+                        <motion.aside
+                            initial={{ width: 0, opacity: 0 }}
+                            animate={{ width: "256px", opacity: 1 }}
+                            exit={{ width: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="hidden lg:block shrink-0"
+                        >
+                            <div className="sticky top-24">
+                                <FilterSidebar
+                                    filters={filters}
+                                    onFilterChange={handleFilterChange}
+                                />
+                            </div>
+                        </motion.aside>
+                    )}
+                </AnimatePresence>
 
-                {/* Right Content Area */}
-                <div className="flex-1">
-                    {/* Header with Filter Toggle, Title and Sort */}
-                    <div className="mb-6">
-                        <div className="flex items-start justify-between gap-4">
-                            {/* Left Side: Filter Toggle + Title */}
-                            <div className="flex items-start gap-3 flex-1">
+                {/* Main Content */}
+                <div className="flex-1 min-w-0">
+                    {/* Header */}
+                    <motion.div
+                        className="mb-6"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <div className="flex items-start justify-between gap-3 md:gap-4 mb-4">
+                            {/* Left: Filter Toggle + Title */}
+                            <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
                                 {/* Desktop Filter Toggle */}
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setIsFilterVisible(!isFilterVisible)}
-                                    className="hidden lg:flex mt-1 shrink-0"
-                                >
-                                    {isFilterVisible ? (
-                                        <X className="h-4 w-4" />
-                                    ) : (
-                                        <SlidersHorizontal className="h-4 w-4" />
-                                    )}
-                                </Button>
+                                <motion.div whileTap={{ scale: 0.95 }}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setIsFilterVisible(!isFilterVisible)}
+                                        className="hidden lg:flex mt-1 shrink-0"
+                                    >
+                                        {isFilterVisible ? (
+                                            <X className="h-4 w-4" />
+                                        ) : (
+                                            <SlidersHorizontal className="h-4 w-4" />
+                                        )}
+                                    </Button>
+                                </motion.div>
 
-                                {/* Mobile Filter Toggle */}
+                                {/* Mobile Filter */}
                                 <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
                                     <SheetTrigger asChild>
-                                        <Button variant="outline" size="sm" className="lg:hidden mt-1 shrink-0">
-                                            <SlidersHorizontal className="h-4 w-4 mr-2" />
-                                            Filters
-                                        </Button>
+                                        <motion.div whileTap={{ scale: 0.95 }}>
+                                            <Button variant="outline" size="sm" className="lg:hidden mt-1 shrink-0">
+                                                <SlidersHorizontal className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                                                <span className="hidden md:inline">Filters</span>
+                                            </Button>
+                                        </motion.div>
                                     </SheetTrigger>
-                                    <SheetContent side="left" className="w-[300px] sm:w-[400px] bg-card">
+                                    <SheetContent side="left" className="w-[280px] sm:w-[350px] bg-card">
                                         <SheetHeader>
                                             <SheetTitle>Filters</SheetTitle>
                                         </SheetHeader>
-                                        <div className="mt-6">
+                                        <div>
                                             <FilterSidebar
                                                 filters={filters}
                                                 onFilterChange={handleFilterChange}
@@ -287,64 +302,60 @@ function SearchPageContent() {
                                     </SheetContent>
                                 </Sheet>
 
-                                {/* Title and Count */}
+                                {/* Title */}
                                 <div className="flex-1 min-w-0">
-                                    <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-foreground">
+                                    <h1 className="text-lg md:text-2xl lg:text-3xl font-bold mb-2 text-foreground truncate">
                                         {searchQuery
-                                            ? `Search results for "${searchQuery}"`
+                                            ? `"${searchQuery}"`
                                             : "All Products"}
                                     </h1>
 
-                                    {/* Active Filters Badges */}
+                                    {/* Active Filters */}
                                     {(filters.categorySlug || filters.tagSlug || filters.promotionId || hasPromotion) && (
-                                        <div className="flex flex-wrap gap-2 mb-2">
+                                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-2">
                                             {filters.categorySlug && (
-                                                <Badge variant="secondary">
-                                                    Category: {filters.categorySlug.replace(/-/g, ' ')}
+                                                <Badge variant="secondary" className="text-xs">
+                                                    {filters.categorySlug.replace(/-/g, ' ')}
                                                 </Badge>
                                             )}
                                             {filters.tagSlug && (
-                                                <Badge variant="outline">
-                                                    Tag: {filters.tagSlug.replace(/-/g, ' ')}
+                                                <Badge variant="outline" className="text-xs">
+                                                    {filters.tagSlug.replace(/-/g, ' ')}
                                                 </Badge>
                                             )}
                                             {(filters.promotionId || hasPromotion) && (
-                                                <Badge variant="promotion">
-                                                    Special Promotion
-                                                </Badge>
-                                            )}
-                                            {(filters.minPrice || filters.maxPrice) && (
-                                                <Badge variant="default">
-                                                    Price Range Applied
+                                                <Badge variant="promotion" className="text-xs">
+                                                    Promo
                                                 </Badge>
                                             )}
                                         </div>
                                     )}
 
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-xs md:text-sm text-muted-foreground">
                                         {isLoading ? (
                                             <span>{t.common.loading}</span>
                                         ) : (
                                             <span>
-                                                {total} {total === 1 ? "product" : "products"} found
+                                                {total} {total === 1 ? "product" : "products"}
                                             </span>
                                         )}
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Right Side: Sort Select */}
+                            {/* Right: Sort */}
                             <div className="shrink-0">
                                 <SortSelect value={sortParam} onChange={handleSortChange} />
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Product Grid */}
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-20">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
+                        <ProductGridSkeleton
+                            count={24}
+                            columns={isFilterVisible ? 4 : 6}
+                        />
                     ) : products.length > 0 ? (
                         <>
                             <div className={`grid gap-3 md:gap-4 ${
@@ -352,13 +363,21 @@ function SearchPageContent() {
                                     ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
                                     : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
                             }`}>
-                                {products.map((product) => (
-                                    <ProductCard key={product.id} product={product} locale={locale} />
+                                {products.map((product, index) => (
+                                    <FadeInView key={product.id} delay={index * 0.02}>
+                                        <ProductCard product={product} locale={locale} />
+                                    </FadeInView>
                                 ))}
                             </div>
 
+                            {/* Pagination */}
                             {totalPages > 1 && (
-                                <div className="mt-12 flex justify-center">
+                                <motion.div
+                                    className="mt-8 md:mt-12 flex justify-center"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                >
                                     <Pagination>
                                         <PaginationContent>
                                             <PaginationItem>
@@ -384,7 +403,7 @@ function SearchPageContent() {
                                             </PaginationItem>
                                         </PaginationContent>
                                     </Pagination>
-                                </div>
+                                </motion.div>
                             )}
                         </>
                     ) : (
@@ -404,9 +423,7 @@ export default function SearchPage() {
         <Suspense
             fallback={
                 <div className="container mx-auto px-4 py-8">
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    </div>
+                    <ProductGridSkeleton count={24} />
                 </div>
             }
         >

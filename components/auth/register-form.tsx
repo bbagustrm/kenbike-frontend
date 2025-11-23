@@ -212,10 +212,9 @@ export default function RegisterForm() {
                                 <ScrollReveal delay={0.1}>
                                     <div className="space-y-4">
                                         <div className="flex items-center space-x-2">
-                                            <div className="h-8 w-1 bg-secondary rounded-full" />
                                             <h3 className="text-xl font-bold">Personal Information</h3>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:pl-4">
                                             <motion.div variants={itemVariants} className="space-y-2">
                                                 <Label htmlFor="first_name">
                                                     {t.auth.register.firstNameLabel}{" "}
@@ -261,10 +260,9 @@ export default function RegisterForm() {
                                 <ScrollReveal delay={0.2}>
                                     <div className="space-y-4">
                                         <div className="flex items-center space-x-2">
-                                            <div className="h-8 w-1 bg-accent rounded-full" />
                                             <h3 className="text-xl font-bold">Account Information</h3>
                                         </div>
-                                        <div className="space-y-4 pl-4">
+                                        <div className="space-y-4 md:pl-4">
                                             <motion.div variants={itemVariants} className="space-y-2">
                                                 <Label htmlFor="username">
                                                     {t.auth.register.usernameLabel}{" "}
@@ -325,10 +323,9 @@ export default function RegisterForm() {
                                 <ScrollReveal delay={0.3}>
                                     <div className="space-y-4">
                                         <div className="flex items-center space-x-2">
-                                            <div className="h-8 w-1 bg-primary rounded-full" />
                                             <h3 className="text-xl font-bold">Location Information</h3>
                                         </div>
-                                        <div className="pl-4">
+                                        <div className="md:pl-4">
                                             <LocationForm
                                                 value={locationData}
                                                 onChange={setLocationData}
@@ -343,10 +340,9 @@ export default function RegisterForm() {
                                 <ScrollReveal delay={0.4}>
                                     <div className="space-y-4">
                                         <div className="flex items-center space-x-2">
-                                            <div className="h-8 w-1 bg-secondary rounded-full" />
                                             <h3 className="text-xl font-bold">Password</h3>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:pl-4">
                                             <motion.div variants={itemVariants} className="space-y-2">
                                                 <Label htmlFor="password">
                                                     {t.auth.register.passwordLabel}{" "}
@@ -428,7 +424,7 @@ export default function RegisterForm() {
 
                                         <motion.div
                                             variants={itemVariants}
-                                            className="text-xs text-muted-foreground space-y-2 mt-4 pl-4 p-4 bg-muted/50 rounded-lg"
+                                            className="text-xs text-muted-foreground space-y-2 mt-4 md:pl-4 p-4 bg-muted/50 rounded-lg"
                                         >
                                             <p className="font-semibold text-foreground">
                                                 {t.auth.register.passwordRequirements.title}

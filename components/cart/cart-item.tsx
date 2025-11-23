@@ -76,8 +76,8 @@ export function CartItem({
                 />
                 {item.product.promotion?.isActive && (
                     <Badge
-                        variant="destructive"
-                        className="absolute -top-2 -right-2 text-xs"
+                        variant="secondary"
+                        className="absolute -top-2 -right-2 text-xs bg-accent"
                     >
                         -{Math.round(item.product.promotion.discount * 100)}%
                     </Badge>

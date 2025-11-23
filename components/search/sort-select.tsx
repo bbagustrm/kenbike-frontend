@@ -28,10 +28,10 @@ export function SortSelect({ value, onChange }: SortSelectProps) {
 
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="md:w-[200px]">
                 <SelectValue placeholder={t.search.sortBy} />
             </SelectTrigger>
-            <SelectContent className="w-[200px]">
+            <SelectContent className="md:w-[200px]">
                 {sortOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                         {option.label}

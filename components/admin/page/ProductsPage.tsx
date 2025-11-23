@@ -44,7 +44,7 @@ import {
     EyeOff,
     Star,
     StarOff,
-    AlertTriangle,
+    AlertTriangle, Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -109,10 +109,6 @@ export default function ProductsPage({
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
-            // Jika ada endpoint berbeda untuk owner, Anda bisa menambahkan kondisi di sini
-            // const response = userRole === 'admin'
-            //   ? await ProductService.getAdminProducts(...)
-            //   : await ProductService.getOwnerProducts(...);
             const response = await ProductService.getAdminProducts({
                 page,
                 limit,
@@ -137,7 +133,7 @@ export default function ProductsPage({
         } finally {
             setIsLoading(false);
         }
-    }, [page, limit, search, sortBy, order, activeTab, userRole]); // Tambahkan userRole ke dependency
+    }, [page, limit, search, sortBy, order, activeTab, userRole]);
 
     useEffect(() => {
         fetchProducts();
@@ -330,7 +326,6 @@ export default function ProductsPage({
         <div className="container mx-auto py-8 px-4">
             {/* Header */}
             <div className="mb-8">
-                {/* Gunakan props untuk judul dan deskripsi */}
                 <h1 className="text-3xl font-bold mb-2">{customTitle}</h1>
                 <p className="text-muted-foreground">{customDescription}</p>
             </div>
@@ -363,7 +358,6 @@ export default function ProductsPage({
                     </SelectContent>
                 </Select>
 
-                {/* Gunakan userRole untuk routing dinamis */}
                 <Button onClick={() => router.push(`/${userRole}/products/new`)} variant="secondary">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product
@@ -484,6 +478,14 @@ export default function ProductsPage({
                                                                         Featured
                                                                     </Badge>
                                                                 )}
+                                                                {product.isPreOrder && (
+                                                                    <Badge
+                                                                        className="w-fit bg-accent text-accent-foreground hover:bg-accent/90"
+                                                                    >
+                                                                        <Clock className="w-3 h-3" />
+                                                                        Pre Order
+                                                                    </Badge>
+                                                                )}
                                                                 {product.tags && product.tags.length > 0 &&
                                                                     product.tags.map((tag) => (
                                                                         <Badge key={tag.id} variant="secondary" className="text-xs">
@@ -509,7 +511,6 @@ export default function ProductsPage({
                                                         <DropdownMenuContent align="end">
                                                             {activeTab === "active" ? (
                                                                 <>
-                                                                    {/* Gunakan userRole untuk routing dinamis */}
                                                                     <DropdownMenuItem
                                                                         onClick={() => router.push(`/${userRole}/products/${product.id}/edit`)}
                                                                     >
