@@ -3,9 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
-import { Clock, Package, MapPin, CreditCard, AlertCircle, ArrowLeft, X, ExternalLink } from 'lucide-react';
+import { Clock, Package, MapPin, ArrowLeft, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +26,10 @@ import { formatCurrency } from '@/lib/format-currency';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const formatPrice = (amount: number, currency: string): string => {
+    return formatCurrency(amount, (currency as 'IDR' | 'USD'));
+};
 
 export default function OrderDetailsPage() {
     const router = useRouter();
@@ -51,8 +54,9 @@ export default function OrderDetailsPage() {
                 const now = Date.now();
                 const remaining = Math.max(0, expiryTime - now);
                 setTimeRemaining(remaining);
-            } catch (error: any) {
-                toast.error(error.message || 'Failed to load order');
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to load order';
+                toast.error(errorMessage);
                 router.push('/');
             } finally {
                 setIsLoading(false);
@@ -109,8 +113,9 @@ export default function OrderDetailsPage() {
             await OrderService.cancelOrder(orderNumber);
             toast.success('Order cancelled successfully');
             router.push('/orders/failed?orderNumber=' + orderNumber);
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to cancel order');
+        } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to cancel order';
+        toast.error(errorMessage);
         } finally {
             setIsCancelling(false);
         }
@@ -186,7 +191,7 @@ export default function OrderDetailsPage() {
                                                     Payment Instructions:
                                                 </p>
                                                 <ol className="list-decimal list-inside space-y-1 text-sm text-yellow-800 dark:text-yellow-200">
-                                                    <li>Click "Open Payment Page" below</li>
+                                                    <li>Click Open Payment Page below</li>
                                                     <li>Complete payment in the new tab</li>
                                                     <li>This page will auto-update when payment is confirmed</li>
                                                 </ol>
@@ -224,7 +229,7 @@ export default function OrderDetailsPage() {
                                             <div className="flex items-center justify-between mt-2">
                                                 <span className="text-sm text-muted-foreground">Qty: {item.quantity}</span>
                                                 <span className="font-semibold">
-                                                    {formatCurrency(item.subtotal, order.currency)}
+                                                    {formatPrice(item.subtotal, order.currency)}
                                                 </span>
                                             </div>
                                         </div>
@@ -278,22 +283,22 @@ export default function OrderDetailsPage() {
                         <CardContent className="space-y-3">
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Subtotal</span>
-                                <span>{formatCurrency(order.subtotal, order.currency)}</span>
+                                <span>{formatPrice(order.subtotal, order.currency)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Shipping</span>
-                                <span>{formatCurrency(order.shippingCost, order.currency)}</span>
+                                <span>{formatPrice(order.shippingCost, order.currency)}</span>
                             </div>
                             {order.discount > 0 && (
                                 <div className="flex justify-between text-sm text-green-600">
                                     <span>Discount</span>
-                                    <span>-{formatCurrency(order.discount, order.currency)}</span>
+                                    <span>-{formatPrice(order.discount, order.currency)}</span>
                                 </div>
                             )}
                             <Separator />
                             <div className="flex justify-between font-semibold text-lg">
                                 <span>Total</span>
-                                <span>{formatCurrency(order.total, order.currency)}</span>
+                                <span>{formatPrice(order.total, order.currency)}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -312,7 +317,7 @@ export default function OrderDetailsPage() {
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This action cannot be undone. Your order will be cancelled and you'll need to create a new order.
+                                            This action cannot be undone. Your order will be cancelled and you all need to create a new order.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

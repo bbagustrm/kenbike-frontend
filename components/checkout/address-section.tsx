@@ -12,13 +12,13 @@ interface AddressSectionProps {
         firstName: string;
         lastName: string;
         email: string;
-        phoneNumber: string | null;
+        phoneNumber?: string | null;
         country: string;
-        province: string | null;
-        city: string | null;
-        district: string | null;
-        postalCode: string | null;
-        address: string | null;
+        province?: string | null;
+        city?: string | null;
+        district?: string | null;
+        postalCode?: string | null;
+        address?: string | null;
     };
     hasCompleteAddress: boolean;
 }

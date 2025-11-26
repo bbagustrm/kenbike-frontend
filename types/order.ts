@@ -146,11 +146,13 @@ export interface CreateOrderDto {
 }
 
 // Calculate Shipping DTO
+// Calculate Shipping DTO
 export interface CalculateShippingDto {
     country: string;
     province?: string; // For domestic
     city?: string; // For domestic
     postalCode: string;
+    address?: string; // Backend may require this
     totalWeight: number; // in grams
 }
 

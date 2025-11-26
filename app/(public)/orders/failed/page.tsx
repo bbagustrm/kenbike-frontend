@@ -11,6 +11,10 @@ import { Separator } from '@/components/ui/separator';
 import { OrderService } from '@/services/order.service';
 import { Order, OrderStatus } from '@/types/order';
 import { formatCurrency } from '@/lib/format-currency';
+// Helper to safely format currency
+const formatPrice = (amount: number, currency: string): string => {
+    return formatCurrency(amount, (currency as 'IDR' | 'USD'));
+};
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,8 +37,9 @@ export default function OrderFailedPage() {
             try {
                 const data = await OrderService.getOrderByNumber(orderNumber);
                 setOrder(data);
-            } catch (error: any) {
-                toast.error(error.message || 'Failed to load order');
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to load order';
+                toast.error(errorMessage);
                 router.push('/');
             } finally {
                 setIsLoading(false);
@@ -125,22 +130,22 @@ export default function OrderFailedPage() {
                     <CardContent className="space-y-3">
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Subtotal</span>
-                            <span>{formatCurrency(order.subtotal, order.currency)}</span>
+                            <span>{formatPrice(order.subtotal, order.currency)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Shipping</span>
-                            <span>{formatCurrency(order.shippingCost, order.currency)}</span>
+                            <span>{formatPrice(order.shippingCost, order.currency)}</span>
                         </div>
                         {order.discount > 0 && (
                             <div className="flex justify-between text-sm text-green-600">
                                 <span>Discount</span>
-                                <span>-{formatCurrency(order.discount, order.currency)}</span>
+                                <span>-{formatPrice(order.discount, order.currency)}</span>
                             </div>
                         )}
                         <Separator />
                         <div className="flex justify-between font-semibold text-lg">
                             <span>Total</span>
-                            <span>{formatCurrency(order.total, order.currency)}</span>
+                            <span>{formatPrice(order.total, order.currency)}</span>
                         </div>
                     </CardContent>
                 </Card>

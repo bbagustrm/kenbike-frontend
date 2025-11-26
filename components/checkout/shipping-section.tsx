@@ -16,7 +16,7 @@ interface ShippingSectionProps {
     calculation: ShippingCalculationResponse | null;
     selectedCourier: ShippingRate | null;
     onSelectCourier: (courier: ShippingRate) => void;
-    currency: string;
+    currency: 'IDR' | 'USD';
 }
 
 export function ShippingSection({

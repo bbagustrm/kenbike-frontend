@@ -2,6 +2,11 @@
 import { Order, ShippingType } from '@/types/order';
 import { formatCurrency } from './format-currency';
 
+// Helper to safely format currency
+const formatPrice = (amount: number, currency: string): string => {
+    return formatCurrency(amount, (currency as 'IDR' | 'USD'));
+};
+
 /**
  * Generate invoice HTML for PDF conversion
  * This HTML can be used with libraries like jsPDF or html2pdf
@@ -326,8 +331,8 @@ export function generateInvoiceHTML(order: Order): string {
                             </span>
                         </td>
                         <td class="text-center">${item.quantity}</td>
-                        <td class="text-right">${formatCurrency(item.pricePerItem, order.currency)}</td>
-                        <td class="text-right"><strong>${formatCurrency(item.subtotal, order.currency)}</strong></td>
+                        <td class="text-right">${formatPrice(item.pricePerItem, order.currency)}</td>
+                        <td class="text-right"><strong>${formatPrice(item.subtotal, order.currency)}</strong></td>
                     </tr>
                 `).join('')}
             </tbody>
@@ -338,21 +343,21 @@ export function generateInvoiceHTML(order: Order): string {
             <div class="summary-table">
                 <div class="summary-row">
                     <span>Subtotal:</span>
-                    <span>${formatCurrency(order.subtotal, order.currency)}</span>
+                    <span>${formatPrice(order.subtotal, order.currency)}</span>
                 </div>
                 <div class="summary-row">
                     <span>Shipping Cost:</span>
-                    <span>${formatCurrency(order.shippingCost, order.currency)}</span>
+                    <span>${formatPrice(order.shippingCost, order.currency)}</span>
                 </div>
                 ${order.discount > 0 ? `
                     <div class="summary-row" style="color: #059669;">
                         <span>Discount:</span>
-                        <span>-${formatCurrency(order.discount, order.currency)}</span>
+                        <span>-${formatPrice(order.discount, order.currency)}</span>
                     </div>
                 ` : ''}
                 <div class="summary-row total">
                     <span>TOTAL PAID:</span>
-                    <span>${formatCurrency(order.total, order.currency)}</span>
+                    <span>${formatPrice(order.total, order.currency)}</span>
                 </div>
             </div>
         </div>
@@ -388,16 +393,6 @@ export function generateInvoiceHTML(order: Order): string {
 /**
  * Generate and download invoice as PDF
  * Requires: html2pdf.js library
- *
- * Usage in component:
- * ```
- * import html2pdf from 'html2pdf.js';
- * import { generateInvoiceHTML, downloadInvoicePDF } from '@/lib/invoice-generator';
- *
- * const handleDownload = () => {
- *     downloadInvoicePDF(order);
- * };
- * ```
  */
 export async function downloadInvoicePDF(order: Order): Promise<void> {
     // Check if html2pdf is available
@@ -416,7 +411,11 @@ export async function downloadInvoicePDF(order: Order): Promise<void> {
             filename: `invoice-${order.orderNumber}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            jsPDF: {
+                unit: 'mm' as const,
+                format: 'a4' as const,
+                orientation: 'portrait' as const
+            },
         };
 
         await html2pdf().set(opt).from(html).save();

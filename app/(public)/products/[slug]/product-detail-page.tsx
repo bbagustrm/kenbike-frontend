@@ -603,7 +603,7 @@ export default function ProductDetailPage() {
                                 {/* Price */}
                                 <div className="space-y-1">
                                     <div className="flex items-baseline gap-3">
-                                        <span className="text-2xl font-bold text-accent dark:text-accent">
+                                        <span className="text-2xl font-bold text-primary dark:text-primary">
                                             {formatCurrency(finalPrice, locale === "id" ? "IDR" : "USD")}
                                         </span>
                                         {hasActivePromotion && (

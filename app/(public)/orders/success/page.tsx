@@ -13,6 +13,10 @@ import { Separator } from '@/components/ui/separator';
 import { OrderService } from '@/services/order.service';
 import { Order, ShippingType } from '@/types/order';
 import { formatCurrency } from '@/lib/format-currency';
+// Helper to safely format currency
+const formatPrice = (amount: number, currency: string): string => {
+    return formatCurrency(amount, (currency as 'IDR' | 'USD'));
+};
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,8 +48,9 @@ export default function OrderSuccessPage() {
                     spread: 70,
                     origin: { y: 0.6 },
                 });
-            } catch (error: any) {
-                toast.error(error.message || 'Failed to load order');
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to load order';
+                toast.error(errorMessage);
                 router.push('/');
             } finally {
                 setIsLoading(false);
@@ -62,8 +67,9 @@ export default function OrderSuccessPage() {
         try {
             // TODO: Implement invoice download
             toast.info('Invoice download will be available soon');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to download invoice');
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to load order';
+            toast.error(errorMessage);
         } finally {
             setIsDownloading(false);
         }
@@ -170,22 +176,22 @@ export default function OrderSuccessPage() {
                         <CardContent className="space-y-3">
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Subtotal</span>
-                                <span>{formatCurrency(order.subtotal, order.currency)}</span>
+                                <span>{formatPrice(order.subtotal, order.currency)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Shipping</span>
-                                <span>{formatCurrency(order.shippingCost, order.currency)}</span>
+                                <span>{formatPrice(order.shippingCost, order.currency)}</span>
                             </div>
                             {order.discount > 0 && (
                                 <div className="flex justify-between text-sm text-green-600">
                                     <span>Discount</span>
-                                    <span>-{formatCurrency(order.discount, order.currency)}</span>
+                                    <span>-{formatPrice(order.discount, order.currency)}</span>
                                 </div>
                             )}
                             <Separator />
                             <div className="flex justify-between font-semibold text-lg">
                                 <span>Total Paid</span>
-                                <span>{formatCurrency(order.total, order.currency)}</span>
+                                <span>{formatPrice(order.total, order.currency)}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -225,7 +231,7 @@ export default function OrderSuccessPage() {
                                             <div className="flex items-center justify-between mt-2">
                                                 <span className="text-sm text-muted-foreground">Qty: {item.quantity}</span>
                                                 <span className="font-semibold">
-                                                    {formatCurrency(item.subtotal, order.currency)}
+                                                    {formatPrice(item.subtotal, order.currency)}
                                                 </span>
                                             </div>
                                         </div>
@@ -323,14 +329,14 @@ export default function OrderSuccessPage() {
                     <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950">
                         <CardHeader>
                             <CardTitle className="text-lg text-blue-900 dark:text-blue-100">
-                                What's Next?
+                                Whats Next?
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <ol className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
                                 <li className="flex items-start gap-2">
                                     <span className="font-semibold">1.</span>
-                                    <span>We'll send you an email confirmation with order details</span>
+                                    <span>We&apos;ll send you an email confirmation with order details</span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="font-semibold">2.</span>
@@ -338,7 +344,7 @@ export default function OrderSuccessPage() {
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="font-semibold">3.</span>
-                                    <span>You'll receive tracking information once your order ships</span>
+                                    <span>You&apos;ll receive tracking information once your order ships</span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="font-semibold">4.</span>

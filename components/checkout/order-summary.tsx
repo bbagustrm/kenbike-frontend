@@ -14,7 +14,7 @@ import { formatCurrency } from '@/lib/format-currency';
 
 interface OrderSummaryProps {
     cart: Cart | null;
-    currency: string;
+    currency: 'IDR' | 'USD';
     subtotal: number;
     selectedCourier: ShippingRate | null;
     internationalShippingCost: number | null;

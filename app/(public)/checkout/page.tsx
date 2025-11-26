@@ -73,8 +73,8 @@ export default function CheckoutPage() {
     }
 
     const currency = (user.country === 'Indonesia' ? 'IDR' : 'USD') as 'IDR' | 'USD';
-    const canCheckout = hasCompleteAddress &&
-        (shippingCalculation?.type === 'DOMESTIC' ? selectedCourier !== null : shippingCalculation?.cost !== undefined);
+    const canCheckout = Boolean(hasCompleteAddress &&
+        (shippingCalculation?.type === 'DOMESTIC' ? selectedCourier !== null : shippingCalculation?.cost !== undefined));
 
     return (
         <div className="container mx-auto px-4 py-6 md:py-8">
@@ -110,18 +110,18 @@ export default function CheckoutPage() {
                     >
                         <AddressSection
                             user={{
-                                firstName: user.first_name,
-                                lastName: user.last_name,
-                                email: user.email,
+                                firstName: user.first_name || '',
+                                lastName: user.last_name || '',
+                                email: user.email || '',
                                 phoneNumber: user.phone_number,
-                                country: user.country,
+                                country: user.country || '',
                                 province: user.province,
                                 city: user.city,
                                 district: user.district,
                                 postalCode: user.postal_code,
                                 address: user.address,
                             }}
-                            hasCompleteAddress={hasCompleteAddress}
+                            hasCompleteAddress={Boolean(hasCompleteAddress)}
                         />
                     </motion.div>
 
@@ -149,7 +149,7 @@ export default function CheckoutPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <PaymentSection country={user.country} />
+                            <PaymentSection country={user.country || ''} />
                         </motion.div>
                     )}
                 </div>

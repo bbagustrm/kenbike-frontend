@@ -18,7 +18,7 @@ import {
 export function useCheckout() {
     const router = useRouter();
     const { user } = useAuth();
-    const { cart, guestCartWithDetails, cartItemsCount, clearCart } = useCart();
+    const { cart, cartItemsCount, clearCart } = useCart();
 
     const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
     const [shippingCalculation, setShippingCalculation] = useState<ShippingCalculationResponse | null>(null);
@@ -26,11 +26,13 @@ export function useCheckout() {
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
     // Check if user has complete address
-    const hasCompleteAddress = user &&
+    const hasCompleteAddress = Boolean(
+        user &&
         user.country &&
         user.address &&
-        user.postalCode &&
-        (user.country !== 'Indonesia' || (user.province && user.city && user.district));
+        user.postal_code &&
+        (user.country !== 'Indonesia' || (user.province && user.city && user.district))
+    );
 
     // Calculate total weight from cart
     const getTotalWeight = (): number => {
@@ -38,7 +40,7 @@ export function useCheckout() {
 
         return cart.items.reduce((total, item) => {
             // Assuming product has weight in grams
-            const productWeight = (item.product as any).weight || 0;
+            const productWeight = (item.product as { weight?: number }).weight || 0;
             return total + (productWeight * item.quantity);
         }, 0);
     };
@@ -70,16 +72,35 @@ export function useCheckout() {
             return;
         }
 
+        // Type guard - ensure required fields
+        if (!user.postal_code) {
+            toast.error('Postal code is required');
+            return;
+        }
+
+        if (!user.address) {
+            toast.error('Address is required');
+            return;
+        }
+
         setIsCalculatingShipping(true);
 
         try {
             const totalWeight = getTotalWeight();
 
+            // Ensure we have total weight
+            if (totalWeight <= 0) {
+                toast.error('Cart items must have weight information');
+                setIsCalculatingShipping(false);
+                return;
+            }
+
             const result = await OrderService.calculateShipping({
-                country: user.country,
+                country: user.country || '',
                 province: user.province || undefined,
                 city: user.city || undefined,
-                postalCode: user.postalCode!,
+                postalCode: user.postal_code,
+                address: user.address, // Include address if backend requires it
                 totalWeight,
             });
 
@@ -94,8 +115,9 @@ export function useCheckout() {
             }
 
             toast.success('Shipping calculated successfully');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to calculate shipping');
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to calculate shipping';
+            toast.error(errorMessage);
             setShippingCalculation(null);
         } finally {
             setIsCalculatingShipping(false);
@@ -119,6 +141,22 @@ export function useCheckout() {
             return;
         }
 
+        // Type guards - ensure required fields are present
+        if (!user.postal_code) {
+            toast.error('Postal code is required');
+            return;
+        }
+
+        if (!user.address) {
+            toast.error('Address is required');
+            return;
+        }
+
+        if (!user.first_name || !user.last_name) {
+            toast.error('Name is required');
+            return;
+        }
+
         setIsCreatingOrder(true);
 
         try {
@@ -127,13 +165,13 @@ export function useCheckout() {
 
             const orderDto: CreateOrderDto = {
                 shippingType: isDomestic ? ShippingType.DOMESTIC : ShippingType.INTERNATIONAL,
-                recipientName: `${user.firstName} ${user.lastName}`,
-                recipientPhone: user.phoneNumber || '',
-                shippingAddress: user.address!,
+                recipientName: `${user.first_name} ${user.last_name}`,
+                recipientPhone: user.phone_number || 'N/A',
+                shippingAddress: user.address,
                 shippingCity: user.city || '',
                 shippingProvince: user.province || undefined,
-                shippingCountry: user.country,
-                shippingPostalCode: user.postalCode!,
+                shippingCountry: user.country || '',
+                shippingPostalCode: user.postal_code,
                 paymentMethod,
             };
 
@@ -166,8 +204,9 @@ export function useCheckout() {
             router.push(`/orders/${response.data.order.orderNumber}`);
 
             toast.success('Order created successfully!');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to create order');
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create order';
+            toast.error(errorMessage);
         } finally {
             setIsCreatingOrder(false);
         }
