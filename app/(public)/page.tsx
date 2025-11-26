@@ -2,19 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroSection } from "@/components/home/hero-section";
+import { QuoteSection } from "@/components/home/quote-section";
+import { VideoSection } from "@/components/home/video-section";
+import { CategoryCarousel } from "@/components/home/category-carousel";
 import { PromotionCarousel } from "@/components/product/promotion-carousel";
 import { ProductCard } from "@/components/product/product-card";
-import { ProductCarousel } from "@/components/product/product-carousel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollReveal } from "@/components/animations/scroll-reveal";
 import { FadeInView } from "@/components/animations/fade-in-view";
 import { ProductGridSkeleton } from "@/components/product/product-card-skeleton";
 import { PromotionCarouselSkeleton } from "@/components/product/promotion-carousel-skeleton";
-import { CategoryBannerSkeleton } from "@/components/product/category-banner-skeleton";
 import { ProductService } from "@/services/product.service";
 import { CategoryService } from "@/services/category.service";
 import { ProductListItem } from "@/types/product";
@@ -22,7 +23,6 @@ import { Category } from "@/types/category";
 import { useTranslation } from "@/hooks/use-translation";
 import { handleApiError } from "@/lib/api-client";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 export default function HomePage() {
     const { t, locale } = useTranslation();
@@ -44,8 +44,6 @@ export default function HomePage() {
             (tp) => !promotionProducts.some((pp) => pp.id === tp.id)
         ),
     ];
-
-    const bannerCategories = categories.slice(0, 4);
 
     useEffect(() => {
         const fetchPromotionProducts = async () => {
@@ -92,7 +90,7 @@ export default function HomePage() {
         const fetchCategories = async () => {
             try {
                 const response = await CategoryService.getCategories({
-                    limit: 4,
+                    limit: 10,
                     isActive: true
                 });
                 setCategories(response.data || []);
@@ -114,10 +112,21 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen">
-            {/* Hero Section - Promotion Banner */}
-            <section className="bg-muted/30">
+            {/* Hero Section - Masonry Grid */}
+            <HeroSection />
+
+            {/* Quote Section */}
+            <QuoteSection />
+
+            {/* Video Section */}
+            <VideoSection />
+
+            {/* Promotion Banner Carousel */}
+            <section className="bg-background">
                 {isLoadingPromotion ? (
-                    <PromotionCarouselSkeleton />
+                    <div className="container mx-auto px-4 py-8 md:py-12">
+                        <PromotionCarouselSkeleton />
+                    </div>
                 ) : (
                     <FadeInView duration={0.8}>
                         <PromotionCarousel />
@@ -137,9 +146,9 @@ export default function HomePage() {
                                 transition={{ duration: 0.5 }}
                             >
                                 <div>
-                                    <h1 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
-                                        Toko Komponen & Aksesoris Sepeda Berkualitas di Indonesia
-                                    </h1>
+                                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
+                                        Hot Deals & Trending Products
+                                    </h2>
                                     <p className="text-xs md:text-sm text-muted-foreground">
                                         Special promotions and trending products this week
                                     </p>
@@ -182,69 +191,39 @@ export default function HomePage() {
                 </section>
             )}
 
-            {/* Category Banner Section */}
-            {(isLoadingCategories || bannerCategories.length > 0) && (
-                <section className="border-t border-border bg-background">
-                    <div className="w-full">
-                        {isLoadingCategories ? (
-                            <CategoryBannerSkeleton />
-                        ) : bannerCategories.length > 0 ? (
-                            <div className="grid grid-cols-2">
-                                {bannerCategories.map((category, index) => (
-                                    <FadeInView key={category.id} delay={index * 0.1}>
-                                        <Link
-                                            href={`/search?category=${category.slug}`}
-                                            className="group relative block overflow-hidden aspect-[4/3] md:aspect-[16/9]"
-                                        >
-                                            <motion.div
-                                                className="relative w-full h-full"
-                                                whileHover={{ scale: 1.05 }}
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <Image
-                                                    src={`/banner-category/img${index + 1}.webp`}
-                                                    alt={category.name}
-                                                    fill
-                                                    className={cn(
-                                                        "object-cover transition-all duration-500",
-                                                        "brightness-90 group-hover:brightness-50"
-                                                    )}
-                                                    sizes="(max-width: 768px) 50vw, 50vw"
-                                                />
-                                                {/* Overlay Gradient */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            {/* Category Carousel Section */}
+            {(isLoadingCategories || categories.length > 0) && (
+                <section className="border-t border-border bg-muted/10 py-8 md:py-12 lg:py-14">
+                    <div className="container mx-auto px-4">
+                        <ScrollReveal direction="up">
+                            <motion.div
+                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                <div>
+                                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
+                                        Shop by Category
+                                    </h2>
+                                    <p className="text-xs md:text-sm text-muted-foreground">
+                                        Explore our wide range of bike components
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </ScrollReveal>
 
-                                                {/* Category Name - Animated */}
-                                                <motion.div
-                                                    className="absolute bottom-0 left-0 right-0 p-4 md:p-8"
-                                                    initial={{ y: 20, opacity: 0 }}
-                                                    whileInView={{ y: 0, opacity: 1 }}
-                                                    viewport={{ once: true }}
-                                                    transition={{ delay: index * 0.1 }}
-                                                >
-                                                    <h3 className="text-white font-bold text-base md:text-xl lg:text-2xl uppercase tracking-wide drop-shadow-lg mb-2">
-                                                        {category.name}
-                                                    </h3>
-                                                    <Button
-                                                        variant="secondary"
-                                                        size="sm"
-                                                        className="text-xs md:text-sm"
-                                                    >
-                                                        Shop Now
-                                                    </Button>
-                                                </motion.div>
-                                            </motion.div>
-                                        </Link>
-                                    </FadeInView>
-                                ))}
-                            </div>
-                        ) : null}
+                        {isLoadingCategories ? (
+                            <ProductGridSkeleton count={4} columns={4} />
+                        ) : (
+                            <CategoryCarousel categories={categories} />
+                        )}
                     </div>
                 </section>
             )}
 
             {/* Featured Products Section */}
-            <section className="border-t border-border bg-muted/10">
+            <section className="border-t border-border bg-background">
                 <div className="container mx-auto px-4 py-8 md:py-12 lg:py-14">
                     <ScrollReveal direction="up">
                         <motion.div
@@ -281,7 +260,7 @@ export default function HomePage() {
                         <ProductGridSkeleton count={12} columns={5} />
                     ) : featuredProducts.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                            {featuredProducts.map((product, index) => (
+                            {featuredProducts.slice(0, 12).map((product, index) => (
                                 <FadeInView key={product.id} delay={index * 0.05}>
                                     <ProductCard product={product} locale={locale} />
                                 </FadeInView>

@@ -2,10 +2,10 @@
 @import "tw-animate-css";
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 6px);
-  --radius-md: calc(var(--radius) - 3px);
-  --radius-lg: calc(var(--radius) + 6px);
-  --radius-xl: calc(var(--radius) + 12px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -27,13 +27,13 @@
 }
 
 :root {
-  --font-display: "Druk", sans-serif;
-  --font-body: "Lato", sans-serif;
+  --font-display: "Akira Expanded", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  /* === BASE THEME (bright, sporty, clean) === */
-  --background: #f9f9f9; /* hampir putih */
-  --foreground: #0a0a0a; /* hitam tajam */
+  /* === BASE THEME (minimal, clean, modern) === */
+  --background: #fafaf9; /* warm off-white */
+  --foreground: #1a1a1a; /* dark charcoal */
 
   /* === SURFACE ELEMENTS === */
   --card: #ffffff;
@@ -42,27 +42,27 @@
   --popover-foreground: var(--foreground);
 
   /* === BRAND COLORS === */
-  --primary: #0a0a0a; /* tombol hitam solid */
+  --primary: #2a2a2a; /* dark gray with slight warmth */
   --primary-foreground: #ffffff;
 
-  --secondary: #d6ff5d; /* neon hijau terang */
-  --secondary-foreground: #0a0a0a;
+  --secondary: #d4e98f; /* soft lime green */
+  --secondary-foreground: #1a1a1a;
 
-  --accent: #ff9727; /* hijau sedikit lebih gelap untuk hover / fokus */
-  --accent-foreground: #0a0a0a;
+  --accent: #ffd966; /* soft yellow */
+  --accent-foreground: #1a1a1a;
 
   /* === SUPPORT COLORS === */
-  --muted: #f2f2f2;
-  --muted-foreground: #5a5a5a;
-  --border: #e6e6e6;
-  --input: #f0f0f0;
-  --ring: #d6ff5d;
+  --muted: #f5f5f4; /* subtle gray */
+  --muted-foreground: #737373;
+  --border: #e7e5e4; /* soft border */
+  --input: #fafaf9;
+  --ring: #d4e98f;
 
-  /* === DESTRUCTIVE COLORS (NEW) === */
-  --destructive: #ef4444;
+  /* === DESTRUCTIVE COLORS === */
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --radius: 1.5rem;
+  --radius: 0.5rem; /* subtle rounded corners */
 }
 
 @layer base {
@@ -92,18 +92,21 @@ body {
   font-family: var(--font-body), sans-serif;
   color: var(--foreground);
   background-color: var(--background);
+  line-height: 1.6;
 }
 
 /* === TYPOGRAPHY === */
 h1, h2 {
   font-family: var(--font-display), sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 h3, h4, h5, h6 {
   font-family: var(--font-body), sans-serif;
-  font-weight: 900;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 code, pre {
@@ -177,7 +180,6 @@ code, pre {
   text-decoration: none;
 }
 
-
 .ProseMirror table {
   border-collapse: collapse;
   table-layout: fixed;
@@ -245,42 +247,58 @@ code, pre {
   opacity: 0.5;
 }
 
+/* === COMPONENT STYLES === */
 .card {
   background-color: var(--card);
   color: var(--card-foreground);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .button-primary {
   background-color: var(--primary);
   color: var(--primary-foreground);
-  border-radius: var(--radius-md);
-  font-weight: 700;
+  border-radius: var(--radius);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+  border: none;
 }
 
 .button-secondary {
   background-color: var(--secondary);
   color: var(--secondary-foreground);
-  border-radius: var(--radius-md);
-  font-weight: 700;
+  border-radius: var(--radius);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  transition: all 0.2s ease;
+  border: none;
 }
 
 .button-primary:hover {
-  background-color: #000000;
+  background-color: #1a1a1a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .button-secondary:hover {
   background-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 217, 102, 0.3);
 }
 
-
+/* === PROSE STYLES === */
 .prose {
   max-width: none;
   color: inherit;
@@ -292,10 +310,11 @@ code, pre {
 .prose h4,
 .prose h5,
 .prose h6 {
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 .prose h1 { font-size: 2em; }
@@ -330,7 +349,7 @@ code, pre {
 }
 
 .prose strong {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .prose em {
@@ -340,14 +359,16 @@ code, pre {
 .prose a {
   color: hsl(var(--primary));
   text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
 }
 
 .prose a:hover {
-  color: hsl(var(--primary) / 0.8);
+  color: hsl(var(--accent));
 }
 
 .prose blockquote {
-  border-left: 4px solid hsl(var(--border));
+  border-left: 3px solid hsl(var(--border));
   padding-left: 1em;
   font-style: italic;
   margin: 1.5em 0;
@@ -359,13 +380,13 @@ code, pre {
   padding: 0.2em 0.4em;
   border-radius: 0.25em;
   font-size: 0.9em;
-  font-family: monospace;
+  font-family: var(--font-mono), monospace;
 }
 
 .prose pre {
   background: hsl(var(--muted));
   padding: 1em;
-  border-radius: 0.5em;
+  border-radius: var(--radius);
   overflow-x: auto;
   margin: 1.5em 0;
 }
@@ -378,7 +399,7 @@ code, pre {
 .prose img {
   max-width: 100%;
   height: auto;
-  border-radius: 0.5em;
+  border-radius: var(--radius);
   margin: 1.5em 0;
 }
 
@@ -386,6 +407,27 @@ code, pre {
   border: none;
   border-top: 1px solid hsl(var(--border));
   margin: 2em 0;
+}
+
+/* === UTILITIES === */
+.text-balance {
+  text-wrap: balance;
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* === FOCUS STYLES === */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* === SELECTION === */
+::selection {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
 }
 
 /* Dark mode support */
