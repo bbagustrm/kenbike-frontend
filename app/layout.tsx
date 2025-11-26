@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
-import { Lato, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { TranslationProvider } from "@/contexts/translation-context";
 import { CartProvider } from "@/contexts/cart-context";
@@ -10,21 +10,26 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const druk = localFont({
-    src: "../public/fonts/Druk.woff",
+// Local Font - Akira Expanded
+const akiraExpanded = localFont({
+    src: "../public/fonts/Akira.woff2",
     variable: "--font-display",
+    display: "swap",
+    weight: "900",
+});
+
+// Google Font - Plus Jakarta Sans
+const plusJakartaSans = Plus_Jakarta_Sans({
+    subsets: ["latin"],
+    weight: ["300", "400", "500", "600", "700", "800"],
+    variable: "--font-body",
     display: "swap",
 });
 
-const lato = Lato({
+// Google Font - JetBrains Mono
+const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],
-    weight: ["300", "400", "700"],
-    variable: "--font-body",
-});
-
-const jetbrains = JetBrains_Mono({
-    subsets: ["latin"],
-    weight: ["400", "600"],
+    weight: ["400", "500", "600", "700"],
     variable: "--font-mono",
     display: "swap",
 });
@@ -64,13 +69,11 @@ export const metadata: Metadata = {
     },
 };
 
-
-
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html
             lang="id"
-            className={`${druk.variable} ${lato.variable} ${jetbrains.variable}`}
+            className={`${akiraExpanded.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
         >
         <head>
             <link rel="preconnect" href="https://api.kenbike.store" crossOrigin="" />
@@ -79,7 +82,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
             <title>Kenbike Store</title>
         </head>
-        <body className="font-body bg-white text-foreground">
+        <body className="font-body bg-background text-foreground">
         <AuthProvider>
             <CartProvider>
                 <TranslationProvider>
