@@ -1,4 +1,4 @@
-// app/(public)/checkout/page.tsx
+// app/(public)/checkout/page.tsx - FINAL WITH TRANSLATIONS
 "use client";
 
 import { useEffect } from 'react';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useCart } from '@/contexts/cart-context';
 import { useCheckout } from '@/hooks/use-checkout';
+import { useTranslation } from '@/hooks/use-translation';
 import { AddressSection } from '@/components/checkout/address-section';
 import { ShippingSection } from '@/components/checkout/shipping-section';
 import { OrderSummary } from '@/components/checkout/order-summary';
@@ -18,6 +19,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { isAuthenticated, user, isLoading: authLoading } = useAuth();
     const { cart, cartItemsCount } = useCart();
+    const { t } = useTranslation();
     const {
         hasCompleteAddress,
         isCalculatingShipping,
@@ -27,6 +29,7 @@ export default function CheckoutPage() {
         isCreatingOrder,
         createOrder,
         subtotal,
+        currency,
     } = useCheckout();
 
     // Redirect if not authenticated
@@ -62,19 +65,24 @@ export default function CheckoutPage() {
             <div className="container mx-auto px-4 py-12">
                 <div className="flex flex-col items-center justify-center min-h-[400px]">
                     <ShoppingCart className="w-16 h-16 text-muted-foreground mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-                    <p className="text-muted-foreground mb-4">Add some products to your cart to checkout</p>
+                    <h2 className="text-2xl font-bold mb-2">{t.checkout.emptyCart}</h2>
+                    <p className="text-muted-foreground mb-4">{t.checkout.emptyCartMessage}</p>
                     <Button onClick={() => router.push('/search')}>
-                        Continue Shopping
+                        {t.checkout.continueShoppingButton}
                     </Button>
                 </div>
             </div>
         );
     }
 
-    const currency = (user.country === 'Indonesia' ? 'IDR' : 'USD') as 'IDR' | 'USD';
-    const canCheckout = Boolean(hasCompleteAddress &&
-        (shippingCalculation?.type === 'DOMESTIC' ? selectedCourier !== null : shippingCalculation?.cost !== undefined));
+    // Check if can checkout - for DOMESTIC need courier selected, for INTERNATIONAL just need calculation
+    const canCheckout = Boolean(
+        hasCompleteAddress &&
+        shippingCalculation &&
+        (shippingCalculation.shippingType === 'DOMESTIC'
+            ? selectedCourier !== null
+            : shippingCalculation.options && shippingCalculation.options.length > 0)
+    );
 
     return (
         <div className="container mx-auto px-4 py-6 md:py-8">
@@ -91,11 +99,11 @@ export default function CheckoutPage() {
                     className="mb-4"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
+                    {t.checkout.back}
                 </Button>
-                <h1 className="text-2xl md:text-3xl font-bold">Checkout</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{t.checkout.title}</h1>
                 <p className="text-muted-foreground mt-1">
-                    Review your order and complete your purchase
+                    {t.checkout.reviewOrder}
                 </p>
             </motion.div>
 
@@ -166,7 +174,11 @@ export default function CheckoutPage() {
                             currency={currency}
                             subtotal={subtotal}
                             selectedCourier={selectedCourier}
-                            internationalShippingCost={shippingCalculation?.cost || null}
+                            internationalShippingCost={
+                                shippingCalculation?.shippingType === 'INTERNATIONAL' && shippingCalculation.options?.[0]
+                                    ? shippingCalculation.options[0].cost
+                                    : null
+                            }
                         />
 
                         {/* Checkout Button */}
@@ -181,15 +193,15 @@ export default function CheckoutPage() {
                                     {isCreatingOrder ? (
                                         <>
                                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                            Processing...
+                                            {t.checkout.processing}
                                         </>
                                     ) : (
-                                        'Pay Now'
+                                        t.checkout.payNow
                                     )}
                                 </Button>
 
                                 <p className="text-xs text-center text-muted-foreground">
-                                    By completing this purchase, you agree to our Terms of Service and Privacy Policy
+                                    {t.checkout.termsAgreement}
                                 </p>
                             </div>
                         )}

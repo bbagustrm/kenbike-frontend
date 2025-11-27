@@ -1,3 +1,4 @@
+// types/auth.ts
 export type UserRole = "USER" | "ADMIN" | "OWNER";
 
 export interface User {
@@ -145,12 +146,10 @@ export interface ChangeUserStatusData {
     reason?: string;
 }
 
-// Extended interface for create user with password
 export interface CreateUserPayload extends RegisterData {
     role: UserRole;
 }
 
-// Extended interface for update profile with file
 export interface UpdateProfilePayload {
     phone_number?: string;
     address?: string;

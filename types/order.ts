@@ -137,51 +137,61 @@ export interface CreateOrderDto {
     // Domestic shipping (Biteship)
     biteshipCourier?: string; // "jne", "tiki", etc
     biteshipService?: string; // "reg", "yes", etc
+    biteshipPriceId?: string; // ← REQUIRED for backend! "jne_reg", "tiki_reg", etc
 
     // International shipping
     shippingZoneId?: string;
 
     // Payment
     paymentMethod: PaymentMethod;
+    currency: 'IDR' | 'USD'; // ← ADDED! Required by backend
 }
 
-// Calculate Shipping DTO
-// Calculate Shipping DTO
+// Calculate Shipping DTO - Backend Compatible (REQUIRED fields!)
 export interface CalculateShippingDto {
-    country: string;
-    province?: string; // For domestic
-    city?: string; // For domestic
-    postalCode: string;
-    address?: string; // Backend may require this
-    totalWeight: number; // in grams
+    country: string; // REQUIRED! 2-char ISO code (e.g., "ID", "US", "SG")
+    province?: string; // Optional - Required for domestic Indonesia only
+    city: string; // REQUIRED! City name
+    district?: string; // Optional - Kecamatan (for domestic Indonesia)
+    postal_code: string; // REQUIRED! Postal/ZIP code (1-10 chars)
+    address: string; // REQUIRED! Full address (10-500 chars)
+    total_weight: number; // REQUIRED! Weight in grams (1-30000, max 30kg)
+    courier?: string; // Optional - Courier preference for domestic: "jne,tiki" or empty for all
 }
 
-// Shipping Rate (Biteship)
-export interface ShippingRate {
-    courier: string;
-    courierName: string;
-    courierLogo: string | null;
-    service: string;
-    serviceName: string;
-    description: string;
-    price: number;
-    estimatedDays: string; // e.g., "2-3 hari"
-    minDay: number;
-    maxDay: number;
-}
-
-// Shipping Calculation Response
-export interface ShippingCalculationResponse {
-    type: ShippingType;
-    country: string;
-    rates?: ShippingRate[]; // For domestic
-    cost?: number; // For international
-    zone?: {
-        id: string;
-        name: string;
-        minDays: number;
-        maxDays: number;
+// Shipping Option (Backend format)
+export interface ShippingOption {
+    type: 'DOMESTIC' | 'INTERNATIONAL';
+    courier?: string; // For domestic: "jne", "tiki", etc.
+    service?: string; // For domestic: "reg", "yes", etc.
+    serviceName: string; // Display name: "JNE REG", "Zone 1 - Southeast Asia"
+    description?: string;
+    cost: number;
+    estimatedDays: {
+        min: number;
+        max: number;
     };
+    // Biteship specific (for domestic)
+    biteshipPriceId?: string;
+    insurance?: {
+        required: boolean;
+        fee: number;
+    };
+    // Zone specific (for international)
+    zoneId?: string;
+    zoneName?: string;
+}
+
+// Shipping Calculation Response (Backend format)
+export interface ShippingCalculationResponse {
+    destination: {
+        country: string;
+        city: string;
+        postalCode: string;
+    };
+    totalWeight: number; // in grams
+    shippingType: 'DOMESTIC' | 'INTERNATIONAL';
+    options: ShippingOption[];
 }
 
 // API Response types
@@ -204,12 +214,32 @@ export interface OrderResponse {
 export interface CreateOrderResponse {
     message: string;
     data: {
-        order: Order;
-        payment: {
-            method: PaymentMethod;
-            redirectUrl?: string; // Midtrans Snap URL
-            approveUrl?: string; // PayPal approve URL
+        id: string;
+        orderNumber: string;
+        status: string;
+        subtotal: number;
+        discount: number;
+        tax: number;
+        shippingCost: number;
+        total: number;
+        currency: string;
+        items: {
+            productName: string;
+            variantName: string;
+            quantity: number;
+            pricePerItem: number;
+            subtotal: number;
+        }[];
+        shipping: {
+            type: string;
+            method: string;
+            recipientName: string;
+            address: string;
+            city: string;
+            country: string;
         };
+        paymentMethod?: string;
+        createdAt: string; // atau Date, tergantung bagaimana API kamu mengirimnya
     };
 }
 

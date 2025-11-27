@@ -1,4 +1,4 @@
-// locales/id.ts
+// locales/id.ts - WITH CHECKOUT TRANSLATIONS
 import { Translation } from "@/types/translation";
 
 export const id: Translation = {
@@ -49,6 +49,12 @@ export const id: Translation = {
         searchButton: "Cari",
         resultsFound: "{count} produk ditemukan",
         showingResults: "Menampilkan {start} - {end} dari {total} produk",
+        allProducts: "Semua Produk",
+        product: "produk",
+        productsCount: "produk",
+        noProductsFound: "Tidak ada produk ditemukan",
+        tryAdjustingFilters: "Coba sesuaikan filter atau kata kunci pencarian",
+        promo: "Promo",
         sortOptions: {
             priceLowHigh: "Harga Terendah",
             priceHighLow: "Harga Tertinggi",
@@ -64,6 +70,31 @@ export const id: Translation = {
         promotionProductsTitle: "Produk Promo",
         featuredTitle: "Produk Unggulan",
         seeAll: "Lihat Semua",
+        hotDealsTitle: "Promo & Produk Trending",
+        hotDealsDescription: "Promosi spesial dan produk trending minggu ini",
+        shopByCategoryTitle: "Belanja Berdasarkan Kategori",
+        shopByCategoryDescription: "Jelajahi berbagai komponen sepeda kami",
+        featuredDescription: "Produk pilihan khusus untuk Anda",
+        noPromotionsAvailable: "Belum ada promosi saat ini",
+        noFeaturedProductsYet: "Belum ada produk unggulan saat ini",
+    },
+
+    hero: {
+        title: "Bersepeda dengan Tujuan.",
+        subtitle: "Dibuat untuk Petualangan Sehari-hari.",
+        description: "Temukan komponen dan aksesori sepeda premium yang dirancang untuk performa, daya tahan, dan gaya. Dari perjalanan urban hingga jalur gunung—bersiaplah untuk petualangan Anda berikutnya.",
+        shopNow: "Belanja Sekarang",
+        viewFeatured: "Lihat Unggulan",
+    },
+
+    quote: {
+        text: '"Setiap perjalanan dimulai dengan perlengkapan yang tepat. Di Kenbike, kami percaya dalam memberdayakan pengendara dengan komponen berkualitas yang mengubah perjalanan biasa menjadi petualangan luar biasa."',
+        author: "— Ken",
+    },
+
+    video: {
+        title: "Rasakan Pengalamannya",
+        description: "Saksikan pengendara kami menjelajahi berbagai medan dengan komponen Kenbike premium",
     },
 
     product: {
@@ -150,7 +181,6 @@ export const id: Translation = {
         adminDashboard: "Dashboard Admin",
         logout: "Keluar",
     },
-
 
     notifications: {
         title: "Notifikasi",
@@ -303,6 +333,7 @@ export const id: Translation = {
             next: "Selanjutnya",
         },
     },
+
     productDetail: {
         stock: "Stok",
         onlyLeftInStock: "Hanya {count} tersisa!",
@@ -318,6 +349,14 @@ export const id: Translation = {
         youMayAlsoLike: "Mungkin Anda juga suka",
         rating: "Rating",
         reviewsCount: "{count} Ulasan",
+        home: "Beranda",
+        product: "Produk",
+        validUntil: "Berlaku hingga",
+        preOrder: "Pre Order",
+        anonymous: "Anonim",
+        productNotFound: "Produk tidak ditemukan",
+        productNotFoundDesc: "Produk yang Anda cari tidak ada.",
+        selectVariantFirst: "Pilih varian terlebih dahulu",
     },
 
     cart: {
@@ -331,5 +370,51 @@ export const id: Translation = {
         emptyCart: "Keranjang kosong",
         emptyMessage: "Keranjang belanja Anda kosong. Mulai belanja sekarang!",
         clearCart: "Kosongkan Keranjang",
+    },
+
+    // ✅ NEW: Checkout Translations
+    checkout: {
+        title: "Checkout",
+        reviewOrder: "Tinjau pesanan Anda dan selesaikan pembelian",
+        back: "Kembali",
+        // Address Section
+        shippingAddress: "Alamat Pengiriman",
+        completeAddress: "Mohon lengkapi alamat pengiriman di pengaturan profil",
+        editAddress: "Ubah Alamat",
+        recipientName: "Nama Penerima",
+        phone: "Telepon",
+        address: "Alamat",
+        city: "Kota",
+        province: "Provinsi",
+        country: "Negara",
+        postalCode: "Kode Pos",
+        // Shipping Section
+        shippingMethod: "Metode Pengiriman",
+        selectShipping: "Pilih metode pengiriman yang diinginkan",
+        calculatingShipping: "Menghitung opsi pengiriman...",
+        domesticShipping: "Pengiriman Domestik",
+        internationalShipping: "Pengiriman Internasional",
+        estimatedDelivery: "Estimasi pengiriman",
+        days: "hari",
+        day: "hari",
+        // Payment Section
+        paymentMethod: "Metode Pembayaran",
+        selectPayment: "Pilih metode pembayaran Anda",
+        // Order Summary
+        orderSummary: "Ringkasan Pesanan",
+        items: "produk",
+        subtotal: "Subtotal",
+        shipping: "Pengiriman",
+        tax: "Pajak",
+        total: "Total",
+        payNow: "Bayar Sekarang",
+        processing: "Memproses...",
+        termsAgreement: "Dengan menyelesaikan pembelian ini, Anda menyetujui Syarat Layanan dan Kebijakan Privasi kami",
+        // Messages
+        emptyCart: "Keranjang Anda kosong",
+        emptyCartMessage: "Tambahkan beberapa produk ke keranjang untuk checkout",
+        continueShoppingButton: "Lanjutkan Belanja",
+        provinceRequired: "Provinsi diperlukan untuk pengiriman domestik",
+        nameRequired: "Nama diperlukan",
     },
 };

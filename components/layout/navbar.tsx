@@ -261,7 +261,7 @@ export default function Navbar() {
       <>
         <div className="sticky top-0 z-50 bg-card border-b border-border">
           <div className="container mx-auto flex items-center justify-between py-3 px-4">
-            {/* Logo dengan priority untuk LCP */}
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <Image
                   src="/logo.webp"
@@ -291,7 +291,7 @@ export default function Navbar() {
 
             {/* Right Icons - Desktop */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-background rounded-full border shadow-xs border-border">
+              <div className="flex items-center gap-2">
                 {isAuthenticated && (
                     <Popover>
                       <PopoverTrigger asChild>
@@ -301,7 +301,7 @@ export default function Navbar() {
                             className="relative"
                             aria-label="Notifications"
                         >
-                          <Bell className="w-7 h-7" />
+                          <Bell className="w-6 h-6" />
                           {notificationsCount > 0 && (
                               <Badge
                                   variant="destructive"
@@ -350,7 +350,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Right Icons - FIXED: Added CartSheet */}
+            {/* Mobile Right Icons */}
             <div className="flex items-center md:hidden gap-2">
               {isAuthenticated && (
                   <Popover>
@@ -394,7 +394,6 @@ export default function Navbar() {
                   </Popover>
               )}
 
-              {/* Cart Sheet for Mobile */}
               <CartSheet />
 
               <Button
@@ -456,7 +455,7 @@ export default function Navbar() {
                   <span>{locale === "id" ? "Indonesia" : "English"}</span>
                 </div>
               </SelectTrigger>
-              <SelectContent className="bg-card">
+              <SelectContent>
                 <SelectItem value="id">
                   <div className="flex items-center gap-3">
                     <Image src="/ic-flag-id.webp" alt="Indonesia" width={20} height={20} className="rounded-sm" loading="lazy" />
@@ -474,7 +473,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu - IMPROVED with border and full menu */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
             <div className="md:hidden border-b-4 border-border bg-card shadow-lg">
               <div className="container mx-auto py-4 px-4 space-y-4">
@@ -492,7 +491,7 @@ export default function Navbar() {
                           <p className="text-sm font-medium">
                             {user?.first_name} {user?.last_name}
                           </p>
-                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                          <p className="text-xs text-gray-600">{user?.email}</p>
                           <Badge
                               variant="outline"
                               className={`mt-1 w-fit text-xs ${getRoleColor()}`}
@@ -713,9 +712,9 @@ export default function Navbar() {
                               <div className="flex flex-col flex-1">
                                 <span className="font-medium">{product.name}</span>
                                 <span className="text-xs text-muted-foreground">
-                            {formatCurrency(product.idPrice)}
+                        {formatCurrency(product.idPrice)}
                                   {product.category && ` • ${product.category.name}`}
-                          </span>
+                      </span>
                               </div>
                             </CommandItem>
                         ))}
@@ -725,7 +724,7 @@ export default function Navbar() {
                             className="justify-center text-primary"
                         >
                           <Search className="mr-2 h-4 w-4" />
-                          <span>View all results for {"}{searchQuery}{"}</span>
+                          <span>{`View all results for "${searchQuery}"`}</span>
                         </CommandItem>
                       </CommandGroup>
                     </>

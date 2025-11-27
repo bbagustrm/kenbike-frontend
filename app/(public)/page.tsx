@@ -147,10 +147,10 @@ export default function HomePage() {
                             >
                                 <div>
                                     <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
-                                        Hot Deals & Trending Products
+                                        {t.home.hotDealsTitle}
                                     </h2>
                                     <p className="text-xs md:text-sm text-muted-foreground">
-                                        Special promotions and trending products this week
+                                        {t.home.hotDealsDescription}
                                     </p>
                                 </div>
                                 {!isLoadingMerged && mergedProducts.length > 0 && (
@@ -204,10 +204,10 @@ export default function HomePage() {
                             >
                                 <div>
                                     <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
-                                        Shop by Category
+                                        {t.home.shopByCategoryTitle}
                                     </h2>
                                     <p className="text-xs md:text-sm text-muted-foreground">
-                                        Explore our wide range of bike components
+                                        {t.home.shopByCategoryDescription}
                                     </p>
                                 </div>
                             </motion.div>
@@ -237,7 +237,7 @@ export default function HomePage() {
                                     {t.home.featuredTitle}
                                 </h2>
                                 <p className="text-xs md:text-sm text-muted-foreground">
-                                    Handpicked products just for you
+                                    {t.home.featuredDescription}
                                 </p>
                             </div>
                             {!isLoadingFeatured && featuredProducts.length > 0 && (
@@ -269,7 +269,7 @@ export default function HomePage() {
                     ) : (
                         <EmptyState
                             title={t.search.noResults}
-                            description="Belum ada produk unggulan saat ini"
+                            description={t.home.noPromotionsAvailable}
                         />
                     )}
                 </div>

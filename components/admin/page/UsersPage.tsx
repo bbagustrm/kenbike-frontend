@@ -782,6 +782,10 @@ export default function UsersPage({
                                                     <p className="font-medium">{selectedUser.city || "-"}</p>
                                                 </div>
                                                 <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">District</p>
+                                                    <p className="font-medium">{selectedUser.district || "-"}</p>
+                                                </div>
+                                                <div>
                                                     <p className="text-xs text-muted-foreground mb-1">Postal Code</p>
                                                     <p className="font-medium">{selectedUser.postal_code || "-"}</p>
                                                 </div>

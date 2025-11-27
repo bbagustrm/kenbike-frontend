@@ -1,22 +1,18 @@
-// components/checkout/order-summary.tsx
+// components/checkout/order-summary.tsx - FINAL WITH LOCALIZED PRICES
 "use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { ShoppingBag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Cart } from '@/types/cart';
-import { ShippingRate } from '@/types/order';
-import { formatCurrency } from '@/lib/format-currency';
+import { ShippingOption } from '@/types/order';
+import { useTranslation } from '@/hooks/use-translation';
+import { formatCurrency, formatLocalizedPrice, getCurrencyFromLocale } from '@/lib/format-currency';
 
 interface OrderSummaryProps {
     cart: Cart | null;
     currency: 'IDR' | 'USD';
     subtotal: number;
-    selectedCourier: ShippingRate | null;
+    selectedCourier: ShippingOption | null;
     internationalShippingCost: number | null;
 }
 
@@ -27,146 +23,106 @@ export function OrderSummary({
                                  selectedCourier,
                                  internationalShippingCost,
                              }: OrderSummaryProps) {
+    const { t, locale } = useTranslation();
+
     if (!cart || cart.items.length === 0) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <ShoppingBag className="w-5 h-5" />
-                        Order Summary
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-center text-muted-foreground py-8">
-                        Your cart is empty
-                    </p>
-                </CardContent>
-            </Card>
-        );
+        return null;
     }
 
-    const shippingCost = selectedCourier?.price || internationalShippingCost || 0;
-    const total = subtotal + shippingCost;
+    const shippingCost = selectedCourier?.cost || internationalShippingCost || 0;
+    const taxRate = 0.11; // 11% PPN
+    const tax = Math.round((subtotal + shippingCost) * taxRate);
+    const total = subtotal + shippingCost + tax;
 
     return (
-        <Card className="sticky top-24">
+        <Card className="sticky top-4">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5" />
-                    Order Summary
-                </CardTitle>
+                <CardTitle>{t.checkout.orderSummary}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Cart Items */}
-                <ScrollArea className="max-h-[300px]">
-                    <div className="space-y-3 pr-4">
-                        {cart.items.map((item) => {
-                            const imageUrl = item.variant.imageUrl || item.product.imageUrl || '/placeholder.png';
-                            const price = currency === 'IDR' ? item.product.idPrice : item.product.enPrice;
-                            const discount = item.product.promotion?.isActive
-                                ? item.product.promotion.discount
-                                : 0;
-                            const finalPrice = price * (1 - discount);
+                <div className="space-y-3">
+                    {cart.items.map((item) => (
+                        <div key={item.id} className="flex gap-3">
+                            {/* Product Image */}
+                            <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
+                                {item.product.imageUrl && (
+                                    <img
+                                        src={item.product.imageUrl}
+                                        alt={item.product.name}
+                                        className="object-cover w-full h-full"
+                                    />
+                                )}
+                            </div>
 
-                            return (
-                                <div key={item.id} className="flex gap-3">
-                                    <Link
-                                        href={`/products/${item.product.slug}`}
-                                        className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden"
-                                    >
-                                        <Image
-                                            src={imageUrl}
-                                            alt={item.product.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                        {discount > 0 && (
-                                            <Badge
-                                                variant="destructive"
-                                                className="absolute -top-1 -right-1 text-xs px-1"
-                                            >
-                                                -{Math.round(discount * 100)}%
-                                            </Badge>
-                                        )}
-                                    </Link>
-                                    <div className="flex-1 min-w-0">
-                                        <Link
-                                            href={`/products/${item.product.slug}`}
-                                            className="text-sm font-medium line-clamp-1 hover:underline"
-                                        >
-                                            {item.product.name}
-                                        </Link>
-                                        <p className="text-xs text-muted-foreground">
-                                            {item.variant.variantName}
-                                        </p>
-                                        <div className="flex items-center justify-between mt-1">
-                                            <span className="text-xs text-muted-foreground">
-                                                Qty: {item.quantity}
-                                            </span>
-                                            <div className="text-right">
-                                                <p className="text-sm font-semibold">
-                                                    {formatCurrency(finalPrice * item.quantity, currency)}
-                                                </p>
-                                                {discount > 0 && (
-                                                    <p className="text-xs text-muted-foreground line-through">
-                                                        {formatCurrency(price * item.quantity, currency)}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </ScrollArea>
+                            {/* Product Info */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium line-clamp-1">
+                                    {item.product.name}
+                                </p>
+                                {item.variant && (
+                                    <p className="text-xs text-muted-foreground">
+                                        {item.variant.variantName}
+                                    </p>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                    Qty: {item.quantity}
+                                </p>
+                            </div>
+
+                            {/* Price - Localized */}
+                            <div className="text-sm font-medium">
+                                {formatLocalizedPrice(
+                                    item.product.idPrice * item.quantity,
+                                    item.product.enPrice * item.quantity,
+                                    locale
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
                 <Separator />
 
-                {/* Price Breakdown */}
-                <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                            Subtotal ({cart.summary.totalQuantity} items)
-                        </span>
-                        <span className="font-medium">
-                            {formatCurrency(subtotal, currency)}
-                        </span>
+                {/* Subtotal */}
+                <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t.checkout.subtotal}</span>
+                    <span className="font-medium">{formatCurrency(subtotal, currency)}</span>
+                </div>
+
+                {/* Shipping */}
+                {shippingCost > 0 && (
+                    <div className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">{t.checkout.shipping}</span>
+                            <span className="font-medium">{formatCurrency(shippingCost, currency)}</span>
+                        </div>
+                        {selectedCourier && (
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>{selectedCourier.serviceName}</span>
+                                <span>
+                                    {selectedCourier.estimatedDays.min === selectedCourier.estimatedDays.max
+                                        ? `${selectedCourier.estimatedDays.min} ${t.checkout.day}`
+                                        : `${selectedCourier.estimatedDays.min}-${selectedCourier.estimatedDays.max} ${t.checkout.days}`}
+                                </span>
+                            </div>
+                        )}
                     </div>
+                )}
 
-                    {shippingCost > 0 && (
-                        <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Shipping</span>
-                            <span className="font-medium">
-                                {formatCurrency(shippingCost, currency)}
-                            </span>
-                        </div>
-                    )}
-
-                    {shippingCost === 0 && (
-                        <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Shipping</span>
-                            <span className="text-yellow-600 dark:text-yellow-400">
-                                Select courier
-                            </span>
-                        </div>
-                    )}
+                {/* Tax */}
+                <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t.checkout.tax} (11%)</span>
+                    <span className="font-medium">{formatCurrency(tax, currency)}</span>
                 </div>
 
                 <Separator />
 
                 {/* Total */}
-                <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">Total</span>
-                    <span className="text-2xl font-bold">
-                        {formatCurrency(total, currency)}
-                    </span>
+                <div className="flex justify-between">
+                    <span className="text-base font-semibold">{t.checkout.total}</span>
+                    <span className="text-lg font-bold">{formatCurrency(total, currency)}</span>
                 </div>
-
-                {/* Tax Note */}
-                <p className="text-xs text-muted-foreground text-center">
-                    Tax included in product prices
-                </p>
             </CardContent>
         </Card>
     );

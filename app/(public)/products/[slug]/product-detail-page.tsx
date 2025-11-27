@@ -195,7 +195,7 @@ export default function ProductDetailPage() {
 
     const handleAddToCart = async () => {
         if (!selectedVariant) {
-            toast.error(locale === "id" ? "Pilih varian terlebih dahulu" : "Please select a variant");
+            toast.error(t.productDetail.selectVariantFirst);
             return;
         }
         if (selectedVariant.stock === 0) {
@@ -231,11 +231,11 @@ export default function ProductDetailPage() {
                 <Breadcrumb className="mb-6">
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                            <BreadcrumbLink href="/">{t.productDetail.home}</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/search">Product</BreadcrumbLink>
+                            <BreadcrumbLink href="/search">{t.productDetail.product}</BreadcrumbLink>
                         </BreadcrumbItem>
                         {product.category && (
                             <>
@@ -401,7 +401,7 @@ export default function ProductDetailPage() {
                                             <div>
                                                 <h3 className="font-bold text-lg">{product.promotion.name}</h3>
                                                 <p className="text-sm">
-                                                    {locale === "id" ? "Berlaku hingga" : "Valid until"}{" "}
+                                                    {t.productDetail.validUntil}{" "}
                                                     {new Date(product.promotion.endDate).toLocaleDateString(
                                                         locale === "id" ? "id-ID" : "en-US",
                                                         {
@@ -538,7 +538,7 @@ export default function ProductDetailPage() {
                                                     <div key={review.id} className="border-b border-border pb-4 last:border-0">
                                                         <div className="flex items-start justify-between mb-2">
                                                             <div>
-                                                                <p className="font-semibold">{review.user?.name || "Anonymous"}</p>
+                                                                <p className="font-semibold">{review.user?.name || t.productDetail.anonymous}</p>
                                                                 <div className="flex items-center gap-1">
                                                                     {[1, 2, 3, 4, 5].map((star) => (
                                                                         <Star
@@ -564,8 +564,8 @@ export default function ProductDetailPage() {
                                         </div>
                                     ) : (
                                         <EmptyState
-                                            title={t.productDetail.noReviewsYet}
-                                            description={t.productDetail.beFirstToReview}
+                                            title={t.productDetail.productNotFound}
+                                            description={t.productDetail.productNotFoundDesc}
                                         />
                                     )}
                                 </AccordionContent>
@@ -587,7 +587,7 @@ export default function ProductDetailPage() {
                                     {isPreOrder && (
                                         <Badge className="bg-accent text-accent-foreground gap-1">
                                             <Clock className="w-3 h-3" />
-                                            Pre Order
+                                            {t.productDetail.preOrder}
                                         </Badge>
                                     )}
                                     {product.tags?.map((tag) => (
