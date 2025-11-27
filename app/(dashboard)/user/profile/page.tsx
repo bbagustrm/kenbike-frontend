@@ -1,8 +1,7 @@
 // (dashboard)/user/profile/page.tsx
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";  // ✅ Add useEffect
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +40,7 @@ export default function ProfilePage() {
       country: isIndonesia ? "Indonesia" : "Global",
       province: user.province || undefined,
       city: user.city || undefined,
-      district: user.district || undefined,  // ✅ Include district
+      district: user.district || undefined,
       postal_code: user.postal_code || undefined,
       country_name: !isIndonesia ? user.country : undefined,
       address: user.address || undefined,
@@ -56,6 +55,25 @@ export default function ProfilePage() {
     new_password: "",
     confirm_password: "",
   });
+
+  // ✅ ADD THIS: Sync user data to state when user changes
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        phone_number: user.phone_number || "",
+      });
+
+      const isIndonesia = user.country === "Indonesia" || !!user.province;
+      setLocationData({
+        province: user.province || undefined,
+        city: user.city || undefined,
+        district: user.district || undefined,
+        postal_code: user.postal_code || undefined,
+        country: !isIndonesia ? user.country : undefined,
+        address: user.address || undefined,
+      });
+    }
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -105,16 +123,18 @@ export default function ProfilePage() {
         address: locationData.address,
       };
 
-      // Add location data based on country
+      // ✅ FIXED: Add location data including district
       if (locationData.country === "Indonesia") {
         updateData.country = "Indonesia";
         updateData.province = locationData.province;
         updateData.city = locationData.city;
+        updateData.district = locationData.district;  // ✅ ADD THIS
         updateData.postal_code = locationData.postal_code;
       } else {
-        updateData.country = locationData.country_name;
+        updateData.country = locationData.country;
         updateData.province = locationData.province;
         updateData.city = locationData.city;
+        updateData.district = locationData.district;  // ✅ ADD THIS
         updateData.postal_code = locationData.postal_code;
       }
 

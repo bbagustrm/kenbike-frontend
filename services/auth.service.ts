@@ -50,13 +50,16 @@ export class AuthService {
         return response.data;
     }
 
-    // Update profile
     static async updateProfile(data: UpdateProfileData): Promise<ApiResponse<Partial<User>>> {
         const formData = new FormData();
 
         if (data.phone_number) formData.append("phone_number", data.phone_number);
         if (data.address) formData.append("address", data.address);
         if (data.country) formData.append("country", data.country);
+        if (data.province) formData.append("province", data.province);
+        if (data.city) formData.append("city", data.city);
+        if (data.district) formData.append("district", data.district);
+        if (data.postal_code) formData.append("postal_code", data.postal_code);
         if (data.profile_image) formData.append("profile_image", data.profile_image);
 
         const response = await apiClient.patch<ApiResponse<Partial<User>>>(

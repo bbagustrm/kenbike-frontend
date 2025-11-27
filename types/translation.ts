@@ -36,7 +36,6 @@ export interface Translation {
         noResults: string;
         pages: string;
         products: string;
-        // NEW KEYS
         filters: string;
         sortBy: string;
         priceRange: string;
@@ -52,6 +51,12 @@ export interface Translation {
         searchButton: string;
         resultsFound: string;
         showingResults: string;
+        allProducts: string;
+        product: string;
+        productsCount: string;
+        noProductsFound: string;
+        tryAdjustingFilters: string;
+        promo: string;
         sortOptions: {
             priceLowHigh: string;
             priceHighLow: string;
@@ -62,15 +67,43 @@ export interface Translation {
         };
     };
 
-    // Home Page (NEW)
+    // Home Page
     home: {
         promotionTitle: string;
         promotionProductsTitle: string;
         featuredTitle: string;
         seeAll: string;
+        hotDealsTitle: string;
+        hotDealsDescription: string;
+        shopByCategoryTitle: string;
+        shopByCategoryDescription: string;
+        featuredDescription: string;
+        noPromotionsAvailable: string;
+        noFeaturedProductsYet: string;
     };
 
-    // Product (NEW)
+    // Hero Section
+    hero: {
+        title: string;
+        subtitle: string;
+        description: string;
+        shopNow: string;
+        viewFeatured: string;
+    };
+
+    // Quote Section
+    quote: {
+        text: string;
+        author: string;
+    };
+
+    // Video Section
+    video: {
+        title: string;
+        description: string;
+    };
+
+    // Product
     product: {
         outOfStock: string;
         itemsSold: string;
@@ -314,6 +347,8 @@ export interface Translation {
             next: string;
         };
     };
+
+    // Product Detail
     productDetail: {
         stock: string;
         onlyLeftInStock: string;
@@ -329,8 +364,17 @@ export interface Translation {
         youMayAlsoLike: string;
         rating: string;
         reviewsCount: string;
+        home: string;
+        product: string;
+        validUntil: string;
+        preOrder: string;
+        anonymous: string;
+        productNotFound: string;
+        productNotFoundDesc: string;
+        selectVariantFirst: string;
     };
 
+    // Cart
     cart: {
         title: string;
         itemsInCart: string;
@@ -342,6 +386,51 @@ export interface Translation {
         emptyCart: string;
         emptyMessage: string;
         clearCart: string;
-    }
+    };
 
+    // ✅ NEW: Checkout
+    checkout: {
+        title: string;
+        reviewOrder: string;
+        back: string;
+        // Address Section
+        shippingAddress: string;
+        completeAddress: string;
+        editAddress: string;
+        recipientName: string;
+        phone: string;
+        address: string;
+        city: string;
+        province: string;
+        country: string;
+        postalCode: string;
+        // Shipping Section
+        shippingMethod: string;
+        selectShipping: string;
+        calculatingShipping: string;
+        domesticShipping: string;
+        internationalShipping: string;
+        estimatedDelivery: string;
+        days: string;
+        day: string;
+        // Payment Section
+        paymentMethod: string;
+        selectPayment: string;
+        // Order Summary
+        orderSummary: string;
+        items: string;
+        subtotal: string;
+        shipping: string;
+        tax: string;
+        total: string;
+        payNow: string;
+        processing: string;
+        termsAgreement: string;
+        // Messages
+        emptyCart: string;
+        emptyCartMessage: string;
+        continueShoppingButton: string;
+        provinceRequired: string;
+        nameRequired: string;
+    };
 }

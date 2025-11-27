@@ -1,4 +1,4 @@
-// locales/en.ts
+// locales/en.ts - WITH CHECKOUT TRANSLATIONS
 import { Translation } from "@/types/translation";
 
 export const en: Translation = {
@@ -33,6 +33,31 @@ export const en: Translation = {
         promotionProductsTitle: "Promotion Products",
         featuredTitle: "Featured Products",
         seeAll: "See All",
+        hotDealsTitle: "Hot Deals & Trending Products",
+        hotDealsDescription: "Special promotions and trending products this week",
+        shopByCategoryTitle: "Shop by Category",
+        shopByCategoryDescription: "Explore our wide range of bike components",
+        featuredDescription: "Handpicked products just for you",
+        noPromotionsAvailable: "No promotions available at the moment",
+        noFeaturedProductsYet: "No featured products available at the moment",
+    },
+
+    hero: {
+        title: "Ride with Purpose.",
+        subtitle: "Crafted for Everyday Adventures.",
+        description: "Discover premium bike components and accessories designed for performance, durability, and style. From urban commutes to mountain trails—gear up for your next journey.",
+        shopNow: "Shop Now",
+        viewFeatured: "View Featured",
+    },
+
+    quote: {
+        text: '"Every journey begins with the right gear. At Kenbike, we believe in empowering riders with quality components that transform ordinary rides into extraordinary adventures."',
+        author: "— Ken",
+    },
+
+    video: {
+        title: "Experience the Ride",
+        description: "Watch our riders explore diverse terrains with premium Kenbike components",
     },
 
     product: {
@@ -59,6 +84,15 @@ export const en: Translation = {
         allCategories: "All Categories",
         allTags: "All Tags",
         allPromotions: "All Promotions",
+        searchButton: "Search",
+        resultsFound: "{count} products found",
+        showingResults: "Showing {start} - {end} of {total} products",
+        allProducts: "All Products",
+        product: "product",
+        productsCount: "products",
+        noProductsFound: "No products found",
+        tryAdjustingFilters: "Try adjusting your filters or search terms",
+        promo: "Promo",
         sortOptions: {
             priceLowHigh: "Price: Low to High",
             priceHighLow: "Price: High to Low",
@@ -67,9 +101,6 @@ export const en: Translation = {
             newest: "Newest",
             oldest: "Oldest",
         },
-        resultsFound: "{count} products found",
-        showingResults: "Showing {start} - {end} of {total} products",
-        searchButton: "Search"
     },
 
     auth: {
@@ -247,6 +278,7 @@ export const en: Translation = {
         },
         imageInfo: "JPG, JPEG, PNG or WEBP. Max 2MB. Recommended 400x400px",
     },
+
     adminUsers: {
         title: "User Management",
         description: "Manage users, roles, and permissions",
@@ -301,6 +333,7 @@ export const en: Translation = {
             next: "Next",
         },
     },
+
     productDetail: {
         stock: "Stock",
         onlyLeftInStock: "Only {count} left in stock!",
@@ -316,6 +349,14 @@ export const en: Translation = {
         youMayAlsoLike: "You may also like",
         rating: "Rating",
         reviewsCount: "{count} Reviews",
+        home: "Home",
+        product: "Product",
+        validUntil: "Valid until",
+        preOrder: "Pre Order",
+        anonymous: "Anonymous",
+        productNotFound: "Product not found",
+        productNotFoundDesc: "The product you're looking for doesn't exist.",
+        selectVariantFirst: "Please select a variant",
     },
 
     cart: {
@@ -329,5 +370,51 @@ export const en: Translation = {
         emptyCart: "Cart is empty",
         emptyMessage: "Your shopping cart is empty. Start adding items!",
         clearCart: "Clear Cart",
+    },
+
+    // ✅ NEW: Checkout Translations
+    checkout: {
+        title: "Checkout",
+        reviewOrder: "Review your order and complete your purchase",
+        back: "Back",
+        // Address Section
+        shippingAddress: "Shipping Address",
+        completeAddress: "Please complete your shipping address in profile settings",
+        editAddress: "Edit Address",
+        recipientName: "Recipient Name",
+        phone: "Phone",
+        address: "Address",
+        city: "City",
+        province: "Province",
+        country: "Country",
+        postalCode: "Postal Code",
+        // Shipping Section
+        shippingMethod: "Shipping Method",
+        selectShipping: "Select your preferred shipping method",
+        calculatingShipping: "Calculating shipping options...",
+        domesticShipping: "Domestic Shipping",
+        internationalShipping: "International Shipping",
+        estimatedDelivery: "Estimated delivery",
+        days: "days",
+        day: "day",
+        // Payment Section
+        paymentMethod: "Payment Method",
+        selectPayment: "Select your payment method",
+        // Order Summary
+        orderSummary: "Order Summary",
+        items: "items",
+        subtotal: "Subtotal",
+        shipping: "Shipping",
+        tax: "Tax",
+        total: "Total",
+        payNow: "Pay Now",
+        processing: "Processing...",
+        termsAgreement: "By completing this purchase, you agree to our Terms of Service and Privacy Policy",
+        // Messages
+        emptyCart: "Your cart is empty",
+        emptyCartMessage: "Add some products to your cart to checkout",
+        continueShoppingButton: "Continue Shopping",
+        provinceRequired: "Province is required for domestic shipping",
+        nameRequired: "Name is required",
     },
 };

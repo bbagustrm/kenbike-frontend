@@ -284,13 +284,13 @@ function SearchPageContent() {
                                         <motion.div whileTap={{ scale: 0.95 }}>
                                             <Button variant="outline" size="sm" className="lg:hidden mt-1 shrink-0">
                                                 <SlidersHorizontal className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
-                                                <span className="hidden md:inline">Filters</span>
+                                                <span className="hidden md:inline">{t.search.filters}</span>
                                             </Button>
                                         </motion.div>
                                     </SheetTrigger>
                                     <SheetContent side="left" className="w-[280px] sm:w-[350px] bg-card">
                                         <SheetHeader>
-                                            <SheetTitle>Filters</SheetTitle>
+                                            <SheetTitle>{t.search.filters}</SheetTitle>
                                         </SheetHeader>
                                         <div>
                                             <FilterSidebar
@@ -307,7 +307,7 @@ function SearchPageContent() {
                                     <h1 className="text-lg md:text-2xl lg:text-3xl font-bold mb-2 text-foreground truncate">
                                         {searchQuery
                                             ? `"${searchQuery}"`
-                                            : "All Products"}
+                                            : t.search.allProducts}
                                     </h1>
 
                                     {/* Active Filters */}
@@ -325,7 +325,7 @@ function SearchPageContent() {
                                             )}
                                             {(filters.promotionId || hasPromotion) && (
                                                 <Badge variant="promotion" className="text-xs">
-                                                    Promo
+                                                    {t.search.promo}
                                                 </Badge>
                                             )}
                                         </div>
@@ -336,7 +336,7 @@ function SearchPageContent() {
                                             <span>{t.common.loading}</span>
                                         ) : (
                                             <span>
-                                                {total} {total === 1 ? "product" : "products"}
+                                                {total} {total === 1 ? t.search.product : t.search.productsCount}
                                             </span>
                                         )}
                                     </p>
@@ -408,8 +408,8 @@ function SearchPageContent() {
                         </>
                     ) : (
                         <EmptyState
-                            title="No products found"
-                            description="Try adjusting your filters or search terms"
+                            title={t.search.noProductsFound}
+                            description={t.search.tryAdjustingFilters}
                         />
                     )}
                 </div>

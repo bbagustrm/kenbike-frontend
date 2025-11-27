@@ -134,7 +134,7 @@ export default function RegisterForm() {
                 return;
             }
         } else {
-            if (!locationData.country_name) {
+            if (!locationData.country) {
                 toast.error("Please enter country name", {
                     duration: 5000,
                     position: "top-center",
@@ -152,7 +152,7 @@ export default function RegisterForm() {
             const registerData: RegisterData = {
                 ...baseData,
                 address: locationData.address,
-                country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name || "",
+                country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country || "",
                 province: locationData.province,
                 city: locationData.city,
                 district: locationData.district,

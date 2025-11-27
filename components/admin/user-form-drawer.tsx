@@ -66,12 +66,11 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
 
             const isIndonesia = user.country === "Indonesia" || !!user.province;
             setLocationData({
-                country: isIndonesia ? "Indonesia" : "Global",
                 province: user.province || undefined,
                 city: user.city || undefined,
-                district: user.district || undefined,  // ✅ Include district
+                district: user.district || undefined,
                 postal_code: user.postal_code || undefined,
-                country_name: !isIndonesia ? user.country : undefined,
+                country: !isIndonesia ? user.country : undefined,
                 address: user.address || undefined,
             });
         } else {
@@ -121,7 +120,7 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                 return;
             }
         } else if (locationData.country === "Global") {
-            if (!locationData.country_name) {
+            if (!locationData.country) {
                 toast.error("Please enter country name");
                 return;
             }
@@ -148,7 +147,7 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                     updateData.district = locationData.district;
                     updateData.postal_code = locationData.postal_code;
                 } else {
-                    updateData.country = locationData.country_name;
+                    updateData.country = locationData.country;
                     updateData.province = locationData.province;
                     updateData.city = locationData.city;
                     updateData.district = locationData.district;
@@ -168,7 +167,7 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                     role: formData.role,
                     phone_number: formData.phone_number || undefined,
                     address: locationData.address,
-                    country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name,
+                    country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country,
                     province: locationData.province,
                     city: locationData.city,
                     district: locationData.district,

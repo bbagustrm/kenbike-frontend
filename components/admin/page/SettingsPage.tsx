@@ -1,7 +1,7 @@
 // File: components/SettingsPage.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";  // ✅ Add useEffect
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, X, CheckCircle2, AlertCircle, Shield, Crown } from "lucide-react"; // Tambahkan ikon Crown
+import { Loader2, Upload, X, CheckCircle2, AlertCircle, Shield, Crown } from "lucide-react";
 import { getImageUrl, validateImageFile, formatFileSize } from "@/lib/image-utils";
 import { getUserInitials } from "@/lib/auth-utils";
 import { toast } from "sonner";
@@ -25,7 +25,6 @@ import { Badge } from "@/components/ui/badge";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { UpdateProfilePayload } from "@/types/auth";
 
-// Interface untuk props yang akan diterima komponen
 interface SettingsPageProps {
     userRole: "admin" | "owner";
 }
@@ -62,6 +61,25 @@ export default function SettingsPage({ userRole }: SettingsPageProps) {
         new_password: "",
         confirm_password: "",
     });
+
+    // ✅ ADD THIS: Sync user data to state when user changes
+    useEffect(() => {
+        if (user) {
+            setProfileData({
+                phone_number: user.phone_number || "",
+            });
+
+            const isIndonesia = user.country === "Indonesia" || !!user.province;
+            setLocationData({
+                province: user.province || undefined,
+                city: user.city || undefined,
+                district: user.district || undefined,
+                postal_code: user.postal_code || undefined,
+                country: !isIndonesia ? user.country : undefined,
+                address: user.address || undefined,
+            });
+        }
+    }, [user]);
 
     if (isLoading) {
         return (
@@ -111,15 +129,15 @@ export default function SettingsPage({ userRole }: SettingsPageProps) {
                 address: locationData.address,
             };
 
-            // Add location data based on country
+            // ✅ FIXED: Add location data including district
             if (locationData.country === "Indonesia") {
                 updateData.country = "Indonesia";
                 updateData.province = locationData.province;
                 updateData.city = locationData.city;
-                updateData.district = locationData.district;
+                updateData.district = locationData.district;  // ✅ ADD THIS
                 updateData.postal_code = locationData.postal_code;
             } else {
-                updateData.country = locationData.country_name;
+                updateData.country = locationData.country;
                 updateData.province = locationData.province;
                 updateData.city = locationData.city;
                 updateData.district = locationData.district;
@@ -206,7 +224,6 @@ export default function SettingsPage({ userRole }: SettingsPageProps) {
         }
     };
 
-    // Fungsi untuk mendapatkan informasi spesifik peran
     const getRoleSpecificInfo = () => {
         if (userRole === "owner") {
             return {
