@@ -2,21 +2,31 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
+# Salin file package.json dan package-lock.json
 COPY package*.json ./
 RUN npm install
 
+# Salin seluruh kode sumber aplikasi
 COPY . .
 
 # Build arguments dari GitHub Actions
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_IMAGE_BASE_URL
+ARG SKIP_ESLINT
 
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_IMAGE_BASE_URL=$NEXT_PUBLIC_IMAGE_BASE_URL
 
-RUN npm run build
+# Ganti baris RUN npm run build dengan logika kondisional
+RUN if [ "$SKIP_ESLINT" = "true" ]; then \
+        echo "Skipping ESLint..."; \
+        npm run build -- --no-lint; \
+    else \
+        echo "Running with ESLint..."; \
+        npm run build; \
+    fi
 
 # --- Stage 2: Runner ---
 FROM node:18-alpine AS runner
