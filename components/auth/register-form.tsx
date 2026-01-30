@@ -23,6 +23,7 @@ import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { RegisterData } from "@/types/auth";
 import { AnimatedButton } from "@/components/animations/button-ripple";
 import { ScrollReveal } from "@/components/animations/scroll-reveal";
+import { isIndonesia } from "@/lib/countries";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -56,8 +57,9 @@ export default function RegisterForm() {
         confirm_password: "",
     });
 
+    // Initialize with Indonesia (ID) as default country code
     const [locationData, setLocationData] = useState<LocationData>({
-        country: "Indonesia",
+        country: "ID",
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +127,9 @@ export default function RegisterForm() {
             return;
         }
 
-        if (locationData.country === "Indonesia") {
+        // Validate location based on country code
+        if (isIndonesia(locationData.country)) {
+            // For Indonesia (ID), require province and city from kodepos search
             if (!locationData.province || !locationData.city) {
                 toast.error("Please select province and complete location search", {
                     duration: 5000,
@@ -134,8 +138,9 @@ export default function RegisterForm() {
                 return;
             }
         } else {
-            if (!locationData.country_name) {
-                toast.error("Please enter country name", {
+            // For international, city is recommended
+            if (!locationData.city) {
+                toast.error("Please enter your city", {
                     duration: 5000,
                     position: "top-center",
                 });
@@ -149,10 +154,11 @@ export default function RegisterForm() {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { confirm_password: _, ...baseData } = formData;
 
+            // Country is now stored as 2-char ISO code (ID, US, GB, etc.)
             const registerData: RegisterData = {
                 ...baseData,
                 address: locationData.address,
-                country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name || "",
+                country: locationData.country, // Already a 2-char ISO code
                 province: locationData.province,
                 city: locationData.city,
                 district: locationData.district,

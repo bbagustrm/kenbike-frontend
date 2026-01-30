@@ -13,9 +13,17 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, Globe } from "lucide-react"; // Tambahkan Globe jika ingin ikon
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+    INTERNATIONAL_COUNTRIES,
+    getCountryName,
+    isIndonesia,
+    type CountryCode
+} from "@/lib/countries";
+
+// ... (Interface dan tipe data lainnya tetap sama) ...
 
 interface LocationFormProps {
     value: LocationData;
@@ -25,14 +33,11 @@ interface LocationFormProps {
 }
 
 export interface LocationData {
-    country: "Indonesia" | "Global";
-    // For Indonesia
+    country: CountryCode;
     province?: string;
     city?: string;
     district?: string;
     postal_code?: string;
-    // For Global
-    country_name?: string;
     address?: string;
 }
 
@@ -48,8 +53,8 @@ interface KodePosArea {
     timezone?: string;
 }
 
-// 34 Provinsi Indonesia
 const INDONESIA_PROVINCES = [
+    // ... (Daftar provinsi tetap sama) ...
     "Aceh",
     "Bali",
     "Banten",
@@ -96,9 +101,12 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
     const [openAreaCombobox, setOpenAreaCombobox] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Fetch areas when province is selected and user searches
+    const isDomestic = isIndonesia(value.country);
+
+    // ... (useEffect dan fetchAreas tetap sama) ...
+
     useEffect(() => {
-        if (value.country === "Indonesia" && value.province && searchQuery.length >= 3) {
+        if (isDomestic && value.province && searchQuery.length >= 3) {
             const timer = setTimeout(() => {
                 fetchAreas(searchQuery, value.province!);
             }, 500);
@@ -106,12 +114,11 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
         } else {
             setAreas([]);
         }
-    }, [searchQuery, value.province, value.country]);
+    }, [searchQuery, value.province, isDomestic]);
 
     const fetchAreas = async (query: string, province: string) => {
         setLoadingAreas(true);
         try {
-            // Search by city or district name
             const response = await fetch(
                 `https://kodepos.vercel.app/search/?q=${encodeURIComponent(query)}`
             );
@@ -122,9 +129,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
 
             const result = await response.json();
 
-            // API returns { statusCode, code, data }
             if (result.data && Array.isArray(result.data)) {
-                // Filter results to only show areas from selected province
                 const filteredAreas = result.data.filter(
                     (area: KodePosArea) =>
                         area.province.toLowerCase() === province.toLowerCase()
@@ -142,24 +147,49 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
         }
     };
 
-    const handleCountryChange = (country: "Indonesia" | "Global") => {
+    const handleCountryTypeChange = (type: "domestic" | "international") => {
+        if (type === "domestic") {
+            onChange({
+                country: "ID",
+                province: undefined,
+                city: undefined,
+                district: undefined,
+                postal_code: undefined,
+                address: undefined,
+            });
+        } else {
+            onChange({
+                country: "SG", // Default international
+                province: undefined,
+                city: undefined,
+                district: undefined,
+                postal_code: undefined,
+                address: undefined,
+            });
+        }
+        setSearchQuery("");
+        setAreas([]);
+    };
+
+    const handleCountryChange = (countryCode: CountryCode) => {
         onChange({
-            country,
-            // Reset all fields
+            ...value,
+            country: countryCode,
             province: undefined,
             city: undefined,
             district: undefined,
             postal_code: undefined,
-            country_name: undefined,
-            address: undefined,
         });
         setSearchQuery("");
         setAreas([]);
     };
 
+    // ... (handleProvinceChange dan handleAreaSelect tetap sama) ...
+
     const handleProvinceChange = (province: string) => {
         onChange({
             ...value,
+            country: "ID",
             province,
             city: undefined,
             district: undefined,
@@ -172,6 +202,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
     const handleAreaSelect = (area: KodePosArea) => {
         onChange({
             ...value,
+            country: "ID",
             province: area.province,
             city: area.regency,
             district: area.district,
@@ -183,29 +214,52 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
 
     return (
         <div className="space-y-4">
-            {/* Country Selection */}
+            {/* Country Type Selection (Domestic/International) */}
             <div className="space-y-2">
-                <Label htmlFor="country">
-                    Country {required && <span className="text-red-500">*</span>}
+                <Label htmlFor="country_type">
+                    Shipping Region {required && <span className="text-red-500">*</span>}
                 </Label>
                 <Select
-                    value={value.country}
-                    onValueChange={handleCountryChange}
+                    value={isDomestic ? "domestic" : "international"}
+                    onValueChange={(val) => handleCountryTypeChange(val as "domestic" | "international")}
                     disabled={disabled}
                 >
                     <SelectTrigger>
-                        <SelectValue placeholder="Select country" />
+                        <SelectValue placeholder="Select shipping region" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Indonesia">Indonesia</SelectItem>
-                        <SelectItem value="Global">Global (Other Countries)</SelectItem>
+                        <SelectItem value="domestic">Indonesia (Domestic)</SelectItem>
+                        <SelectItem value="international">International</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
-            {/* Indonesia Form */}
-            {value.country === "Indonesia" && (
+            {/* Indonesia Form (Domestic) */}
+            {isDomestic && (
                 <>
+                    {/* --- TAMBAHKAN BLOK INI --- */}
+                    {/* Country Selection for Domestic (Locked to Indonesia) */}
+                    <div className="space-y-2">
+                        <Label htmlFor="country_domestic">
+                            Country {required && <span className="text-red-500">*</span>}
+                        </Label>
+                        <Select
+                            value="ID"
+                            disabled={true} // Disabled karena user memilih Domestik
+                        >
+                            <SelectTrigger className="bg-muted/50 cursor-not-allowed opacity-80">
+                                <SelectValue placeholder="Indonesia" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ID">Indonesia</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-[10px] text-muted-foreground">
+                            Automatically set for Domestic region.
+                        </p>
+                    </div>
+                    {/* -------------------------- */}
+
                     {/* Province */}
                     <div className="space-y-2">
                         <Label htmlFor="province">
@@ -323,9 +377,10 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                         <div className="rounded-lg border bg-muted/50 p-3 space-y-1">
                             <div className="text-sm font-medium">Selected Location:</div>
                             <div className="text-sm text-muted-foreground">
-                                <div>District: <span className="font-medium text-foreground">{value.district}</span></div>
-                                <div>City: <span className="font-medium text-foreground">{value.city}</span></div>
+                                <div>Country: <span className="font-medium text-foreground">Indonesia ({value.country})</span></div>
                                 <div>Province: <span className="font-medium text-foreground">{value.province}</span></div>
+                                <div>City: <span className="font-medium text-foreground">{value.city}</span></div>
+                                <div>District: <span className="font-medium text-foreground">{value.district}</span></div>
                                 <div>Postal Code: <span className="font-medium text-foreground">{value.postal_code}</span></div>
                             </div>
                         </div>
@@ -333,28 +388,36 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                 </>
             )}
 
-            {/* Global Form */}
-            {value.country === "Global" && (
+            {/* International Form */}
+            {!isDomestic && (
                 <>
                     <div className="space-y-2">
-                        <Label htmlFor="country_name">
-                            Country Name {required && <span className="text-red-500">*</span>}
+                        <Label htmlFor="country">
+                            Country {required && <span className="text-red-500">*</span>}
                         </Label>
-                        <Input
-                            id="country_name"
-                            value={value.country_name || ""}
-                            onChange={(e) => onChange({ ...value, country_name: e.target.value })}
-                            placeholder="e.g., United States"
+                        <Select
+                            value={value.country}
+                            onValueChange={(val) => handleCountryChange(val as CountryCode)}
                             disabled={disabled}
-                            maxLength={50}
-                        />
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                                {INTERNATIONAL_COUNTRIES.map((country) => (
+                                    <SelectItem key={country.code} value={country.code}>
+                                        {country.name} ({country.code})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="province_global">State/Province</Label>
+                            <Label htmlFor="province_intl">State/Province</Label>
                             <Input
-                                id="province_global"
+                                id="province_intl"
                                 value={value.province || ""}
                                 onChange={(e) => onChange({ ...value, province: e.target.value })}
                                 placeholder="e.g., California"
@@ -364,9 +427,9 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="city_global">City</Label>
+                            <Label htmlFor="city_intl">City</Label>
                             <Input
-                                id="city_global"
+                                id="city_intl"
                                 value={value.city || ""}
                                 onChange={(e) => onChange({ ...value, city: e.target.value })}
                                 placeholder="e.g., Los Angeles"
@@ -377,15 +440,22 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="postal_code_global">Postal/ZIP Code</Label>
+                        <Label htmlFor="postal_code_intl">Postal/ZIP Code</Label>
                         <Input
-                            id="postal_code_global"
+                            id="postal_code_intl"
                             value={value.postal_code || ""}
                             onChange={(e) => onChange({ ...value, postal_code: e.target.value })}
                             placeholder="e.g., 90001"
                             disabled={disabled}
                             maxLength={10}
                         />
+                    </div>
+
+                    <div className="rounded-lg border bg-muted/50 p-3">
+                        <div className="text-sm">
+                            <span className="text-muted-foreground">Selected Country: </span>
+                            <span className="font-medium">{getCountryName(value.country)} ({value.country})</span>
+                        </div>
                     </div>
                 </>
             )}

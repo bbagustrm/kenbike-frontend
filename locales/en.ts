@@ -17,6 +17,9 @@ export const en: Translation = {
         delete: "Delete",
         edit: "Edit",
         view: "View",
+        refresh: "Refresh",
+        previous: "Previous",
+        next: "Next",
     },
 
     nav: {
@@ -150,16 +153,6 @@ export const en: Translation = {
         adminDashboard: "Admin Dashboard",
         logout: "Logout",
     },
-
-    notifications: {
-        title: "Notifications",
-        markAllRead: "Mark all as read",
-        viewAll: "View all notifications",
-        orderProcessing: "Order is being processed",
-        orderShipped: "Order has been shipped",
-        orderDelivered: "Order has been delivered",
-    },
-
     products: {
         title: "Products",
         category: "Category",
@@ -329,5 +322,222 @@ export const en: Translation = {
         emptyCart: "Cart is empty",
         emptyMessage: "Your shopping cart is empty. Start adding items!",
         clearCart: "Clear Cart",
+    },
+
+    adminReviews: {
+        title: "Review Management",
+        description: "Manage product reviews and responses",
+        fetchError: "Failed to load reviews",
+
+        // Stats
+        totalReviews: "Total Reviews",
+        fiveStarReviews: "5 Star Reviews",
+        withReplies: "With Replies",
+        needsReply: "Needs Reply",
+
+        // Filters
+        searchPlaceholder: "Search by user, product, or comment...",
+        filterByRating: "Rating",
+        allRatings: "All Ratings",
+        filterByReply: "Reply Status",
+        allReplyStatus: "All Status",
+        hasReply: "Has Reply",
+        noReply: "No Reply",
+        sortBy: "Sort By",
+        sortByDate: "Newest",
+        sortByRating: "Rating",
+
+        // Table
+        product: "Product",
+        user: "User",
+        rating: "Rating",
+        comment: "Comment",
+        status: "Status",
+        date: "Date",
+        actions: "Actions",
+        noComment: "No comment",
+        verified: "Verified",
+        replied: "Replied",
+        pending: "Pending",
+
+        // Empty State
+        noReviews: "No reviews found",
+        noReviewsDesc: "Try adjusting your search filters",
+
+        // Reply Dialog
+        reply: "Reply",
+        replyToReview: "Reply to Review",
+        replyDescription: "Your reply will be visible to all customers",
+        existingReplies: "Existing Replies",
+        yourReply: "Your Reply",
+        replyPlaceholder: "Write your reply...",
+        submitReply: "Submit Reply",
+        replySuccess: "Reply submitted successfully",
+        replyError: "Failed to submit reply",
+
+        // Delete Dialog
+        deleteReviewTitle: "Delete Review",
+        deleteReviewDesc: "Are you sure you want to delete this review? This action cannot be undone.",
+        deleteSuccess: "Review deleted successfully",
+        deleteError: "Failed to delete review",
+    },
+
+    // Admin Discussions
+    adminDiscussions: {
+        title: "Discussion Management",
+        description: "Manage product Q&A discussions",
+        fetchError: "Failed to load discussions",
+
+        // Stats
+        totalQuestions: "Total Questions",
+        withReplies: "With Replies",
+        unanswered: "Unanswered",
+        totalLikes: "Total Likes",
+
+        // Filters
+        searchPlaceholder: "Search by user, product, or question...",
+        filterByReplies: "Reply Status",
+        allStatus: "All Status",
+        answered: "Answered",
+        sortBy: "Sort By",
+        sortByDate: "Newest",
+        sortByLikes: "Most Liked",
+
+        // Table
+        product: "Product",
+        user: "User",
+        question: "Question",
+        replies: "Replies",
+        likes: "Likes",
+        date: "Date",
+        actions: "Actions",
+        view: "View",
+
+        // Empty State
+        noDiscussions: "No discussions found",
+        noDiscussionsDesc: "Try adjusting your search filters",
+
+        // Delete Dialog
+        deleteTitle: "Delete Discussion",
+        deleteDesc: "Are you sure you want to delete this discussion? All replies will also be deleted. This action cannot be undone.",
+        deleteSuccess: "Discussion deleted successfully",
+        deleteError: "Failed to delete discussion",
+    },
+
+    // Review (Public - for product detail page)
+    review: {
+        title: "Reviews",
+        writeReview: "Write a Review",
+        basedOn: "based on",
+        reviews: "reviews",
+        filterByRating: "Filter by rating",
+        allRatings: "All Ratings",
+        sortBy: "Sort By",
+        newest: "Newest",
+        oldest: "Oldest",
+        highestRating: "Highest Rating",
+        lowestRating: "Lowest Rating",
+        verifiedPurchase: "Verified Purchase",
+        adminReply: "Admin Reply",
+        ownerReply: "Owner Reply",
+        noReviews: "No reviews yet",
+        noReviewsDesc: "Be the first to review this product",
+        loadMore: "Load More",
+
+        // Review Form
+        rateProduct: "Rate this product",
+        yourReview: "Your Review",
+        reviewPlaceholder: "Share your experience with this product... (minimum 10 characters)",
+        submitReview: "Submit Review",
+        submitting: "Submitting...",
+        minChars: "Minimum {min} characters",
+        maxChars: "Maximum {max} characters",
+        reviewSuccess: "Review submitted successfully!",
+        reviewError: "Failed to submit review",
+
+        // Pending Reviews
+        pendingReviews: "Pending Reviews",
+        pendingReviewsDesc: "Products waiting for your review",
+        reviewNow: "Review Now",
+        noPendingReviews: "No pending reviews",
+    },
+
+    // Discussion (Public - for product detail page)
+    discussion: {
+        title: "Discussion",
+        askQuestion: "Ask a Question",
+        questionPlaceholder: "Write your question about this product...",
+        submitQuestion: "Submit Question",
+        submitting: "Submitting...",
+        sortBy: "Sort By",
+        newest: "Newest",
+        mostLiked: "Most Liked",
+        reply: "Reply",
+        replies: "replies",
+        showReplies: "Show {count} replies",
+        hideReplies: "Hide replies",
+        replyPlaceholder: "Write your reply...",
+        submitReply: "Submit",
+        like: "Like",
+        liked: "Liked",
+        adminBadge: "Admin",
+        ownerBadge: "Owner",
+        noDiscussions: "No discussions yet",
+        noDiscussionsDesc: "Be the first to ask about this product",
+        loadMore: "Load More",
+        questionSuccess: "Question submitted successfully!",
+        questionError: "Failed to submit question",
+        replySuccess: "Reply submitted successfully!",
+        replyError: "Failed to submit reply",
+        deleteSuccess: "Deleted successfully",
+        deleteError: "Failed to delete",
+        loginToAsk: "Login to ask",
+        loginToReply: "Login to reply",
+        loginToLike: "Login to like",
+    },
+    notifications: {
+        title: "Notifications",
+        markAllRead: "Mark all as read",
+        markAsRead: "Mark as read",
+        viewAll: "View all notifications",
+        empty: "No notifications yet",
+
+        // Filter
+        filterAll: "All",
+        filterUnread: "Unread",
+        filterRead: "Read",
+        filterByType: "Filter by type",
+        allTypes: "All types",
+
+        // Status messages
+        unreadNotifications: "unread notifications",
+        allCaughtUp: "You're all caught up!",
+        noNotifications: "No notifications",
+        noUnread: "No unread notifications",
+        noRead: "No read notifications",
+        loadMore: "Load more",
+        refreshed: "Notifications refreshed",
+
+        // Actions
+        deleted: "Notification deleted",
+        deleteError: "Failed to delete notification",
+        allMarkedAsRead: "All notifications marked as read",
+        markAsReadError: "Failed to mark as read",
+        markAllError: "Failed to mark all as read",
+
+        // Order notifications
+        orderProcessing: "Order is being processed",
+        orderShipped: "Order has been shipped",
+        orderDelivered: "Order has been delivered",
+        orderCompleted: "Order completed",
+        orderCancelled: "Order cancelled",
+        orderPaid: "Payment successful",
+        orderFailed: "Payment failed",
+
+        // Other notifications
+        reviewReply: "Review reply",
+        discussionReply: "Discussion reply",
+        promotionStart: "Promotion started",
+        promotionEnd: "Promotion ended",
     },
 };

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useTranslation } from "@/hooks/use-translation";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { UpdateProfilePayload } from "@/types/auth";
+import { isIndonesia, type CountryCode } from "@/lib/countries";
 
 export default function ProfilePage() {
   const { user, isLoading, updateProfile, updatePassword, deleteProfileImage } = useAuth();
@@ -33,20 +34,40 @@ export default function ProfilePage() {
     phone_number: user?.phone_number || "",
   });
 
+  // Initialize location data from user
   const [locationData, setLocationData] = useState<LocationData>(() => {
-    if (!user) return { country: "Indonesia" };
+    if (!user) return { country: "ID" as CountryCode };
 
-    const isIndonesia = user.country === "Indonesia" || !!user.province;
+    // Country is now stored as 2-char code (ID, US, GB, etc.)
+    const countryCode = (user.country || "ID") as CountryCode;
+
     return {
-      country: isIndonesia ? "Indonesia" : "Global",
+      country: countryCode,
       province: user.province || undefined,
       city: user.city || undefined,
-      district: user.district || undefined,  // ✅ Include district
+      district: user.district || undefined,
       postal_code: user.postal_code || undefined,
-      country_name: !isIndonesia ? user.country : undefined,
       address: user.address || undefined,
     };
   });
+
+  // Update location data when user changes
+  useEffect(() => {
+    if (user) {
+      const countryCode = (user.country || "ID") as CountryCode;
+      setLocationData({
+        country: countryCode,
+        province: user.province || undefined,
+        city: user.city || undefined,
+        district: user.district || undefined,
+        postal_code: user.postal_code || undefined,
+        address: user.address || undefined,
+      });
+      setProfileData({
+        phone_number: user.phone_number || "",
+      });
+    }
+  }, [user]);
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -102,25 +123,20 @@ export default function ProfilePage() {
     try {
       const updateData: UpdateProfilePayload = {
         phone_number: profileData.phone_number || undefined,
-        address: locationData.address,
+        // Country is already a 2-char code (ID, US, GB, etc.)
+        country: locationData.country,
+        province: locationData.province || undefined,
+        city: locationData.city || undefined,
+        district: locationData.district || undefined,
+        postal_code: locationData.postal_code || undefined,
+        address: locationData.address || undefined,
       };
-
-      // Add location data based on country
-      if (locationData.country === "Indonesia") {
-        updateData.country = "Indonesia";
-        updateData.province = locationData.province;
-        updateData.city = locationData.city;
-        updateData.postal_code = locationData.postal_code;
-      } else {
-        updateData.country = locationData.country_name;
-        updateData.province = locationData.province;
-        updateData.city = locationData.city;
-        updateData.postal_code = locationData.postal_code;
-      }
 
       if (selectedImage) {
         updateData.profile_image = selectedImage;
       }
+
+      console.log("📤 Sending profile update:", updateData);
 
       await updateProfile(updateData);
 

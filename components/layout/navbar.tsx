@@ -1,3 +1,4 @@
+// components/layout/navbar.tsx
 "use client";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,12 +16,17 @@ const UserAvatar = dynamic(() => import("@/components/auth/user-avatar").then(mo
   ssr: false,
 });
 
+// ✅ NEW: Import NotificationPopover
+const NotificationPopover = dynamic(
+    () => import("@/components/notification/notification-popover").then(mod => ({ default: mod.NotificationPopover })),
+    { ssr: false }
+);
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Search,
-  Bell,
   Menu,
   X,
   Package,
@@ -35,12 +41,8 @@ import {
   Settings,
   BarChart3,
   LogOut,
+  Bell, // Keep for mobile menu notifications link
 } from "lucide-react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -87,7 +89,7 @@ export default function Navbar() {
   const [searchResults, setSearchResults] = useState<ProductListItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const notificationsCount = 5;
+  // ✅ REMOVED: const notificationsCount = 5; (now comes from NotificationContext)
 
   const pages = [
     { name: t.nav.home, href: "/", icon: Home },
@@ -292,47 +294,8 @@ export default function Navbar() {
             {/* Right Icons - Desktop */}
             <div className="hidden md:flex items-center gap-4">
               <div className="flex items-center gap-2 bg-background rounded-full border shadow-xs border-border">
-                {isAuthenticated && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="relative"
-                            aria-label="Notifications"
-                        >
-                          <Bell className="w-7 h-7" />
-                          {notificationsCount > 0 && (
-                              <Badge
-                                  variant="destructive"
-                                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                              >
-                                {notificationsCount}
-                              </Badge>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 bg-card" align="end">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold">{t.notifications.title}</h4>
-                            <Button variant="ghost" size="sm" className="text-xs">
-                              {t.notifications.markAllRead}
-                            </Button>
-                          </div>
-                          <div className="space-y-2 max-h-96 overflow-y-auto">
-                            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer">
-                              <p className="text-sm font-medium">{t.notifications.orderProcessing}</p>
-                              <p className="text-xs text-muted-foreground mt-1">Order #12345 - 2 {t.common.minutesAgo}</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" className="w-full" size="sm">
-                            {t.notifications.viewAll}
-                          </Button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                )}
+                {/* ✅ UPDATED: Use NotificationPopover instead of hardcoded Popover */}
+                {isAuthenticated && <NotificationPopover />}
                 <CartSheet />
               </div>
 
@@ -350,49 +313,10 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Right Icons - FIXED: Added CartSheet */}
+            {/* Mobile Right Icons */}
             <div className="flex items-center md:hidden gap-2">
-              {isAuthenticated && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                          variant="ghost"
-                          size="icon"
-                          className="relative"
-                          aria-label="Notifications"
-                      >
-                        <Bell className="w-6 h-6" />
-                        {notificationsCount > 0 && (
-                            <Badge
-                                variant="destructive"
-                                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                            >
-                              {notificationsCount}
-                            </Badge>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 bg-card" align="end">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-semibold">{t.notifications.title}</h4>
-                          <Button variant="ghost" size="sm" className="text-xs">
-                            {t.notifications.markAllRead}
-                          </Button>
-                        </div>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer">
-                            <p className="text-sm font-medium">{t.notifications.orderProcessing}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Order #12345 - 2 {t.common.minutesAgo}</p>
-                          </div>
-                        </div>
-                        <Button variant="outline" className="w-full" size="sm">
-                          {t.notifications.viewAll}
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-              )}
+              {/* ✅ UPDATED: Use NotificationPopover for mobile too */}
+              {isAuthenticated && <NotificationPopover />}
 
               {/* Cart Sheet for Mobile */}
               <CartSheet />
@@ -474,7 +398,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu - IMPROVED with border and full menu */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
             <div className="md:hidden border-b-4 border-border bg-card shadow-lg">
               <div className="container mx-auto py-4 px-4 space-y-4">
@@ -513,6 +437,15 @@ export default function Navbar() {
                               >
                                 <ShoppingCart className="h-4 w-4" />
                                 <span className="text-sm font-medium">Orders</span>
+                              </Link>
+                              {/* ✅ NEW: Notifications link in mobile menu */}
+                              <Link
+                                  href="/user/notifications"
+                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <Bell className="h-4 w-4" />
+                                <span className="text-sm font-medium">{t.notifications?.title || "Notifications"}</span>
                               </Link>
                               <Link
                                   href="/user/profile"
@@ -713,9 +646,9 @@ export default function Navbar() {
                               <div className="flex flex-col flex-1">
                                 <span className="font-medium">{product.name}</span>
                                 <span className="text-xs text-muted-foreground">
-                            {formatCurrency(product.idPrice)}
+                                                    {formatCurrency(product.idPrice)}
                                   {product.category && ` • ${product.category.name}`}
-                          </span>
+                                                </span>
                               </div>
                             </CommandItem>
                         ))}
@@ -725,7 +658,7 @@ export default function Navbar() {
                             className="justify-center text-primary"
                         >
                           <Search className="mr-2 h-4 w-4" />
-                          <span>View all results for {"}{searchQuery}{"}</span>
+                          <span>View all results for &quot;{searchQuery}&quot;</span>
                         </CommandItem>
                       </CommandGroup>
                     </>

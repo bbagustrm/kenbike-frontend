@@ -7,8 +7,10 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { TranslationProvider } from "@/contexts/translation-context";
 import { CartProvider } from "@/contexts/cart-context";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
+import { OrderProvider } from "@/contexts/order-context";
 import { Toaster } from "sonner";
 import "./globals.css";
+import {NotificationProvider} from "@/contexts/notification-context";
 
 // Local Font - Akira Expanded
 const akiraExpanded = localFont({
@@ -84,12 +86,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </head>
         <body className="font-body bg-background text-foreground">
         <AuthProvider>
-            <CartProvider>
-                <TranslationProvider>
-                    <SmoothScrollProvider>{children}</SmoothScrollProvider>
-                    <Toaster position="top-right" />
-                </TranslationProvider>
-            </CartProvider>
+            <NotificationProvider>
+                <CartProvider>
+                    <OrderProvider>
+                        <TranslationProvider>
+                            <SmoothScrollProvider>{children}</SmoothScrollProvider>
+                            <Toaster position="top-right" />
+                        </TranslationProvider>
+                    </OrderProvider>
+                </CartProvider>
+            </NotificationProvider>
         </AuthProvider>
         </body>
         </html>

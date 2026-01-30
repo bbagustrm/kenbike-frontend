@@ -73,3 +73,24 @@ export interface GuestCartItem {
     quantity: number;
     addedAt: string;
 }
+export interface GuestCartItemWithDetails extends GuestCartItem {
+    product?: {
+        id: string;
+        name: string;
+        slug: string;
+        idPrice: number;
+        enPrice: number;
+        imageUrl: string | null;
+        promotion?: {
+            isActive: boolean;
+            discount: number;
+        } | null;
+    };
+    variant?: {
+        id: string;
+        variantName: string;
+        sku: string;
+        stock: number;
+        imageUrl: string | null;
+    };
+}

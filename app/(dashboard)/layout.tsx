@@ -19,6 +19,9 @@ import {
   Home,
   Tag,
   Folder,
+  Star,
+  MessageCircleMore,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -30,6 +33,8 @@ const adminNavigation = [
   { name: "Categories", href: "/admin/categories", icon: Folder },
   { name: "Tags", href: "/admin/tags", icon: Tag },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
+  { name: "Reviews", href: "/admin/reviews", icon: Star },
+  { name: "Comments", href: "/admin/discussions", icon: MessageCircleMore },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -40,14 +45,17 @@ const ownerNavigation = [
   { name: "Categories", href: "/owner/categories", icon: Folder },
   { name: "Tags", href: "/owner/tags", icon: Tag },
   { name: "Orders", href: "/owner/orders", icon: ShoppingCart },
-  { name: "Settings", href: "/owner/settings", icon: Settings },
+  { name: "Reviews", href: "/admin/reviews", icon: Star },
+  { name: "Comments", href: "/admin/discussions", icon: MessageCircleMore },
   { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
   { name: "Promotions", href: "/owner/promotions", icon: Tag },
+  { name: "Settings", href: "/owner/settings", icon: Settings },
 ];
 
 const userNavigation = [
   { name: "Profile", href: "/user/profile", icon: User },
   { name: "Orders", href: "/user/orders", icon: ShoppingCart },
+  { name: "Notification", href: "/user/notifications", icon: Bell },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

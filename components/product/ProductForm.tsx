@@ -41,7 +41,6 @@ import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { GalleryManager } from "@/components/admin/gallery-manager";
 import {PriceInput} from "@/components/ui/price-input";
 
-// Perbaikan 1: Perbaiki tipe props untuk menerima undefined dan memisahkan tipe data
 interface ProductFormProps {
     userRole: "admin" | "owner";
     initialData?: CreateProductData | UpdateProductData;
@@ -52,6 +51,31 @@ interface ProductFormProps {
     submitButtonText: string;
     isEditing?: boolean;
 }
+
+// Default form data
+const getDefaultFormData = (isEditing: boolean): CreateProductData | UpdateProductData => ({
+    name: "",
+    slug: "",
+    idDescription: "",
+    enDescription: "",
+    idPrice: 0,
+    enPrice: 0,
+    imageUrls: [],
+    weight: 0,
+    height: 0,
+    length: 0,
+    width: 0,
+    taxRate: 0.11,
+    categoryId: undefined,
+    promotionId: undefined,
+    isFeatured: false,
+    isPreOrder: false,
+    preOrderDays: 0,
+    variants: [],
+    tagIds: [],
+    galleryImages: [],
+    ...(isEditing ? { isActive: true } : {}),
+});
 
 export default function ProductForm({
                                         userRole,
@@ -64,7 +88,6 @@ export default function ProductForm({
                                         isEditing = false,
                                     }: ProductFormProps) {
     const router = useRouter();
-    // Perbaikan 2: Gunakan 'owner' (lowercase) untuk pengecekan role
     const isOwner = userRole === "owner";
 
     const [isLoading, setIsLoading] = useState(false);
@@ -72,33 +95,17 @@ export default function ProductForm({
     const [tags, setTags] = useState<Tag[]>([]);
     const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-    // Perbaikan 3: Gunakan tipe union yang benar untuk formData
+    // Initialize with default values
     const [formData, setFormData] = useState<CreateProductData | UpdateProductData>(
-        initialData || {
-            name: "",
-            slug: "",
-            idDescription: "",
-            enDescription: "",
-            idPrice: 0,
-            enPrice: 0,
-            imageUrls: [],
-            weight: 0,
-            height: 0,
-            length: 0,
-            width: 0,
-            taxRate: 0.11,
-            categoryId: undefined,
-            promotionId: undefined,
-            isFeatured: false,
-            isPreOrder: false,
-            preOrderDays: 0,
-            variants: [],
-            tagIds: [],
-            galleryImages: [],
-            // Tambahkan isActive hanya jika mode edit
-            ...(isEditing ? { isActive: true } : {}),
-        }
+        initialData || getDefaultFormData(isEditing)
     );
+
+    // ✅ FIX: Sync formData when initialData changes (for edit mode)
+    useEffect(() => {
+        if (initialData) {
+            setFormData(initialData);
+        }
+    }, [initialData]);
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -129,7 +136,6 @@ export default function ProductForm({
         loadInitialData();
     }, [isOwner]);
 
-    // Perbaikan 4: Perbaiki tipe fungsi handleChange
     const handleChange = (field: keyof CreateProductData | keyof UpdateProductData, value: unknown) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
@@ -531,7 +537,6 @@ export default function ProductForm({
                                             Control product visibility
                                         </p>
                                     </div>
-                                    {/* Perbaikan 5: Akses isActive dengan aman */}
                                     <Switch
                                         id="isActive"
                                         checked={(formData as UpdateProductData).isActive || false}

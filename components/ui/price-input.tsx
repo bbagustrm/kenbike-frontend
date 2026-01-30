@@ -15,14 +15,14 @@ interface PriceInputProps {
 }
 
 export function PriceInput({
-    label,
-    value,
-    onChange,
-    placeholder,
-    required = false,
-    disabled = false,
-    type,
-}: PriceInputProps) {
+                               label,
+                               value,
+                               onChange,
+                               placeholder,
+                               required = false,
+                               disabled = false,
+                               type,
+                           }: PriceInputProps) {
     const [displayValue, setDisplayValue] = useState("");
     const [isFocused, setIsFocused] = useState(false);
 
@@ -33,6 +33,7 @@ export function PriceInput({
             if (type === "IDR") {
                 setDisplayValue(value ? formatIDR(value) : "");
             } else {
+                // USD: value is actual dollars (e.g., 23.00)
                 setDisplayValue(value ? formatUSD(value) : "");
             }
         }
@@ -48,14 +49,14 @@ export function PriceInput({
         return parseInt(str.replace(/\./g, ""), 10) || 0;
     };
 
-    // Format USD as decimal
-    const formatUSD = (cents: number): string => {
-        return (cents / 100).toFixed(2);
+    // Format USD as decimal (value is already in dollars)
+    const formatUSD = (dollars: number): string => {
+        return dollars.toFixed(2);
     };
 
-    // Parse USD (dollars to cents)
+    // Parse USD (string to float - NO conversion needed)
     const parseUSD = (str: string): number => {
-        return Math.round(parseFloat(str) * 100) || 0;
+        return parseFloat(str) || 0;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,9 +95,9 @@ export function PriceInput({
             // Update display (don't auto-format while typing)
             setDisplayValue(cleaned);
 
-            // Send cents to parent (handle empty/partial input)
-            const cents = parseUSD(cleaned);
-            onChange(cents);
+            // ✅ FIX: Send actual dollars to parent (no × 100 conversion)
+            const dollars = parseUSD(cleaned);
+            onChange(dollars);
         }
     };
 
@@ -109,8 +110,9 @@ export function PriceInput({
 
         // Format properly on blur
         if (type === "USD" && displayValue) {
-            const cents = parseUSD(displayValue);
-            setDisplayValue(formatUSD(cents));
+            // ✅ FIX: No cents conversion needed
+            const dollars = parseUSD(displayValue);
+            setDisplayValue(formatUSD(dollars));
         } else if (type === "IDR" && displayValue) {
             // Ensure IDR formatting is clean
             const num = parseIDR(displayValue);
@@ -150,8 +152,8 @@ export function PriceInput({
             </div>
             <p className="text-xs text-muted-foreground">
                 {type === "IDR"
-                    ? "Enter amount in Rupiah (e.g., 25.000.000)"
-                    : "Enter amount in USD (e.g., 17.50)"}
+                    ? "Enter amount in Rupiah (e.g., 250.000)"
+                    : "Enter amount in USD (e.g., 23.50)"}
             </p>
         </div>
     );

@@ -1,3 +1,7 @@
+// types/auth.ts
+
+import { CountryCode } from "@/lib/countries";
+
 export type UserRole = "USER" | "ADMIN" | "OWNER";
 
 export interface User {
@@ -7,7 +11,7 @@ export interface User {
     username: string;
     email: string;
     phone_number?: string;
-    country?: string;
+    country?: string; // 2-char ISO code (ID, US, GB, etc.)
     province?: string;
     city?: string;
     district?: string;
@@ -41,7 +45,7 @@ export interface RegisterData {
     username: string;
     email: string;
     phone_number?: string;
-    country?: string;
+    country?: string; // 2-char ISO code (ID, US, GB, etc.)
     province?: string;
     city?: string;
     district?: string;
@@ -60,7 +64,7 @@ export interface RegisterResponse {
 export interface UpdateProfileData {
     phone_number?: string;
     address?: string;
-    country?: string;
+    country?: string; // 2-char ISO code (ID, US, GB, etc.)
     province?: string;
     city?: string;
     district?: string;
@@ -129,7 +133,7 @@ export interface UpdateUserData {
     email?: string;
     phone_number?: string;
     address?: string;
-    country?: string;
+    country?: string; // 2-char ISO code (ID, US, GB, etc.)
     province?: string;
     city?: string;
     district?: string;
@@ -154,7 +158,7 @@ export interface CreateUserPayload extends RegisterData {
 export interface UpdateProfilePayload {
     phone_number?: string;
     address?: string;
-    country?: string;
+    country?: string; // 2-char ISO code (ID, US, GB, etc.)
     province?: string;
     city?: string;
     district?: string;

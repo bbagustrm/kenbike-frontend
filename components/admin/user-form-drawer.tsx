@@ -26,6 +26,7 @@ import { handleApiError } from "@/lib/api-client";
 import { User, UserRole, UpdateUserData, CreateUserPayload } from "@/types/auth";
 import { PasswordInput } from "@/components/ui/password-input";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
+import { isIndonesia, type CountryCode } from "@/lib/countries";
 
 interface UserFormDrawerProps {
     open: boolean;
@@ -47,8 +48,9 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
         confirm_password: "",
     });
 
+    // Initialize with Indonesia (ID) as default country code
     const [locationData, setLocationData] = useState<LocationData>({
-        country: "Indonesia",
+        country: "ID",
     });
 
     useEffect(() => {
@@ -64,14 +66,15 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                 confirm_password: "",
             });
 
-            const isIndonesia = user.country === "Indonesia" || !!user.province;
+            // Country is now stored as 2-char ISO code (ID, US, GB, etc.)
+            const countryCode = (user.country || "ID") as CountryCode;
+
             setLocationData({
-                country: isIndonesia ? "Indonesia" : "Global",
+                country: countryCode,
                 province: user.province || undefined,
                 city: user.city || undefined,
-                district: user.district || undefined,  // ✅ Include district
+                district: user.district || undefined,
                 postal_code: user.postal_code || undefined,
-                country_name: !isIndonesia ? user.country : undefined,
                 address: user.address || undefined,
             });
         } else {
@@ -86,7 +89,7 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                 confirm_password: "",
             });
             setLocationData({
-                country: "Indonesia",
+                country: "ID",
             });
         }
     }, [user, open]);
@@ -114,15 +117,17 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
             }
         }
 
-        // Validate location data
-        if (locationData.country === "Indonesia") {
+        // Validate location data based on country code
+        if (isIndonesia(locationData.country)) {
+            // For Indonesia (ID), require province and city
             if (!locationData.province || !locationData.city) {
                 toast.error("Please select province and complete location search");
                 return;
             }
-        } else if (locationData.country === "Global") {
-            if (!locationData.country_name) {
-                toast.error("Please enter country name");
+        } else {
+            // For international, city is recommended
+            if (!locationData.city) {
+                toast.error("Please enter city");
                 return;
             }
         }
@@ -138,22 +143,13 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                     email: formData.email,
                     phone_number: formData.phone_number || undefined,
                     address: locationData.address,
+                    // Country is already a 2-char ISO code
+                    country: locationData.country,
+                    province: locationData.province,
+                    city: locationData.city,
+                    district: locationData.district,
+                    postal_code: locationData.postal_code,
                 };
-
-                // Add location data
-                if (locationData.country === "Indonesia") {
-                    updateData.country = "Indonesia";
-                    updateData.province = locationData.province;
-                    updateData.city = locationData.city;
-                    updateData.district = locationData.district;
-                    updateData.postal_code = locationData.postal_code;
-                } else {
-                    updateData.country = locationData.country_name;
-                    updateData.province = locationData.province;
-                    updateData.city = locationData.city;
-                    updateData.district = locationData.district;
-                    updateData.postal_code = locationData.postal_code;
-                }
 
                 await UserService.updateUser(user.id, updateData);
                 toast.success("User updated successfully");
@@ -168,7 +164,8 @@ export function UserFormDrawer({ open, onOpenChange, user, onSuccess }: UserForm
                     role: formData.role,
                     phone_number: formData.phone_number || undefined,
                     address: locationData.address,
-                    country: locationData.country === "Indonesia" ? "Indonesia" : locationData.country_name,
+                    // Country is already a 2-char ISO code
+                    country: locationData.country,
                     province: locationData.province,
                     city: locationData.city,
                     district: locationData.district,

@@ -54,10 +54,51 @@ export class AuthService {
     static async updateProfile(data: UpdateProfileData): Promise<ApiResponse<Partial<User>>> {
         const formData = new FormData();
 
-        if (data.phone_number) formData.append("phone_number", data.phone_number);
-        if (data.address) formData.append("address", data.address);
-        if (data.country) formData.append("country", data.country);
-        if (data.profile_image) formData.append("profile_image", data.profile_image);
+        // Phone number
+        if (data.phone_number !== undefined) {
+            formData.append("phone_number", data.phone_number || "");
+        }
+
+        // Country (2-char ISO code: ID, US, GB, etc.)
+        if (data.country !== undefined) {
+            formData.append("country", data.country);
+        }
+
+        // Province
+        if (data.province !== undefined) {
+            formData.append("province", data.province || "");
+        }
+
+        // City
+        if (data.city !== undefined) {
+            formData.append("city", data.city || "");
+        }
+
+        // District
+        if (data.district !== undefined) {
+            formData.append("district", data.district || "");
+        }
+
+        // Postal code
+        if (data.postal_code !== undefined) {
+            formData.append("postal_code", data.postal_code || "");
+        }
+
+        // Address
+        if (data.address !== undefined) {
+            formData.append("address", data.address || "");
+        }
+
+        // Profile image
+        if (data.profile_image) {
+            formData.append("profile_image", data.profile_image);
+        }
+
+        // Debug log
+        console.log("📤 FormData entries:");
+        formData.forEach((value, key) => {
+            console.log(`  ${key}:`, value);
+        });
 
         const response = await apiClient.patch<ApiResponse<Partial<User>>>(
             "/auth/profile",

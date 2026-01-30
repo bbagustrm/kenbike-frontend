@@ -17,6 +17,9 @@ export const id: Translation = {
         delete: "Hapus",
         edit: "Ubah",
         view: "Lihat",
+        refresh: "Segarkan",
+        previous: "Sebelumnya",
+        next: "Selanjutnya",
     },
 
     nav: {
@@ -149,16 +152,6 @@ export const id: Translation = {
         settings: "Pengaturan",
         adminDashboard: "Dashboard Admin",
         logout: "Keluar",
-    },
-
-
-    notifications: {
-        title: "Notifikasi",
-        markAllRead: "Tandai semua dibaca",
-        viewAll: "Lihat semua notifikasi",
-        orderProcessing: "Pesanan sedang diproses",
-        orderShipped: "Pesanan telah dikirim",
-        orderDelivered: "Pesanan telah diterima",
     },
 
     products: {
@@ -331,5 +324,222 @@ export const id: Translation = {
         emptyCart: "Keranjang kosong",
         emptyMessage: "Keranjang belanja Anda kosong. Mulai belanja sekarang!",
         clearCart: "Kosongkan Keranjang",
+    },
+    adminReviews: {
+        title: "Manajemen Ulasan",
+        description: "Kelola ulasan produk dan tanggapan",
+        fetchError: "Gagal memuat ulasan",
+
+        // Stats
+        totalReviews: "Total Ulasan",
+        fiveStarReviews: "Ulasan 5 Bintang",
+        withReplies: "Sudah Dibalas",
+        needsReply: "Perlu Dibalas",
+
+        // Filters
+        searchPlaceholder: "Cari berdasarkan pengguna, produk, atau komentar...",
+        filterByRating: "Rating",
+        allRatings: "Semua Rating",
+        filterByReply: "Status Balasan",
+        allReplyStatus: "Semua Status",
+        hasReply: "Sudah Dibalas",
+        noReply: "Belum Dibalas",
+        sortBy: "Urutkan",
+        sortByDate: "Terbaru",
+        sortByRating: "Rating",
+
+        // Table
+        product: "Produk",
+        user: "Pengguna",
+        rating: "Rating",
+        comment: "Komentar",
+        status: "Status",
+        date: "Tanggal",
+        actions: "Aksi",
+        noComment: "Tidak ada komentar",
+        verified: "Terverifikasi",
+        replied: "Sudah Dibalas",
+        pending: "Menunggu",
+
+        // Empty State
+        noReviews: "Tidak ada ulasan ditemukan",
+        noReviewsDesc: "Coba sesuaikan filter pencarian Anda",
+
+        // Reply Dialog
+        reply: "Balas",
+        replyToReview: "Balas Ulasan",
+        replyDescription: "Balasan Anda akan terlihat oleh semua pelanggan",
+        existingReplies: "Balasan Sebelumnya",
+        yourReply: "Balasan Anda",
+        replyPlaceholder: "Tulis balasan Anda...",
+        submitReply: "Kirim Balasan",
+        replySuccess: "Balasan berhasil dikirim",
+        replyError: "Gagal mengirim balasan",
+
+        // Delete Dialog
+        deleteReviewTitle: "Hapus Ulasan",
+        deleteReviewDesc: "Apakah Anda yakin ingin menghapus ulasan ini? Tindakan ini tidak dapat dibatalkan.",
+        deleteSuccess: "Ulasan berhasil dihapus",
+        deleteError: "Gagal menghapus ulasan",
+    },
+
+    // Admin Discussions
+    adminDiscussions: {
+        title: "Manajemen Diskusi",
+        description: "Kelola diskusi tanya jawab produk",
+        fetchError: "Gagal memuat diskusi",
+
+        // Stats
+        totalQuestions: "Total Pertanyaan",
+        withReplies: "Sudah Dijawab",
+        unanswered: "Belum Dijawab",
+        totalLikes: "Total Suka",
+
+        // Filters
+        searchPlaceholder: "Cari berdasarkan pengguna, produk, atau pertanyaan...",
+        filterByReplies: "Status Jawaban",
+        allStatus: "Semua Status",
+        answered: "Sudah Dijawab",
+        sortBy: "Urutkan",
+        sortByDate: "Terbaru",
+        sortByLikes: "Paling Disukai",
+
+        // Table
+        product: "Produk",
+        user: "Pengguna",
+        question: "Pertanyaan",
+        replies: "Balasan",
+        likes: "Suka",
+        date: "Tanggal",
+        actions: "Aksi",
+        view: "Lihat",
+
+        // Empty State
+        noDiscussions: "Tidak ada diskusi ditemukan",
+        noDiscussionsDesc: "Coba sesuaikan filter pencarian Anda",
+
+        // Delete Dialog
+        deleteTitle: "Hapus Diskusi",
+        deleteDesc: "Apakah Anda yakin ingin menghapus diskusi ini? Semua balasan juga akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+        deleteSuccess: "Diskusi berhasil dihapus",
+        deleteError: "Gagal menghapus diskusi",
+    },
+
+    // Review (Public - untuk product detail page)
+    review: {
+        title: "Ulasan",
+        writeReview: "Tulis Ulasan",
+        basedOn: "berdasarkan",
+        reviews: "ulasan",
+        filterByRating: "Filter berdasarkan rating",
+        allRatings: "Semua Rating",
+        sortBy: "Urutkan",
+        newest: "Terbaru",
+        oldest: "Terlama",
+        highestRating: "Rating Tertinggi",
+        lowestRating: "Rating Terendah",
+        verifiedPurchase: "Pembelian Terverifikasi",
+        adminReply: "Balasan Admin",
+        ownerReply: "Balasan Pemilik",
+        noReviews: "Belum ada ulasan",
+        noReviewsDesc: "Jadilah yang pertama mengulas produk ini",
+        loadMore: "Muat Lebih Banyak",
+
+        // Review Form
+        rateProduct: "Beri rating produk ini",
+        yourReview: "Ulasan Anda",
+        reviewPlaceholder: "Ceritakan pengalaman Anda dengan produk ini... (minimal 10 karakter)",
+        submitReview: "Kirim Ulasan",
+        submitting: "Mengirim...",
+        minChars: "Minimal {min} karakter",
+        maxChars: "Maksimal {max} karakter",
+        reviewSuccess: "Ulasan berhasil dikirim!",
+        reviewError: "Gagal mengirim ulasan",
+
+        // Pending Reviews
+        pendingReviews: "Ulasan Menunggu",
+        pendingReviewsDesc: "Produk yang perlu Anda ulas",
+        reviewNow: "Ulas Sekarang",
+        noPendingReviews: "Tidak ada ulasan yang menunggu",
+    },
+
+    // Discussion (Public - untuk product detail page)
+    discussion: {
+        title: "Diskusi",
+        askQuestion: "Ajukan Pertanyaan",
+        questionPlaceholder: "Tulis pertanyaan Anda tentang produk ini...",
+        submitQuestion: "Kirim Pertanyaan",
+        submitting: "Mengirim...",
+        sortBy: "Urutkan",
+        newest: "Terbaru",
+        mostLiked: "Paling Disukai",
+        reply: "Balas",
+        replies: "balasan",
+        showReplies: "Tampilkan {count} balasan",
+        hideReplies: "Sembunyikan balasan",
+        replyPlaceholder: "Tulis balasan Anda...",
+        submitReply: "Kirim",
+        like: "Suka",
+        liked: "Disukai",
+        adminBadge: "Admin",
+        ownerBadge: "Pemilik",
+        noDiscussions: "Belum ada diskusi",
+        noDiscussionsDesc: "Jadilah yang pertama bertanya tentang produk ini",
+        loadMore: "Muat Lebih Banyak",
+        questionSuccess: "Pertanyaan berhasil dikirim!",
+        questionError: "Gagal mengirim pertanyaan",
+        replySuccess: "Balasan berhasil dikirim!",
+        replyError: "Gagal mengirim balasan",
+        deleteSuccess: "Berhasil dihapus",
+        deleteError: "Gagal menghapus",
+        loginToAsk: "Masuk untuk bertanya",
+        loginToReply: "Masuk untuk membalas",
+        loginToLike: "Masuk untuk menyukai",
+    },
+
+    notifications: {
+        title: "Notifikasi",
+        markAllRead: "Tandai semua dibaca",
+        markAsRead: "Tandai dibaca",
+        viewAll: "Lihat semua notifikasi",
+        empty: "Belum ada notifikasi",
+
+        // Filter
+        filterAll: "Semua",
+        filterUnread: "Belum dibaca",
+        filterRead: "Sudah dibaca",
+        filterByType: "Filter berdasarkan tipe",
+        allTypes: "Semua tipe",
+
+        // Status messages
+        unreadNotifications: "notifikasi belum dibaca",
+        allCaughtUp: "Semua notifikasi sudah dibaca!",
+        noNotifications: "Tidak ada notifikasi",
+        noUnread: "Tidak ada notifikasi belum dibaca",
+        noRead: "Tidak ada notifikasi yang sudah dibaca",
+        loadMore: "Muat lebih banyak",
+        refreshed: "Notifikasi diperbarui",
+
+        // Actions
+        deleted: "Notifikasi dihapus",
+        deleteError: "Gagal menghapus notifikasi",
+        allMarkedAsRead: "Semua notifikasi ditandai sudah dibaca",
+        markAsReadError: "Gagal menandai sebagai dibaca",
+        markAllError: "Gagal menandai semua sebagai dibaca",
+
+        // Order notifications
+        orderProcessing: "Pesanan sedang diproses",
+        orderShipped: "Pesanan telah dikirim",
+        orderDelivered: "Pesanan telah sampai",
+        orderCompleted: "Pesanan selesai",
+        orderCancelled: "Pesanan dibatalkan",
+        orderPaid: "Pembayaran berhasil",
+        orderFailed: "Pembayaran gagal",
+
+        // Other notifications
+        reviewReply: "Balasan ulasan",
+        discussionReply: "Balasan diskusi",
+        promotionStart: "Promo dimulai",
+        promotionEnd: "Promo berakhir",
     },
 };

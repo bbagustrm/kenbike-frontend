@@ -1,3 +1,4 @@
+// components/ui/empty-state.tsx
 import { PackageOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React from "react";
@@ -7,6 +8,7 @@ interface EmptyStateProps {
     description?: string;
     icon?: React.ReactNode;
     className?: string;
+    children?: React.ReactNode;
 }
 
 export function EmptyState({
@@ -14,6 +16,7 @@ export function EmptyState({
     description = "Try adjusting your filters or search query",
     icon,
     className,
+    children,
 }: EmptyStateProps) {
     return (
         <div
@@ -27,6 +30,7 @@ export function EmptyState({
             </div>
             <h3 className="mb-2 text-lg font-semibold">{title}</h3>
             <p className="text-sm text-muted-foreground max-w-md">{description}</p>
+            {children && <div className="mt-4">{children}</div>} {/* ✅ Render children */}
         </div>
     );
 }

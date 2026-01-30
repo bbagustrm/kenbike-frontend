@@ -1,7 +1,7 @@
-// File: components/SettingsPage.tsx
+// File: components/admin/page/SettingsPage.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, X, CheckCircle2, AlertCircle, Shield, Crown } from "lucide-react"; // Tambahkan ikon Crown
+import { Loader2, Upload, X, CheckCircle2, AlertCircle, Shield, Crown } from "lucide-react";
 import { getImageUrl, validateImageFile, formatFileSize } from "@/lib/image-utils";
 import { getUserInitials } from "@/lib/auth-utils";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from "@/components/ui/badge";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { UpdateProfilePayload } from "@/types/auth";
+import { type CountryCode } from "@/lib/countries";
 
 // Interface untuk props yang akan diterima komponen
 interface SettingsPageProps {
@@ -39,20 +40,40 @@ export default function SettingsPage({ userRole }: SettingsPageProps) {
         phone_number: user?.phone_number || "",
     });
 
+    // Initialize location data with country code (2-char ISO code)
     const [locationData, setLocationData] = useState<LocationData>(() => {
-        if (!user) return { country: "Indonesia" };
+        if (!user) return { country: "ID" as CountryCode };
 
-        const isIndonesia = user.country === "Indonesia" || !!user.province;
+        // Country is now stored as 2-char ISO code (ID, US, GB, etc.)
+        const countryCode = (user.country || "ID") as CountryCode;
+
         return {
-            country: isIndonesia ? "Indonesia" : "Global",
+            country: countryCode,
             province: user.province || undefined,
             city: user.city || undefined,
             district: user.district || undefined,
             postal_code: user.postal_code || undefined,
-            country_name: !isIndonesia ? user.country : undefined,
             address: user.address || undefined,
         };
     });
+
+    // Update location data when user changes
+    useEffect(() => {
+        if (user) {
+            const countryCode = (user.country || "ID") as CountryCode;
+            setLocationData({
+                country: countryCode,
+                province: user.province || undefined,
+                city: user.city || undefined,
+                district: user.district || undefined,
+                postal_code: user.postal_code || undefined,
+                address: user.address || undefined,
+            });
+            setProfileData({
+                phone_number: user.phone_number || "",
+            });
+        }
+    }, [user]);
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -106,29 +127,22 @@ export default function SettingsPage({ userRole }: SettingsPageProps) {
         setIsSubmitting(true);
 
         try {
+            // Country is now stored as 2-char ISO code (ID, US, GB, etc.)
             const updateData: UpdateProfilePayload = {
                 phone_number: profileData.phone_number || undefined,
-                address: locationData.address,
+                country: locationData.country, // Already a 2-char ISO code
+                province: locationData.province || undefined,
+                city: locationData.city || undefined,
+                district: locationData.district || undefined,
+                postal_code: locationData.postal_code || undefined,
+                address: locationData.address || undefined,
             };
-
-            // Add location data based on country
-            if (locationData.country === "Indonesia") {
-                updateData.country = "Indonesia";
-                updateData.province = locationData.province;
-                updateData.city = locationData.city;
-                updateData.district = locationData.district;
-                updateData.postal_code = locationData.postal_code;
-            } else {
-                updateData.country = locationData.country_name;
-                updateData.province = locationData.province;
-                updateData.city = locationData.city;
-                updateData.district = locationData.district;
-                updateData.postal_code = locationData.postal_code;
-            }
 
             if (selectedImage) {
                 updateData.profile_image = selectedImage;
             }
+
+            console.log("📤 Sending profile update:", updateData);
 
             await updateProfile(updateData);
 

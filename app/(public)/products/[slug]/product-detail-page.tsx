@@ -1,4 +1,4 @@
-// app/products/[slug]/product-detail-page.tsx
+// app/(public)/products/[slug]/product-detail-page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -32,15 +32,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductDetailSkeleton } from "@/components/product/product-detail-skeleton";
 
-interface Review {
-    id: string;
-    rating: number;
-    comment: string;
-    createdAt: string;
-    user?: {
-        name: string;
-    };
-}
+// Review & Discussion Components
+import { ReviewList } from "@/components/review/review-list";
+import { DiscussionList } from "@/components/discussion/discussion-list";
 
 const COLOR_MAP: Record<string, string> = {
     black: "#000000",
@@ -489,6 +483,7 @@ export default function ProductDetailPage() {
                     {/* Product Details Accordion */}
                     <ScrollReveal direction="up" delay={0.3}>
                         <Accordion type="single" collapsible defaultValue="description" className="w-full">
+                            {/* Description */}
                             <AccordionItem value="description">
                                 <AccordionTrigger className="text-xl font-bold">
                                     {t.productDetail.description}
@@ -503,71 +498,31 @@ export default function ProductDetailPage() {
                                 </AccordionContent>
                             </AccordionItem>
 
+                            {/* Reviews - Using ReviewList Component */}
                             <AccordionItem value="reviews">
                                 <AccordionTrigger className="text-xl font-bold">
-                                    {t.productDetail.reviews}{" "}
-                                    {product.reviews && product.reviews.length > 0 && `(${product.reviews.length})`}
+                                    <div className="flex items-center gap-2">
+                                        <Star className="w-5 h-5" />
+                                        {t.productDetail.reviews}
+                                        {product.avgRating > 0 && (
+                                            <span className="text-sm font-normal text-muted-foreground">
+                                                ({product.avgRating.toFixed(1)})
+                                            </span>
+                                        )}
+                                    </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    {product.reviews && product.reviews.length > 0 ? (
-                                        <div className="space-y-6">
-                                            <div className="flex items-center gap-8 pb-6 border-b border-border">
-                                                <div className="text-center">
-                                                    <div className="text-5xl font-bold mb-2">{product.avgRating.toFixed(1)}</div>
-                                                    <div className="flex items-center justify-center gap-1 mb-1">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
-                                                            <Star
-                                                                key={star}
-                                                                className={cn(
-                                                                    "w-5 h-5",
-                                                                    star <= product.avgRating
-                                                                        ? "fill-yellow-400 text-yellow-400"
-                                                                        : "text-muted"
-                                                                )}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        {t.productDetail.reviewsCount.replace("{count}", product.reviews.length.toString())}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <ReviewList productSlug={slug} />
+                                </AccordionContent>
+                            </AccordionItem>
 
-                                            <div className="space-y-4">
-                                                {(product.reviews as Review[]).map((review) => (
-                                                    <div key={review.id} className="border-b border-border pb-4 last:border-0">
-                                                        <div className="flex items-start justify-between mb-2">
-                                                            <div>
-                                                                <p className="font-semibold">{review.user?.name || "Anonymous"}</p>
-                                                                <div className="flex items-center gap-1">
-                                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                                        <Star
-                                                                            key={star}
-                                                                            className={cn(
-                                                                                "w-4 h-4",
-                                                                                star <= review.rating
-                                                                                    ? "fill-yellow-400 text-yellow-400"
-                                                                                    : "text-muted"
-                                                                            )}
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                            <span className="text-sm text-muted-foreground">
-                                                                {new Date(review.createdAt).toLocaleDateString()}
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-muted-foreground">{review.comment}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <EmptyState
-                                            title={t.productDetail.noReviewsYet}
-                                            description={t.productDetail.beFirstToReview}
-                                        />
-                                    )}
+                            {/* Q&A / Discussions - Using DiscussionList Component */}
+                            <AccordionItem value="discussions">
+                                <AccordionTrigger className="text-xl font-bold">
+                                    {locale === "id" ? "Tanya Jawab" : "Q&A"}
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <DiscussionList productId={product.id} productSlug={slug} />
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>

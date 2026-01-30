@@ -17,6 +17,9 @@ export interface Translation {
         delete: string;
         edit: string;
         view: string;
+        refresh?: string;
+        previous?: string;
+        next?: string;
     };
 
     // Navigation
@@ -156,16 +159,6 @@ export interface Translation {
         settings: string;
         adminDashboard: string;
         logout: string;
-    };
-
-    // Notifications
-    notifications: {
-        title: string;
-        markAllRead: string;
-        viewAll: string;
-        orderProcessing: string;
-        orderShipped: string;
-        orderDelivered: string;
     };
 
     // Products
@@ -344,4 +337,215 @@ export interface Translation {
         clearCart: string;
     }
 
+    adminReviews?: {
+        title: string;
+        description: string;
+        fetchError: string;
+
+        // Stats
+        totalReviews: string;
+        fiveStarReviews: string;
+        withReplies: string;
+        needsReply: string;
+
+        // Filters
+        searchPlaceholder: string;
+        filterByRating: string;
+        allRatings: string;
+        filterByReply: string;
+        allReplyStatus: string;
+        hasReply: string;
+        noReply: string;
+        sortBy: string;
+        sortByDate: string;
+        sortByRating: string;
+
+        // Table
+        product: string;
+        user: string;
+        rating: string;
+        comment: string;
+        status: string;
+        date: string;
+        actions: string;
+        noComment: string;
+        verified: string;
+        replied: string;
+        pending: string;
+
+        // Empty State
+        noReviews: string;
+        noReviewsDesc: string;
+
+        // Reply Dialog
+        reply: string;
+        replyToReview: string;
+        replyDescription: string;
+        existingReplies: string;
+        yourReply: string;
+        replyPlaceholder: string;
+        submitReply: string;
+        replySuccess: string;
+        replyError: string;
+
+        // Delete Dialog
+        deleteReviewTitle: string;
+        deleteReviewDesc: string;
+        deleteSuccess: string;
+        deleteError: string;
+    };
+
+    // Admin Discussions
+    adminDiscussions?: {
+        title: string;
+        description: string;
+        fetchError: string;
+
+        // Stats
+        totalQuestions: string;
+        withReplies: string;
+        unanswered: string;
+        totalLikes: string;
+
+        // Filters
+        searchPlaceholder: string;
+        filterByReplies: string;
+        allStatus: string;
+        answered: string;
+        sortBy: string;
+        sortByDate: string;
+        sortByLikes: string;
+
+        // Table
+        product: string;
+        user: string;
+        question: string;
+        replies: string;
+        likes: string;
+        date: string;
+        actions: string;
+        view: string;
+
+        // Empty State
+        noDiscussions: string;
+        noDiscussionsDesc: string;
+
+        // Delete Dialog
+        deleteTitle: string;
+        deleteDesc: string;
+        deleteSuccess: string;
+        deleteError: string;
+    };
+
+    // Review (Public)
+    review?: {
+        title: string;
+        writeReview: string;
+        basedOn: string;
+        reviews: string;
+        filterByRating: string;
+        allRatings: string;
+        sortBy: string;
+        newest: string;
+        oldest: string;
+        highestRating: string;
+        lowestRating: string;
+        verifiedPurchase: string;
+        adminReply: string;
+        ownerReply: string;
+        noReviews: string;
+        noReviewsDesc: string;
+        loadMore: string;
+
+        // Review Form
+        rateProduct: string;
+        yourReview: string;
+        reviewPlaceholder: string;
+        submitReview: string;
+        submitting: string;
+        minChars: string;
+        maxChars: string;
+        reviewSuccess: string;
+        reviewError: string;
+
+        // Pending Reviews
+        pendingReviews: string;
+        pendingReviewsDesc: string;
+        reviewNow: string;
+        noPendingReviews: string;
+    };
+
+    // Discussion (Public)
+    discussion?: {
+        title: string;
+        askQuestion: string;
+        questionPlaceholder: string;
+        submitQuestion: string;
+        submitting: string;
+        sortBy: string;
+        newest: string;
+        mostLiked: string;
+        reply: string;
+        replies: string;
+        showReplies: string;
+        hideReplies: string;
+        replyPlaceholder: string;
+        submitReply: string;
+        like: string;
+        liked: string;
+        adminBadge: string;
+        ownerBadge: string;
+        noDiscussions: string;
+        noDiscussionsDesc: string;
+        loadMore: string;
+        questionSuccess: string;
+        questionError: string;
+        replySuccess: string;
+        replyError: string;
+        deleteSuccess: string;
+        deleteError: string;
+        loginToAsk: string;
+        loginToReply: string;
+        loginToLike: string;
+    };
+    notifications: {
+        title: string;
+        markAllRead: string;
+        markAsRead: string;
+        viewAll: string;
+        empty: string;
+
+        filterAll: string;
+        filterUnread: string;
+        filterRead: string;
+        filterByType: string;
+        allTypes: string;
+
+        unreadNotifications: string;
+        allCaughtUp: string;
+        noNotifications: string;
+        noUnread: string;
+        noRead: string;
+        loadMore: string;
+        refreshed: string;
+
+        deleted: string;
+        deleteError: string;
+        allMarkedAsRead: string;
+        markAsReadError: string;
+        markAllError: string;
+
+        orderProcessing: string;
+        orderShipped: string;
+        orderDelivered: string;
+        orderCompleted: string;
+        orderCancelled: string;
+        orderPaid: string;
+        orderFailed: string;
+
+        reviewReply: string;
+        discussionReply: string;
+        promotionStart: string;
+        promotionEnd: string;
+    };
 }

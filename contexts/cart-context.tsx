@@ -4,32 +4,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CartService } from '@/services/cart.service';
 import { ProductService } from '@/services/product.service';
-import { Cart, GuestCartItem } from '@/types/cart';
+import { Cart, GuestCartItem, GuestCartItemWithDetails } from '@/types/cart';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 
-// Extended guest cart with product details
-interface GuestCartItemWithDetails extends GuestCartItem {
-    product?: {
-        id: string;
-        name: string;
-        slug: string;
-        idPrice: number;
-        enPrice: number;
-        imageUrl: string | null;
-        promotion?: {
-            isActive: boolean;
-            discount: number;
-        } | null;
-    };
-    variant?: {
-        id: string;
-        variantName: string;
-        sku: string;
-        stock: number;
-        imageUrl: string | null;
-    };
-}
 
 interface VariantWithImages {
     images?: { imageUrl?: string | null }[];
