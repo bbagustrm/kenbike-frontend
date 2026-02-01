@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { TranslationProvider } from "@/contexts/translation-context";
 import { CartProvider } from "@/contexts/cart-context";
@@ -10,25 +10,85 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { OrderProvider } from "@/contexts/order-context";
 import { Toaster } from "sonner";
 import "./globals.css";
-import {NotificationProvider} from "@/contexts/notification-context";
+import { NotificationProvider } from "@/contexts/notification-context";
 
-// Local Font - Akira Expanded
-const akiraExpanded = localFont({
-    src: "../public/fonts/Akira.woff2",
-    variable: "--font-display",
+// Local Font - Clash Display (Headings)
+const clashDisplay = localFont({
+    src: [
+        {
+            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Regular.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Medium.woff2",
+            weight: "500",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Semibold.woff2",
+            weight: "600",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Bold.woff2",
+            weight: "700",
+            style: "normal",
+        },
+    ],
+    variable: "--font-heading",
     display: "swap",
-    weight: "900",
 });
 
-// Google Font - Plus Jakarta Sans
-const plusJakartaSans = Plus_Jakarta_Sans({
-    subsets: ["latin"],
-    weight: ["300", "400", "500", "600", "700", "800"],
+// Local Font - Satoshi (Body)
+const satoshi = localFont({
+    src: [
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-Light.woff2",
+            weight: "300",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-Regular.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-Medium.woff2",
+            weight: "500",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-Bold.woff2",
+            weight: "700",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-Black.woff2",
+            weight: "900",
+            style: "normal",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-Italic.woff2",
+            weight: "400",
+            style: "italic",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-MediumItalic.woff2",
+            weight: "500",
+            style: "italic",
+        },
+        {
+            path: "../public/fonts/Satoshi_Complete/Satoshi-BoldItalic.woff2",
+            weight: "700",
+            style: "italic",
+        },
+    ],
     variable: "--font-body",
     display: "swap",
 });
 
-// Google Font - JetBrains Mono
+// Google Font - JetBrains Mono (Code)
 const jetbrainsMono = JetBrains_Mono({
     subsets: ["latin"],
     weight: ["400", "500", "600", "700"],
@@ -49,7 +109,7 @@ export const metadata: Metadata = {
         nocache: false,
     },
     other: {
-        "hreflang": "id-ID",
+        hreflang: "id-ID",
     },
     openGraph: {
         title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
@@ -75,16 +135,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html
             lang="id"
-            className={`${akiraExpanded.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
+            className={`${clashDisplay.variable} ${satoshi.variable} ${jetbrainsMono.variable}`}
         >
         <head>
             <link rel="preconnect" href="https://api.kenbike.store" crossOrigin="" />
             <link rel="dns-prefetch" href="https://api.kenbike.store" />
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-            <title>Kenbike Store</title>
         </head>
-        <body className="font-body bg-background text-foreground">
+        <body className="font-body bg-background text-foreground antialiased">
         <AuthProvider>
             <NotificationProvider>
                 <CartProvider>

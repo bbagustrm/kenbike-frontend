@@ -5,54 +5,68 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-  {
-    variants: {
-      variant: {
-        default: "cursor-pointer bg-primary text-primary-foreground hover:bg-secondary hover:text-secondary-foreground",
-        destructive:
-          "cursor-pointer bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "cursor-pointer border hover:bg-secondary/30 dark:hover:bg-secondary/30 transition duration-300 shadow-xs hover:bg-secondary hover:text-secondary-foreground dark:bg-input/30 border-input",
-        secondary:
-          "cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost:
-          "cursor-pointer hover:bg-secondary hover:text-secondary-foreground dark:hover:bg-secondary/50",
-        link: "cursor-pointer text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-9 rounded-full gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-11 rounded-full px-6 has-[>svg]:px-4",
-        icon: "size-9",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#222222] focus-visible:ring-offset-2",
+    {
+        variants: {
+            variant: {
+                // Primary: bg #222222, text white, hover bg #383838
+                default:
+                    "cursor-pointer bg-[#222222] text-white hover:bg-[#383838]",
+
+                // Outline: border #222222, hover filled #383838 with white text
+                outline:
+                    "cursor-pointer border border-[#222222] bg-transparent text-[#222222] hover:bg-[#383838] hover:text-white hover:border-[#383838]",
+
+                // Ghost: text #383838, hover text #222222
+                ghost:
+                    "cursor-pointer bg-transparent text-[#383838] hover:text-[#222222]",
+
+                // Secondary
+                secondary:
+                    "cursor-pointer bg-[#f8f8f8] text-[#222222] border border-[#bebebe] hover:border-[#222222]",
+
+                // Destructive
+                destructive:
+                    "cursor-pointer bg-[#ef4444] text-white hover:bg-[#dc2626]",
+
+                // Link
+                link:
+                    "cursor-pointer text-[#222222] underline-offset-4 hover:underline",
+            },
+            size: {
+                default: "h-10 px-5 py-2 rounded-md",
+                sm: "h-9 px-4 text-xs rounded-md",
+                lg: "h-11 px-6 text-base rounded-md",
+                xl: "h-12 px-8 text-base rounded-md",
+                icon: "size-10 rounded-md",
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+            size: "default",
+        },
+    }
 )
 
 function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
+                    className,
+                    variant,
+                    size,
+                    asChild = false,
+                    ...props
+                }: React.ComponentProps<"button"> &
+    VariantProps<typeof buttonVariants> & {
     asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
+}) {
+    const Comp = asChild ? Slot : "button"
 
-  return (
-    <Comp
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
+    return (
+        <Comp
+            data-slot="button"
+            className={cn(buttonVariants({ variant, size, className }))}
+            {...props}
+        />
+    )
 }
 
 export { Button, buttonVariants }

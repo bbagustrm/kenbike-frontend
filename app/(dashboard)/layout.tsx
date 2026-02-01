@@ -1,162 +1,160 @@
-"use client";
+// app/layout.tsx
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import localFont from "next/font/local";
+import { JetBrains_Mono } from "next/font/google";
+import { AuthProvider } from "@/contexts/auth-context";
+import { TranslationProvider } from "@/contexts/translation-context";
+import { CartProvider } from "@/contexts/cart-context";
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
+import { OrderProvider } from "@/contexts/order-context";
+import { Toaster } from "sonner";
+import "./globals.css";
+import { NotificationProvider } from "@/contexts/notification-context";
 
-import { ReactNode } from "react";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import { ProtectedRoute } from "@/components/auth/protected-route";
-import { UserAvatar } from "@/components/auth/user-avatar";
-import { useAuth } from "@/contexts/auth-context";
-import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Users,
-  Package,
-  ShoppingCart,
-  BarChart3,
-  Settings,
-  Menu,
-  User,
-  Home,
-  Tag,
-  Folder,
-  Star,
-  MessageCircleMore,
-  Bell
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+// Local Font - Clash Display (Headings)
+const clashDisplay = localFont({
+  src: [
+    {
+      path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Semibold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-heading",
+  display: "swap",
+});
 
-const adminNavigation = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Products", href: "/admin/products", icon: Package },
-  { name: "Categories", href: "/admin/categories", icon: Folder },
-  { name: "Tags", href: "/admin/tags", icon: Tag },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Reviews", href: "/admin/reviews", icon: Star },
-  { name: "Comments", href: "/admin/discussions", icon: MessageCircleMore },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-];
+// Local Font - Satoshi (Body)
+const satoshi = localFont({
+  src: [
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-Black.woff2",
+      weight: "900",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-Italic.woff2",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-MediumItalic.woff2",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "../public/fonts/Satoshi_Complete/Satoshi-BoldItalic.woff2",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-body",
+  display: "swap",
+});
 
-const ownerNavigation = [
-  { name: "Dashboard", href: "/owner/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/owner/users", icon: Users },
-  { name: "Products", href: "/owner/products", icon: Package },
-  { name: "Categories", href: "/owner/categories", icon: Folder },
-  { name: "Tags", href: "/owner/tags", icon: Tag },
-  { name: "Orders", href: "/owner/orders", icon: ShoppingCart },
-  { name: "Reviews", href: "/admin/reviews", icon: Star },
-  { name: "Comments", href: "/admin/discussions", icon: MessageCircleMore },
-  { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
-  { name: "Promotions", href: "/owner/promotions", icon: Tag },
-  { name: "Settings", href: "/owner/settings", icon: Settings },
-];
+// Google Font - JetBrains Mono (Code)
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
-const userNavigation = [
-  { name: "Profile", href: "/user/profile", icon: User },
-  { name: "Orders", href: "/user/orders", icon: ShoppingCart },
-  { name: "Notification", href: "/user/notifications", icon: Bell },
-];
+export const metadata: Metadata = {
+  title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
+  description:
+      "Toko online sepeda terpercaya. Temukan komponen, sparepart, dan aksesoris sepeda terbaik dengan harga bersaing di Kenbike Store!",
+  alternates: {
+    canonical: "https://kenbike.store/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+  },
+  other: {
+    hreflang: "id-ID",
+  },
+  openGraph: {
+    title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
+    description:
+        "Belanja komponen dan aksesoris sepeda berkualitas di Kenbike Store. Produk original dan harga bersaing.",
+    url: "https://kenbike.store",
+    siteName: "Kenbike Store",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@KenbikeStore",
+    creator: "@KenbikeStore",
+    title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
+    description:
+        "Temukan komponen sepeda terbaik di Kenbike Store. Belanja mudah & cepat!",
+    images: ["https://kenbike.store/og-image.jpg"],
+  },
+};
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const { user } = useAuth();
-
-  const getNavigation = () => {
-    if (user?.role === "ADMIN") return adminNavigation;
-    if (user?.role === "OWNER") return ownerNavigation;
-    return userNavigation;
-  };
-
-  const navigation = getNavigation();
-
-  const getDashboardTitle = () => {
-    if (user?.role === "ADMIN") return "Admin Panel";
-    if (user?.role === "OWNER") return "Owner Panel";
-    return "My Account";
-  };
-
-  const Sidebar = () => (
-      <>
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-white font-bold">
-              {user?.role === "ADMIN" ? "A" : user?.role === "OWNER" ? "O" : "U"}
-            </span>
-            </div>
-            <span className="font-semibold text-lg">{getDashboardTitle()}</span>
-          </div>
-        </div>
-        <div className="border-b px-3 py-2">
-          <Link
-              href="/"
-              className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  "text-muted-foreground hover:bg-secondary"
-              )}
-          >
-            <Home className="h-5 w-5" />
-            Back to Home
-          </Link>
-        </div>
-        <nav className="flex-1 space-y-2 px-3 py-4">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-                <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-secondary"
-                    )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.name}
-                </Link>
-            );
-          })}
-        </nav>
-      </>
-  );
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-      <ProtectedRoute>
-        <div className="flex h-screen bg-neutral-50 overflow-hidden">
-          {/* Desktop Sidebar */}
-          <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-white">
-            <Sidebar />
-          </aside>
-
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            {/* Header */}
-            <header className="flex h-16 items-center justify-between border-b bg-white px-6">
-              <div className="flex items-center gap-4">
-                {/* Mobile Menu */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="md:hidden">
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-64 p-0">
-                    <Sidebar />
-                  </SheetContent>
-                </Sheet>
-              </div>
-              <UserAvatar />
-            </header>
-
-            {/* Page Content - TAMBAHKAN flex flex-col DI SINI */}
-            <main className="flex-1 overflow-y-auto md:px-8 flex flex-col">
-              {children}
-            </main>
-          </div>
-        </div>
-      </ProtectedRoute>
+      <html
+          lang="id"
+          className={`${clashDisplay.variable} ${satoshi.variable} ${jetbrainsMono.variable}`}
+      >
+      <head>
+        <link rel="preconnect" href="https://api.kenbike.store" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://api.kenbike.store" />
+      </head>
+      <body className="font-body antialiased">
+      <AuthProvider>
+        <NotificationProvider>
+          <CartProvider>
+            <OrderProvider>
+              <TranslationProvider>
+                <SmoothScrollProvider>{children}</SmoothScrollProvider>
+                <Toaster position="top-right" />
+              </TranslationProvider>
+            </OrderProvider>
+          </CartProvider>
+        </NotificationProvider>
+      </AuthProvider>
+      </body>
+      </html>
   );
 }

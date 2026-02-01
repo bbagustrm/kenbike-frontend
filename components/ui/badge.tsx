@@ -5,44 +5,77 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
-        destructive:
-          "border-transparent bg-red-600 text-white [a&]:hover:bg-red-600/90 focus-visible:ring-red-600/20 dark:focus-visible:ring-red-600/40 dark:bg-red-600/60",
-        outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-          promotion:
-              "border-transparent bg-accent text-accent-foreground [a&]:hover:bg-accent/90",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
+    "inline-flex items-center justify-center rounded-sm px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none transition-colors border",
+    {
+        variants: {
+            variant: {
+                // Default
+                default:
+                    "border-[#222222] text-[#222222] bg-transparent",
+
+                // DEV badge - #a1b9cf
+                dev:
+                    "border-[#a1b9cf] text-[#a1b9cf] bg-transparent",
+
+                // SOTD badge - #d7876d
+                sotd:
+                    "border-[#d7876d] text-[#d7876d] bg-transparent",
+
+                // PROMOTED
+                promoted:
+                    "border-[#bebebe] text-[#222222] bg-transparent",
+
+                // Secondary
+                secondary:
+                    "border-[#bebebe] text-[#222222] bg-transparent",
+
+                // Destructive
+                destructive:
+                    "border-[#ef4444] text-[#ef4444] bg-transparent",
+
+                // Success
+                success:
+                    "border-[#22c55e] text-[#22c55e] bg-transparent",
+
+                // Warning
+                warning:
+                    "border-[#f59e0b] text-[#f59e0b] bg-transparent",
+
+                // Info
+                info:
+                    "border-[#3b82f6] text-[#3b82f6] bg-transparent",
+
+                // Outline (generic)
+                outline:
+                    "border-[#bebebe] text-[#222222] bg-transparent",
+
+                // Promotion
+                promotion:
+                    "border-[#d7876d] text-[#d7876d] bg-transparent",
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+        },
+    }
 )
 
 function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : "span"
+                   className,
+                   variant,
+                   asChild = false,
+                   ...props
+               }: React.ComponentProps<"span"> &
+    VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+    const Comp = asChild ? Slot : "span"
 
-  return (
-    <Comp
-      data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  )
+    return (
+        <Comp
+            data-slot="badge"
+            className={cn(badgeVariants({ variant }), className)}
+            {...props}
+        />
+    )
 }
 
 export { Badge, badgeVariants }
