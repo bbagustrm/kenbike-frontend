@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#222222] focus-visible:ring-offset-2",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none",
     {
         variants: {
             variant: {
@@ -15,7 +15,7 @@ const buttonVariants = cva(
 
                 // Outline: border #222222, hover filled #383838 with white text
                 outline:
-                    "cursor-pointer border border-[#222222] bg-transparent text-[#222222] hover:bg-[#383838] hover:text-white hover:border-[#383838]",
+                    "cursor-pointer border border-border bg-transparent text-[#222222] hover:bg-[#383838] hover:text-white hover:border-[#383838]",
 
                 // Ghost: text #383838, hover text #222222
                 ghost:
@@ -23,11 +23,15 @@ const buttonVariants = cva(
 
                 // Secondary
                 secondary:
-                    "cursor-pointer bg-[#f8f8f8] text-[#222222] border border-[#bebebe] hover:border-[#222222]",
+                    "cursor-pointer bg-[#f8f8f8] text-[#222222] hover:border-[#222222]",
 
                 // Destructive
                 destructive:
                     "cursor-pointer bg-[#ef4444] text-white hover:bg-[#dc2626]",
+
+                // Destructive
+                destructive2:
+                    "cursor-pointer text-[#ef4444] hover:bg-[#ef4444] border border-[#ef4444]",
 
                 // Link
                 link:

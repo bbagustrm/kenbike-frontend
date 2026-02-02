@@ -5,9 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HeroSection } from "@/components/home/hero-section";
-import { QuoteSection } from "@/components/home/quote-section";
-import { VideoSection } from "@/components/home/video-section";
 import { CategoryCarousel } from "@/components/home/category-carousel";
 import { PromotionCarousel } from "@/components/product/promotion-carousel";
 import { ProductCard } from "@/components/product/product-card";
@@ -112,23 +109,15 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen">
-            {/* Hero Section - Masonry Grid */}
-            <HeroSection />
-
-            {/* Quote Section */}
-            <QuoteSection />
-
-            {/* Video Section */}
-            <VideoSection />
 
             {/* Promotion Banner Carousel */}
-            <section className="bg-background">
+            <section className="bg-background pt-2">
                 {isLoadingPromotion ? (
-                    <div className="container mx-auto px-4 py-8 md:py-12">
+                    <div className="container mx-auto px-4 pb-8 md:pb-12">
                         <PromotionCarouselSkeleton />
                     </div>
                 ) : (
-                    <FadeInView duration={0.8}>
+                    <FadeInView duration={0.8} className="container mx-auto px-4">
                         <PromotionCarousel />
                     </FadeInView>
                 )}
@@ -136,7 +125,7 @@ export default function HomePage() {
 
             {/* Merged Promotion & Trending Section */}
             {(isLoadingMerged || mergedProducts.length > 0) && (
-                <section className="border-t border-border bg-gradient-to-b from-muted/5 to-transparent">
+                <section className="bg-background">
                     <div className="container mx-auto px-4 py-8 md:py-12 lg:py-14">
                         <ScrollReveal direction="up">
                             <motion.div
@@ -174,7 +163,7 @@ export default function HomePage() {
                                 <ProductGridSkeleton count={10} columns={5} />
                             </div>
                         ) : mergedProducts.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4 pt-2 md:pt-4">
                                 {mergedProducts.slice(0, 10).map((product, index) => (
                                     <FadeInView key={product.id} delay={index * 0.05}>
                                         <ProductCard product={product} locale={locale} />
@@ -193,11 +182,11 @@ export default function HomePage() {
 
             {/* Category Carousel Section */}
             {(isLoadingCategories || categories.length > 0) && (
-                <section className="border-t border-border bg-muted/10 py-8 md:py-12 lg:py-14">
+                <section className="bg-background py-8 md:py-12 lg:py-14">
                     <div className="container mx-auto px-4">
                         <ScrollReveal direction="up">
                             <motion.div
-                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8"
+                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8 pb-4"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
@@ -223,7 +212,7 @@ export default function HomePage() {
             )}
 
             {/* Featured Products Section */}
-            <section className="border-t border-border bg-background">
+            <section className="bg-background">
                 <div className="container mx-auto px-4 py-8 md:py-12 lg:py-14">
                     <ScrollReveal direction="up">
                         <motion.div
@@ -259,7 +248,7 @@ export default function HomePage() {
                     {isLoadingFeatured ? (
                         <ProductGridSkeleton count={12} columns={5} />
                     ) : featuredProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4 pt-2 md:pt-4">
                             {featuredProducts.slice(0, 12).map((product, index) => (
                                 <FadeInView key={product.id} delay={index * 0.05}>
                                     <ProductCard product={product} locale={locale} />

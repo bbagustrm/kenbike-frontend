@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import {ArrowRight, Globe} from "lucide-react";
 
 export function HeroSection() {
     return (
@@ -18,9 +18,7 @@ export function HeroSection() {
                     className="text-center mb-8 md:mb-12 max-w-4xl mx-auto"
                 >
                     <h1 className="font-display text-3xl md:text-4xl lg:text-5xl xl:text-6xl mb-4 md:mb-6 leading-tight">
-                        Ride with Purpose.
-                        <br />
-                        Crafted for Everyday Adventures.
+                        About Us
                     </h1>
                     <p className="text-sm md:text-base lg:text-lg text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
                         Discover premium bike components and accessories designed for performance, durability, and style.
@@ -29,16 +27,17 @@ export function HeroSection() {
                     <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Button asChild size="lg" className="button-secondary group">
-                                <Link href="/search" className="flex items-center gap-2">
-                                    Shop Now
+                                <Link href="https://linktr.ee/Kenbike" className="flex items-center gap-2">
+                                    Contact Us
                                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </Button>
                         </motion.div>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Button asChild size="lg" variant="outline">
-                                <Link href="/search?isFeatured=true">
-                                    View Featured
+                                <Link href="https://www.instagram.com/kenbike.id/">
+                                    <Globe className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                                    See Our Social Media
                                 </Link>
                             </Button>
                         </motion.div>

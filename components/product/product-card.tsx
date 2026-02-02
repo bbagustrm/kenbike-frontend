@@ -63,7 +63,6 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
         ? calculateDiscountedPrice(originalPrice, product.promotion!.discount)
         : originalPrice;
 
-    // ✅ Get image URL for display (handles dev/prod)
     const displayImage = getImageUrl(product.imageUrl || product.images?.[0]?.imageUrl);
 
     const variantColors =
@@ -74,10 +73,9 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
 
     return (
         <motion.div
-            whileHover={{ y: -8, scale: 1.02 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-                "relative overflow-hidden group",
+                "relative group",
                 "rounded-sm bg-transparent backdrop-blur-sm",
                 isOutOfStock && "opacity-70",
                 className
@@ -85,9 +83,9 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
         >
             <Link href={`/products/${product.slug}`} className="block">
                 {/* Image */}
-                <div className="relative aspect-square overflow-hidden rounded-sm border border-border bg-muted/40">
+                <div className="relative aspect-square overflow-hidden shadow-sm rounded-md">
                     <motion.div
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.2 }}
                         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                         className="w-full h-full"
                     >
@@ -124,7 +122,7 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                                 damping: 15,
                                 delay: 0.2
                             }}
-                            className="absolute top-2 right-2 bg-gradient-to-r bg-accent text-accent-foreground text-xs font-bold font-mono px-2 py-0.5 rounded-full shadow-sm"
+                            className="absolute top-2 right-2 bg-gradient-to-r bg-accent text-accent-foreground text-xs font-bold font-mono px-2 py-0.5 rounded-md shadow-sm"
                         >
                             {formatDiscountPercentage(product.promotion!.discount)}
                         </motion.div>
@@ -141,7 +139,7 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                                 damping: 15,
                                 delay: 0.1
                             }}
-                            className="absolute top-2 left-2 bg-background text-card-foreground text-xs font-bold px-2 py-0.5 rounded-full border border-border flex gap-2"
+                            className="absolute top-2 left-2 bg-background text-card-foreground text-xs font-bold px-2 py-0.5 rounded-md border border-border flex gap-2"
                         >
                             <Clock className="w-3 h-3" />
                             Pre Order
@@ -150,7 +148,7 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                 </div>
 
                 {/* Content */}
-                <div className="p-3 space-y-2.5">
+                <div className="py-3 space-y-2.5">
                     <h3 className="line-clamp-1 uppercase text-sm font-medium text-foreground">
                         {product.name}
                     </h3>
@@ -158,12 +156,12 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                     {/* Category + Tag */}
                     <div className="flex flex-wrap gap-1">
                         {product.category && (
-                            <Badge variant="secondary" className="text-[10px] px-2 py-0.5 h-5 rounded-full">
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0.5 h-5 rounded-md">
                                 {product.category.name}
                             </Badge>
                         )}
                         {product.tags?.slice(0, 1).map((tag) => (
-                            <Badge key={tag.id} variant="outline" className="text-[10px] px-2 py-0.5 h-5 rounded-full">
+                            <Badge key={tag.id} variant="outline" className="text-[10px] px-2 py-0.5 h-5 rounded-md">
                                 {tag.name}
                             </Badge>
                         ))}
@@ -200,7 +198,6 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
                                 {variantColors.map((variant, index) => (
                                     <motion.div
                                         key={index}
-                                        whileHover={{ scale: 1.3 }}
                                         transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                         className={cn("w-4 h-4 rounded-full ring-1 ring-border cursor-pointer", variant.color)}
                                         title={variant.name}

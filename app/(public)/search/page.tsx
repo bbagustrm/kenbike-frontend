@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/product/product-card";
@@ -229,7 +229,7 @@ function SearchPageContent() {
 
     return (
         <div className="container mx-auto px-4 py-6 md:pt-8 md:pb-24">
-            <div className="flex gap-6 lg:gap-8">
+            <div className="flex gap-12 lg:gap-16">
                 {/* Desktop Filter Sidebar */}
                 <AnimatePresence>
                     {isFilterVisible && (
@@ -259,36 +259,21 @@ function SearchPageContent() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <div className="flex items-start justify-between gap-3 md:gap-4 mb-4">
+                        <div className="flex items-start justify-between gap-3 md:gap-4 mb-8">
                             {/* Left: Filter Toggle + Title */}
                             <div className="flex items-start gap-2 md:gap-3 flex-1 min-w-0">
-                                {/* Desktop Filter Toggle */}
-                                <motion.div whileTap={{ scale: 0.95 }}>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setIsFilterVisible(!isFilterVisible)}
-                                        className="hidden lg:flex mt-1 shrink-0"
-                                    >
-                                        {isFilterVisible ? (
-                                            <X className="h-4 w-4" />
-                                        ) : (
-                                            <SlidersHorizontal className="h-4 w-4" />
-                                        )}
-                                    </Button>
-                                </motion.div>
 
                                 {/* Mobile Filter */}
                                 <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
                                     <SheetTrigger asChild>
                                         <motion.div whileTap={{ scale: 0.95 }}>
-                                            <Button variant="outline" size="sm" className="lg:hidden mt-1 shrink-0">
+                                            <Button variant="secondary" size="sm" className="lg:hidden mt-1 shrink-0 bg-accent">
                                                 <SlidersHorizontal className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
                                                 <span className="hidden md:inline">Filters</span>
                                             </Button>
                                         </motion.div>
                                     </SheetTrigger>
-                                    <SheetContent side="left" className="w-[280px] sm:w-[350px] bg-card">
+                                    <SheetContent side="left" className="w-[280px] sm:w-[350px] bg-accent">
                                         <SheetHeader>
                                             <SheetTitle>Filters</SheetTitle>
                                         </SheetHeader>
@@ -310,36 +295,39 @@ function SearchPageContent() {
                                             : "All Products"}
                                     </h1>
 
-                                    {/* Active Filters */}
-                                    {(filters.categorySlug || filters.tagSlug || filters.promotionId || hasPromotion) && (
-                                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-2">
-                                            {filters.categorySlug && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {filters.categorySlug.replace(/-/g, ' ')}
-                                                </Badge>
-                                            )}
-                                            {filters.tagSlug && (
-                                                <Badge variant="outline" className="text-xs">
-                                                    {filters.tagSlug.replace(/-/g, ' ')}
-                                                </Badge>
-                                            )}
-                                            {(filters.promotionId || hasPromotion) && (
-                                                <Badge variant="promotion" className="text-xs">
-                                                    Promo
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <p className="text-xs md:text-sm text-muted-foreground">
-                                        {isLoading ? (
-                                            <span>{t.common.loading}</span>
-                                        ) : (
-                                            <span>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-xs md:text-sm text-muted-foreground">
+                                            {isLoading ? (
+                                                <span>{t.common.loading}</span>
+                                            ) : (
+                                                <span>
                                                 {total} {total === 1 ? "product" : "products"}
                                             </span>
+                                            )}
+                                        </p>
+                                        {/* Active Filters */}
+                                        {(filters.categorySlug || filters.tagSlug || filters.promotionId || hasPromotion) && (
+                                            <div className="flex flex-wrap gap-1.5 md:gap-2">
+                                                {filters.categorySlug && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        {filters.categorySlug.replace(/-/g, ' ')}
+                                                    </Badge>
+                                                )}
+                                                {filters.tagSlug && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                        {filters.tagSlug.replace(/-/g, ' ')}
+                                                    </Badge>
+                                                )}
+                                                {(filters.promotionId || hasPromotion) && (
+                                                    <Badge variant="promotion" className="text-xs">
+                                                        Promo
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         )}
-                                    </p>
+                                    </div>
+
+
                                 </div>
                             </div>
 
@@ -354,13 +342,13 @@ function SearchPageContent() {
                     {isLoading ? (
                         <ProductGridSkeleton
                             count={24}
-                            columns={isFilterVisible ? 4 : 6}
+                            columns={isFilterVisible ? 4 : 4}
                         />
                     ) : products.length > 0 ? (
                         <>
                             <div className={`grid gap-3 md:gap-4 ${
                                 isFilterVisible
-                                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+                                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4'
                                     : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
                             }`}>
                                 {products.map((product, index) => (

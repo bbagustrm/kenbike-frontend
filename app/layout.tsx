@@ -16,22 +16,22 @@ import { NotificationProvider } from "@/contexts/notification-context";
 const clashDisplay = localFont({
     src: [
         {
-            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Regular.woff2",
+            path: "../public/fonts/ClashDisplay-Regular.woff2",
             weight: "400",
             style: "normal",
         },
         {
-            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Medium.woff2",
+            path: "../public/fonts/ClashDisplay-Medium.woff2",
             weight: "500",
             style: "normal",
         },
         {
-            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Semibold.woff2",
+            path: "../public/fonts/ClashDisplay-Semibold.woff2",
             weight: "600",
             style: "normal",
         },
         {
-            path: "../public/fonts/ClashDisplay_Complete/ClashDisplay-Bold.woff2",
+            path: "../public/fonts/ClashDisplay-Bold.woff2",
             weight: "700",
             style: "normal",
         },
@@ -44,42 +44,42 @@ const clashDisplay = localFont({
 const satoshi = localFont({
     src: [
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-Light.woff2",
+            path: "../public/fonts/Satoshi-Light.woff2",
             weight: "300",
             style: "normal",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-Regular.woff2",
+            path: "../public/fonts/Satoshi-Regular.woff2",
             weight: "400",
             style: "normal",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-Medium.woff2",
+            path: "../public/fonts/Satoshi-Medium.woff2",
             weight: "500",
             style: "normal",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-Bold.woff2",
+            path: "../public/fonts/Satoshi-Bold.woff2",
             weight: "700",
             style: "normal",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-Black.woff2",
+            path: "../public/fonts/Satoshi-Black.woff2",
             weight: "900",
             style: "normal",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-Italic.woff2",
+            path: "../public/fonts/Satoshi-Italic.woff2",
             weight: "400",
             style: "italic",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-MediumItalic.woff2",
+            path: "../public/fonts/Satoshi-MediumItalic.woff2",
             weight: "500",
             style: "italic",
         },
         {
-            path: "../public/fonts/Satoshi_Complete/Satoshi-BoldItalic.woff2",
+            path: "../public/fonts/Satoshi-BoldItalic.woff2",
             weight: "700",
             style: "italic",
         },
@@ -140,8 +140,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <head>
             <link rel="preconnect" href="https://api.kenbike.store" crossOrigin="" />
             <link rel="dns-prefetch" href="https://api.kenbike.store" />
+            <title>Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas</title>
         </head>
-        <body className="font-body bg-background text-foreground antialiased">
+        <body className="font-body text-foreground antialiased">
         <AuthProvider>
             <NotificationProvider>
                 <CartProvider>

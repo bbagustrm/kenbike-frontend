@@ -116,12 +116,12 @@ export function PriceRangeSlider({
             {/* Track */}
             <div
                 ref={trackRef}
-                className="relative h-2 bg-muted rounded-full cursor-pointer"
+                className="relative h-2 bg-accent rounded-full cursor-pointer"
                 onClick={handleTrackClick}
             >
                 {/* Active Range */}
                 <div
-                    className="absolute h-full bg-accent rounded-full"
+                    className="absolute h-full bg-primary rounded-full"
                     style={{
                         left: `${minPercent}%`,
                         right: `${100 - maxPercent}%`,

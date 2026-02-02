@@ -1,5 +1,9 @@
-import LoginPageLayout from "@/components/auth/login-page-layout";
+import LoginForm from "@/components/auth/login-form";
 
 export default function LoginPage() {
-  return <LoginPageLayout />;
+  return (
+      <div className="min-h-screen">
+        <LoginForm />
+      </div>
+  );
 }

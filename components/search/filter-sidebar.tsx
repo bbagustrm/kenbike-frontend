@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import {Minus} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,6 +17,12 @@ import { Tag } from "@/types/tag";
 import { Promotion } from "@/types/promotion";
 import { formatCurrency } from "@/lib/format-currency";
 import { cn } from "@/lib/utils";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export interface FilterValues {
     categorySlug?: string;
@@ -156,23 +162,24 @@ export function FilterSidebar({
         filters.availableOnly;
 
     return (
-        <div className={cn("space-y-6 px-4 md:py-4 md:bg-card md:border md:border-border md:rounded-sm", className)}>
-            {/* Desktop Header (no close button) */}
+        <div className={cn("space-y-2", className)}>
+            {/* Desktop Header */}
             {!onClose && (
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">{t.search.filters}</h2>
+                <div className="flex items-center justify-end">
                     {hasActiveFilters && (
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleClearFilters}
-                            className="text-xs"
+                            className="w-full text-xs my-2 py-0 px-2.5 mb-4 "
                         >
+                            <Minus />
                             {t.search.clearFilters}
                         </Button>
                     )}
                 </div>
             )}
+
             {isLoading ? (
                 <div className="space-y-6">
                     <Skeleton className="h-32 w-full" />
@@ -180,98 +187,134 @@ export function FilterSidebar({
                     <Skeleton className="h-32 w-full" />
                 </div>
             ) : (
-                <div className="space-y-6">
-                    {/* Category Filter */}
+                <Accordion
+                    type="multiple"
+                    defaultValue={["category","promotion", "price"]}
+                    className="px-2 md:px-0 py-0"
+                >
+                    {/* Category */}
                     {categories.length > 0 && (
-                        <div className="space-y-3">
-                            <Label className="text-sm font-bold">{t.search.category}</Label>
-                            <RadioGroup
-                                value={filters.categorySlug || "all"}
-                                onValueChange={handleCategoryChange}
-                                className="space-y-2"
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="all" id="category-all" />
-                                    <Label htmlFor="category-all" className="font-normal cursor-pointer text-sm">
-                                        {t.search.allCategories}
-                                    </Label>
-                                </div>
-                                {categories.map((category) => (
-                                    <div key={category.id} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={category.slug} id={`category-${category.id}`} />
-                                        <Label
-                                            htmlFor={`category-${category.id}`}
-                                            className="font-normal cursor-pointer text-sm"
-                                        >
-                                            {category.name}
+                        <AccordionItem value="category" className="border-0 overflow-auto py-0">
+                            <AccordionTrigger className="font-semibold py-0 pb-2 px-4 cursor-pointer hover:no-underline">
+                                {t.search.category}
+                            </AccordionTrigger>
+                            <AccordionContent className="p-4">
+                                <RadioGroup
+                                    value={filters.categorySlug || "all"}
+                                    onValueChange={handleCategoryChange}
+                                    className="gap-4 px-4"
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <RadioGroupItem value="all" id="category-all" />
+                                        <Label htmlFor="category-all" className=" cursor-pointer font-normal">
+                                            {t.search.allCategories}
                                         </Label>
                                     </div>
-                                ))}
-                            </RadioGroup>
-                        </div>
+
+                                    {categories.map((category) => (
+                                        <div
+                                            key={category.id}
+                                            className="flex items-center space-x-3"
+                                        >
+                                            <RadioGroupItem
+                                                value={category.slug}
+                                                id={`category-${category.id}`}
+                                            />
+                                            <Label
+                                                htmlFor={`category-${category.id}`}
+                                                className=" cursor-pointer font-normal"
+                                            >
+                                                {category.name}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+                            </AccordionContent>
+                        </AccordionItem>
                     )}
 
-                    {/* Tag Filter */}
+                    {/* Tags */}
                     {tags.length > 0 && (
-                        <div className="space-y-3">
-                            <Label className="text-sm font-bold">{t.search.tags}</Label>
-                            <RadioGroup
-                                value={filters.tagSlug || "all"}
-                                onValueChange={handleTagChange}
-                                className="space-y-2"
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="all" id="tag-all" />
-                                    <Label htmlFor="tag-all" className="font-normal cursor-pointer text-sm">
-                                        {t.search.allTags}
-                                    </Label>
-                                </div>
-                                {tags.map((tag) => (
-                                    <div key={tag.id} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={tag.slug} id={`tag-${tag.id}`} />
-                                        <Label htmlFor={`tag-${tag.id}`} className="font-normal cursor-pointer text-sm">
-                                            {tag.name}
+                        <AccordionItem value="tag" className="border-0">
+                            <AccordionTrigger className=" font-semibold pt-3 pb-2 px-4 cursor-pointer hover:no-underline">
+                                {t.search.tags}
+                            </AccordionTrigger>
+                            <AccordionContent className="p-4">
+                                <RadioGroup
+                                    value={filters.tagSlug || "all"}
+                                    onValueChange={handleTagChange}
+                                    className="gap-4 px-4"
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="all" id="tag-all" />
+                                        <Label htmlFor="tag-all" className="font-normal cursor-pointer">
+                                            {t.search.allTags}
                                         </Label>
                                     </div>
-                                ))}
-                            </RadioGroup>
-                        </div>
+
+                                    {tags.map((tag) => (
+                                        <div key={tag.id} className="flex items-center space-x-2 ">
+                                            <RadioGroupItem
+                                                value={tag.slug}
+                                                id={`tag-${tag.id}`}
+                                            />
+                                            <Label
+                                                htmlFor={`tag-${tag.id}`}
+                                                className="font-normal cursor-pointer"
+                                            >
+                                                {tag.name}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+                            </AccordionContent>
+                        </AccordionItem>
                     )}
 
-                    {/* Promotion Filter */}
+                    {/* Promotion */}
                     {promotions.length > 0 && (
-                        <div className="space-y-3">
-                            <Label className="text-sm font-bold">{t.search.promotion}</Label>
-                            <RadioGroup
-                                value={filters.promotionId || "all"}
-                                onValueChange={handlePromotionChange}
-                                className="space-y-2"
-                            >
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem value="all" id="promotion-all" />
-                                    <Label htmlFor="promotion-all" className="font-normal cursor-pointer text-sm">
-                                        {t.search.allPromotions}
-                                    </Label>
-                                </div>
-                                {promotions.map((promotion) => (
-                                    <div key={promotion.id} className="flex items-center space-x-2">
-                                        <RadioGroupItem value={promotion.id} id={`promotion-${promotion.id}`} />
-                                        <Label
-                                            htmlFor={`promotion-${promotion.id}`}
-                                            className="font-normal cursor-pointer text-sm"
-                                        >
-                                            {promotion.name} (-{Math.round(promotion.discount * 100)}%)
+                        <AccordionItem value="promotion" className="border-0">
+                            <AccordionTrigger className="font-semibold pt-3 pb-2 px-4 cursor-pointer hover:no-underline">
+                                {t.search.promotion}
+                            </AccordionTrigger>
+                            <AccordionContent className="p-4">
+                                <RadioGroup
+                                    value={filters.promotionId || "all"}
+                                    onValueChange={handlePromotionChange}
+                                    className="gap-4 px-4"
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="all" id="tag-all" />
+                                        <Label htmlFor="tag-all" className="font-normal cursor-pointer">
+                                            {t.search.allPromotions}
                                         </Label>
                                     </div>
-                                ))}
-                            </RadioGroup>
-                        </div>
+
+                                    {promotions.map((promotion) => (
+                                        <div key={promotion.id} className="flex items-center space-x-2 ">
+                                            <RadioGroupItem
+                                                value={promotion.id}
+                                                id={`promotion-${promotion.id}`}
+                                            />
+                                            <Label
+                                                htmlFor={`promotion-${promotion.id}`}
+                                                className="font-normal cursor-pointer"
+                                            >
+                                                {promotion.name} (-{Math.round(promotion.discount * 100)}%)
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+                            </AccordionContent>
+                        </AccordionItem>
                     )}
 
-                    {/* Price Range Filter */}
-                    <div className="space-y-4">
-                        <Label className="text-sm font-bold">{t.search.priceRange}</Label>
-                        <div className="px-2 py-6">
+                    {/* Price Range */}
+                    <AccordionItem value="price" className="border-0">
+                        <AccordionTrigger className="font-semibold pt-3 pb-2 px-4 cursor-pointer hover:no-underline">
+                            {t.search.priceRange}
+                        </AccordionTrigger>
+                        <AccordionContent className="p-4 space-y-4">
                             <PriceRangeSlider
                                 min={priceConfig.MIN}
                                 max={priceConfig.MAX}
@@ -279,50 +322,40 @@ export function FilterSidebar({
                                 value={[priceRange[0], priceRange[1]]}
                                 onValueChange={handlePriceRangeChange}
                                 onValueCommit={handlePriceRangeCommit}
-                                className="w-full"
+                                className="px-4 py-2"
                             />
-                        </div>
-                        <div className="flex items-center justify-between text-xs gap-2">
-                            <div className="flex flex-col">
-                                <span className="text-muted-foreground mb-1">Min</span>
-                                <span className="text-foreground font-medium">
-                                    {formatCurrency(priceRange[0], currency)}
-                                </span>
-                            </div>
-                            <span className="text-muted-foreground">-</span>
-                            <div className="flex flex-col text-right">
-                                <span className="text-muted-foreground mb-1">Max</span>
-                                <span className="text-foreground font-medium">
-                                    {formatCurrency(priceRange[1], currency)}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Available Only Switch */}
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <Label htmlFor="available-only" className="text-sm font-semibold cursor-pointer">
+                            <div className="flex justify-between text-xs px-2">
+                                <span>{formatCurrency(priceRange[0], currency)}</span>
+                                <span>{formatCurrency(priceRange[1], currency)}</span>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Available Only */}
+                    <div className="flex items-center justify-between p-4">
+                        <Label className=" font-semibold cursor-pointer hover:no-underline">
                             {t.search.availableOnly}
                         </Label>
                         <Switch
-                            id="available-only"
                             checked={filters.availableOnly}
                             onCheckedChange={handleAvailableOnlyChange}
+                            className="bg-border"
                         />
                     </div>
 
-                    {/* Clear Filters Button (Mobile only) */}
+                    {/* Mobile Clear */}
                     {onClose && hasActiveFilters && (
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={handleClearFilters}
-                            className="w-full"
+                            className="w-full mt-4"
                         >
                             {t.search.clearFilters}
                         </Button>
                     )}
-                </div>
+                </Accordion>
             )}
         </div>
     );

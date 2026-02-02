@@ -27,8 +27,9 @@ export function SortSelect({ value, onChange }: SortSelectProps) {
     ];
 
     return (
-        <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="md:w-[200px]">
+        <Select value={value} onValueChange={onChange} >
+            <SelectTrigger className="space-x-2 cursor-pointer border border-border bg-transparent">
+                Sorted by:
                 <SelectValue placeholder={t.search.sortBy} />
             </SelectTrigger>
             <SelectContent className="md:w-[200px]">

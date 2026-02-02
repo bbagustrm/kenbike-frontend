@@ -242,7 +242,7 @@ export default function ProductDetailPage() {
                             </>
                         )}
                         <BreadcrumbSeparator />
-                        <BreadcrumbItem>
+                        <BreadcrumbItem className="bg-secondary rounded-md px-3">
                             <BreadcrumbPage>{product.name}</BreadcrumbPage>
                         </BreadcrumbItem>
                     </BreadcrumbList>

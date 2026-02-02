@@ -11,7 +11,7 @@ export function ProductCardSkeleton() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
         >
-            <Card className="group overflow-hidden border-2 transition-all duration-300">
+            <Card className="bg-accent group overflow-hidden border-2 transition-all duration-300">
                 {/* Image Skeleton */}
                 <div className="relative aspect-square bg-muted overflow-hidden">
                     <Skeleton className="absolute inset-0" />
@@ -67,13 +67,11 @@ export function ProductGridSkeleton({ count = 12, columns = 5 }: ProductGridSkel
     const gridCols = {
         2: "grid-cols-2",
         3: "grid-cols-2 sm:grid-cols-3",
-        4: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
-        5: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
-        6: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6",
+        4: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
     };
 
     return (
-        <div className={`grid ${gridCols[columns as keyof typeof gridCols] || gridCols[5]} gap-3 md:gap-4`}>
+        <div className={`grid ${gridCols[columns as keyof typeof gridCols] || gridCols[4]} gap-3 md:gap-4`}>
             {Array.from({ length: count }).map((_, index) => (
                 <ProductCardSkeleton key={index} />
             ))}

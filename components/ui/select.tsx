@@ -37,8 +37,8 @@ function SelectTrigger({
             data-slot="select-trigger"
             data-size={size}
             className={cn(
-                "flex w-fit items-center justify-between gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200",
-                "bg-[#f8f8f8] border border-[#bebebe]",
+                "cursor-pointer flex w-fit items-center justify-between gap-2 rounded-md px-4 py-2 text-sm whitespace-nowrap transition-all duration-200",
+                "bg-[#f8f8f8]",
                 "text-[#222222]",
                 "data-[placeholder]:text-[#bebebe]",
                 "[&_svg:not([class*='text-'])]:text-[#222222]",
@@ -72,7 +72,7 @@ function SelectContent({
                 data-slot="select-content"
                 className={cn(
                     "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-hidden",
-                    "bg-white text-[#222222] rounded-md border border-[#bebebe]",
+                    "bg-background text-[#222222] rounded-md shadow-[0px_0px_7px_1px_#00000024]",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                     "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

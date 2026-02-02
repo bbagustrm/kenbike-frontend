@@ -1,68 +1,41 @@
 // components/layout/navbar.tsx
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useTranslation } from "@/hooks/use-translation";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const CartSheet = dynamic(() => import("@/components/cart/cart-sheet").then(mod => ({ default: mod.CartSheet })), {
-  ssr: false,
-});
-
-const UserAvatar = dynamic(() => import("@/components/auth/user-avatar").then(mod => ({ default: mod.UserAvatar })), {
-  ssr: false,
-});
-
-// ✅ NEW: Import NotificationPopover
-const NotificationPopover = dynamic(
-    () => import("@/components/notification/notification-popover").then(mod => ({ default: mod.NotificationPopover })),
+// Dynamic imports for client components
+const CartSheet = dynamic(
+    () => import("@/components/cart/cart-sheet").then((mod) => ({ default: mod.CartSheet })),
     { ssr: false }
 );
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+const NotificationPopover = dynamic(
+    () => import("@/components/notification/notification-popover").then((mod) => ({ default: mod.NotificationPopover })),
+    { ssr: false }
+);
+
 import { Button } from "@/components/ui/button";
-import {
-  Search,
-  Menu,
-  X,
-  Package,
-  Home,
-  Grid3x3,
-  Tag,
-  Percent,
-  User,
-  ShoppingCart,
-  LayoutDashboard,
-  Users,
-  Settings,
-  BarChart3,
-  LogOut,
-  Bell, // Keep for mobile menu notifications link
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { getUserInitials } from "@/lib/auth-utils";
-
-import { CategoryService } from "@/services/category.service";
-import { TagService } from "@/services/tag.service";
-import { PromotionService } from "@/services/promotion.service";
-import { ProductService } from "@/services/product.service";
-import { Category } from "@/types/category";
-import { Tag as TagType } from "@/types/tag";
-import { Promotion } from "@/types/promotion";
-import { ProductListItem } from "@/types/product";
-import { handleApiError } from "@/lib/api-client";
-import { formatCurrency } from "@/lib/format-currency";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   CommandDialog,
   CommandEmpty,
@@ -72,52 +45,65 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
+import {
+  Search,
+  Menu,
+  X,
+  ChevronDown,
+  Package,
+  Grid3x3,
+  Percent,
+  User,
+  ShoppingCart,
+  LayoutDashboard,
+  LogOut,
+  Bell,
+} from "lucide-react";
+import { getUserInitials } from "@/lib/auth-utils";
+import { formatCurrency } from "@/lib/format-currency";
 
+import { CategoryService } from "@/services/category.service";
+import { PromotionService } from "@/services/promotion.service";
+import { ProductService } from "@/services/product.service";
+import { Category } from "@/types/category";
+import { Promotion } from "@/types/promotion";
+import { ProductListItem } from "@/types/product";
+import { handleApiError } from "@/lib/api-client";
 
 export default function Navbar() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { t, locale, setLocale } = useTranslation();
+
+  // States
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<TagType[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProductListItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // ✅ REMOVED: const notificationsCount = 5; (now comes from NotificationContext)
-
-  const pages = [
-    { name: t.nav.home, href: "/", icon: Home },
-    { name: "All Products", href: "/search", icon: Package },
-  ];
-
-  // Fetch data dengan delay untuk non-critical content
+  // Fetch categories & promotions
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesRes, tagsRes, promotionsRes] = await Promise.all([
+        const [categoriesRes, promotionsRes] = await Promise.all([
           CategoryService.getCategories({ limit: 10, isActive: true }),
-          TagService.getTags({ limit: 10, isActive: true }),
           PromotionService.getActivePromotions(),
         ]);
         setCategories(categoriesRes.data || []);
-        setTags(tagsRes.data || []);
         setPromotions(promotionsRes.data || []);
       } catch (error) {
         const errorResult = handleApiError(error);
         console.error("Failed to fetch data:", errorResult.message);
       }
     };
-
     const timer = setTimeout(fetchData, 100);
     return () => clearTimeout(timer);
   }, []);
 
+  // Reset search on close
   useEffect(() => {
     if (!isSearchOpen) {
       setSearchQuery("");
@@ -125,30 +111,20 @@ export default function Navbar() {
     }
   }, [isSearchOpen]);
 
-  // Search dengan debounce
+  // Search with debounce
   useEffect(() => {
     const searchProducts = async () => {
       if (!searchQuery || searchQuery.length < 2) {
         setSearchResults([]);
         return;
       }
-
       setIsSearching(true);
       try {
         const response = await ProductService.getProducts({
           search: searchQuery,
-          limit: 50,
+          limit: 5,
         });
-        let results = response.data || [];
-        if (results.length === 0) {
-          const allProducts = await ProductService.getProducts({
-            limit: 100,
-          });
-          results = allProducts.data.filter((product) =>
-              product.name.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-        }
-        setSearchResults(results.slice(0, 5));
+        setSearchResults(response.data || []);
       } catch (error) {
         console.error("Search failed:", error);
         setSearchResults([]);
@@ -156,67 +132,11 @@ export default function Navbar() {
         setIsSearching(false);
       }
     };
-
     const debounce = setTimeout(searchProducts, 300);
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
-  const getFilteredCategories = () => {
-    if (!searchQuery) return categories;
-    const query = searchQuery.toLowerCase();
-    if (query.includes('category') || query.includes('kategori')) {
-      return categories;
-    }
-    return categories.filter(cat =>
-        cat.name.toLowerCase().includes(query)
-    );
-  };
-
-  const getFilteredTags = () => {
-    if (!searchQuery) return tags.slice(0, 5);
-    const query = searchQuery.toLowerCase();
-    if (query.includes('tag')) {
-      return tags;
-    }
-    return tags.filter(tag =>
-        tag.name.toLowerCase().includes(query)
-    );
-  };
-
-  const getFilteredPromotions = () => {
-    if (!searchQuery) return promotions.slice(0, 3);
-    const query = searchQuery.toLowerCase();
-    if (query.includes('promo') || query.includes('discount') || query.includes('sale')) {
-      return promotions;
-    }
-    return promotions.filter(promo =>
-        promo.name.toLowerCase().includes(query)
-    );
-  };
-
-  const filteredCategories = getFilteredCategories();
-  const filteredTags = getFilteredTags();
-  const filteredPromotions = getFilteredPromotions();
-
-  // Scroll handler dengan passive listener
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY) {
-        if (currentScrollY > 100) {
-          setIsBottomNavVisible(false);
-        }
-      } else {
-        setIsBottomNavVisible(true);
-      }
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
-
-  // Keyboard shortcut
+  // Keyboard shortcut (Cmd+K)
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -228,14 +148,8 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const navigation = [
-    { name: t.nav.specialPromo, href: "/search?hasPromotion=true" },
-    { name: "All Products", href: "/search" },
-    ...categories.map((category) => ({
-      name: category.name,
-      href: `/search?category=${category.slug}`,
-    })),
-  ];
+  // Close mobile menu
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const handleCommandSelect = (callback: () => void) => {
     setIsSearchOpen(false);
@@ -245,85 +159,206 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await logout();
-    setIsMobileMenuOpen(false);
+    closeMobileMenu();
   };
 
-  const getRoleColor = () => {
+  const getDashboardLink = () => {
     switch (user?.role) {
       case "ADMIN":
-        return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700";
+        return "/admin/dashboard";
       case "OWNER":
-        return "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900 dark:text-purple-300 dark:border-purple-700";
+        return "/owner/dashboard";
       default:
-        return "bg-muted text-muted-foreground border-border";
+        return "/user/orders";
     }
   };
 
   return (
       <>
-        <div className="sticky top-0 z-50 bg-card border-b border-border">
-          <div className="container mx-auto flex items-center justify-between py-3 px-4">
-            {/* Logo dengan priority untuk LCP */}
-            <Link href="/" className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <Image
-                  src="/logo.webp"
-                  alt="Kenbike Logo"
-                  width={160}
-                  height={160}
-                  priority
-                  quality={95}
-              />
-            </Link>
+        {/* Main Navbar */}
+        <header className="sticky top-0 z-50 w-full bg-background">
+          <div className="container mx-auto flex h-16 items-center justify-between gap-6 px-4">
+            {/* Left: Logo - LARGER */}
+            <div className="flex items-center md:gap-8 lg:gap-12">
+              <Link href="/" className="flex-shrink-0">
+                <Image
+                    src="/logo.webp"
+                    alt="Kenbike"
+                    width={300}
+                    height={150}
+                    priority
+                    className="h-12 w-auto hidden lg:inline"
+                />
+                <Image
+                    src="/logo.webp"
+                    alt="Kenbike"
+                    width={300}
+                    height={150}
+                    priority
+                    className="h-10 w-auto lg:hidden"
+                />
 
-            {/* Search Command - Desktop */}
-            <div className="hidden md:flex flex-1 justify-center px-6">
-              <Button
-                  variant="outline"
-                  className="relative w-full max-w-xl justify-start text-sm font-normal"
-                  onClick={() => setIsSearchOpen(true)}
-                  size="lg"
-              >
-                <Search className="mr-2 h-4 w-4" />
-                {t.search.placeholder}
-                <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                  <span className="text-xs">⌘</span>K
-                </kbd>
-              </Button>
+              </Link>
+
+              {/* Center: Navigation - Desktop - LARGER FONT */}
+              <nav className="hidden lg:flex items-center">
+                <Link href="/search?hasPromotion=true">
+                  <Button variant="ghost" className="gap-0 px-4 uppercase" >
+                    {t.nav.specialPromo}
+                    {/*<Badge className="ml-2">*/}
+                    {/*  2.2*/}
+                    {/*</Badge>*/}
+                  </Button>
+                </Link>
+
+                {/* Category Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="gap-2 px-4 uppercase">
+                      Categories
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 uppercase">
+                    {categories.map((category) => (
+                        <DropdownMenuItem key={category.id} asChild>
+                          <Link href={`/search?category=${category.slug}`}>
+                            {category.name}
+                          </Link>
+                        </DropdownMenuItem>
+                    ))}
+                    {categories.length > 0 && <DropdownMenuSeparator />}
+                    <DropdownMenuItem asChild>
+                      <Link href="/search" className="font-semibold">
+                        View All Products
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Link href="/about">
+                  <Button variant="ghost" className="px-4 uppercase" >
+                    About Us
+                  </Button>
+                </Link>
+              </nav>
             </div>
 
-            {/* Right Icons - Desktop */}
-            <div className="hidden md:flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-background rounded-full border shadow-xs border-border">
-                {/* ✅ UPDATED: Use NotificationPopover instead of hardcoded Popover */}
+            {/* Right: Actions */}
+            <div className="flex items-center gap-3">
+              {/* Center: Search Button - Desktop - SMALLER */}
+              <div className="hidden lg:flex lg:max-w-[240px] xl:max-w-md w-full items-center justify-center gap-2">
+                <Button
+                    variant="secondary"
+                    className="w-full justify-start gap-2 text-muted-foreground font-light bg-accent px-3"
+                    onClick={() => setIsSearchOpen(true)}
+                    size="default"
+                >
+                  <Search className="h-4 w-4"/>
+                  <span className="text-sm font-normal truncate">Search products, categories, or tags ...</span>
+                </Button>
+              </div>
+              {/* Language Selector - Desktop */}
+              <div className="hidden md:block">
+                <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
+                  <SelectTrigger className="w-auto gap-2 border-none bg-transparent shadow-none">
+                    <Image
+                        src={locale === "id" ? "/ic-flag-id.webp" : "/ic-flag-uk.webp"}
+                        alt={locale === "id" ? "ID" : "EN"}
+                        width={20}
+                        height={14}
+                        className="rounded-sm"
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="id">
+                      <div className="flex items-center gap-2">
+                        <Image src="/ic-flag-id.webp" alt="ID" width={20} height={14} className="rounded-sm" />
+                        <span>Indonesia</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="en">
+                      <div className="flex items-center gap-2">
+                        <Image src="/ic-flag-uk.webp" alt="EN" width={20} height={14} className="rounded-sm" />
+                        <span>English</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Notification & Cart */}
+              <div className="flex items-center">
                 {isAuthenticated && <NotificationPopover />}
                 <CartSheet />
               </div>
 
-              {isAuthenticated ? (
-                  <UserAvatar />
-              ) : (
-                  <div className="flex items-center gap-2">
-                    <Button variant="secondary" size="sm" className="min-w-20 px-4 font-semibold" asChild>
-                      <Link href="/login">{t.auth.titleLogin}</Link>
-                    </Button>
-                    <Button size="sm" asChild variant="outline" className="min-w-20 px-4 font-semibold">
-                      <Link href="/register">{t.auth.titleRegister}</Link>
-                    </Button>
-                  </div>
-              )}
-            </div>
+              <div className="flex items-center lg:hidden">
+                <Search className="h-4 w-4" onClick={() => setIsSearchOpen(true)} />
+              </div>
 
-            {/* Mobile Right Icons */}
-            <div className="flex items-center md:hidden gap-2">
-              {/* ✅ UPDATED: Use NotificationPopover for mobile too */}
-              {isAuthenticated && <NotificationPopover />}
+              {/* Auth Buttons - Desktop */}
+              <div className="hidden md:flex items-center gap-2">
+                {isAuthenticated ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full px-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={user?.profile_image} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {getUserInitials(user)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <div className="px-2 py-1.5">
+                          <p className="text-sm font-semibold text-foreground">{user?.first_name} {user?.last_name}</p>
+                          <p className="text-xs text-muted-foreground font-light">{user?.email}</p>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href={getDashboardLink()} className="gap-2">
+                            <LayoutDashboard className="h-4 w-4" />
+                            Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/user/profile" className="gap-2">
+                            <User className="h-4 w-4" />
+                            Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/user/orders" className="gap-2">
+                            <ShoppingCart className="h-4 w-4" />
+                            Orders
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="gap-2 text-destructive">
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <>
+                      <Button variant="default" asChild>
+                        <Link href="/login">{t.auth.titleLogin}</Link>
+                      </Button>
+                      <Button asChild variant="ghost">
+                        <Link href="/register">{t.auth.titleRegister}</Link>
+                      </Button>
+                    </>
+                )}
+              </div>
 
-              {/* Cart Sheet for Mobile */}
-              <CartSheet />
-
+              {/* Mobile Menu Button */}
               <Button
                   variant="ghost"
                   size="icon"
+                  className="md:hidden px-0"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -331,410 +366,243 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Search Button - Mobile */}
-          <div className="md:hidden px-4 pb-3">
-            <Button
-                variant="outline"
-                className="w-full justify-start text-sm text-muted-foreground"
-                onClick={() => setIsSearchOpen(true)}
-            >
-              <Search className="mr-2 h-4 w-4" />
-              {t.search.placeholder}
-            </Button>
-          </div>
-        </div>
-
-        {/* Bottom Navigation - Desktop */}
-        <div
-            className={cn(
-                "hidden md:block border-b border-border bg-card transition-all duration-300",
-                isBottomNavVisible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 -translate-y-full pointer-events-none"
-            )}
-            style={{ position: "sticky", top: "0", zIndex: "40" }}
-        >
-          <div className="container mx-auto flex items-center justify-between py-2 px-4">
-            <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide flex-1">
-              {navigation.map((item) => (
-                  <Link
-                      key={item.href}
-                      href={item.href}
-                      className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
-                  >
-                    {item.name}
-                  </Link>
-              ))}
-            </div>
-            <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
-              <SelectTrigger className="w-[150px] shadow-none ml-4 flex-shrink-0 bg-card">
-                <div className="flex items-center gap-3">
-                  <Image
-                      src={locale === "id" ? "/ic-flag-id.webp" : "/ic-flag-uk.webp"}
-                      alt={locale === "id" ? "Indonesia" : "English"}
-                      width={20}
-                      height={20}
-                      className="rounded-sm"
-                      loading="lazy"
-                  />
-                  <span>{locale === "id" ? "Indonesia" : "English"}</span>
-                </div>
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                <SelectItem value="id">
-                  <div className="flex items-center gap-3">
-                    <Image src="/ic-flag-id.webp" alt="Indonesia" width={20} height={20} className="rounded-sm" loading="lazy" />
-                    <span>Indonesia</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="en">
-                  <div className="flex items-center gap-3">
-                    <Image src="/ic-flag-uk.webp" alt="English" width={20} height={20} className="rounded-sm" loading="lazy" />
-                    <span>English</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        </header>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-            <div className="md:hidden border-b-4 border-border bg-card shadow-lg">
-              <div className="container mx-auto py-4 px-4 space-y-4">
+            <div className="fixed inset-0 top-[64px] z-40 bg-background md:hidden overflow-y-auto">
+              <div className="container mx-auto px-4 py-4 space-y-4">
+                {/* User Info */}
                 {isAuthenticated ? (
-                    <>
-                      {/* User Info Section */}
-                      <div className="flex items-center gap-3 pb-4 border-b border-border">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={user?.profile_image} />
-                          <AvatarFallback className="bg-secondary text-secondary-foreground">
-                            {getUserInitials(user)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">
-                            {user?.first_name} {user?.last_name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{user?.email}</p>
-                          <Badge
-                              variant="outline"
-                              className={`mt-1 w-fit text-xs ${getRoleColor()}`}
-                          >
-                            {user?.role}
-                          </Badge>
-                        </div>
+                    <div className="flex items-center gap-3 pb-4 border-b border-border">
+                      <Avatar className="h-14 w-14">
+                        <AvatarImage src={user?.profile_image} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                          {getUserInitials(user)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-lg font-semibold text-foreground">
+                          {user?.first_name} {user?.last_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-light">{user?.email}</p>
                       </div>
-
-                      {/* Role-based Menu Items */}
-                      <div className="space-y-1 pb-3 border-b border-border">
-                        {user?.role === "USER" && (
-                            <>
-                              <Link
-                                  href="/user/orders"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <ShoppingCart className="h-4 w-4" />
-                                <span className="text-sm font-medium">Orders</span>
-                              </Link>
-                              {/* ✅ NEW: Notifications link in mobile menu */}
-                              <Link
-                                  href="/user/notifications"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Bell className="h-4 w-4" />
-                                <span className="text-sm font-medium">{t.notifications?.title || "Notifications"}</span>
-                              </Link>
-                              <Link
-                                  href="/user/profile"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <User className="h-4 w-4" />
-                                <span className="text-sm font-medium">Profile</span>
-                              </Link>
-                            </>
-                        )}
-
-                        {user?.role === "ADMIN" && (
-                            <>
-                              <Link
-                                  href="/admin/dashboard"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <LayoutDashboard className="h-4 w-4" />
-                                <span className="text-sm font-medium">Dashboard</span>
-                              </Link>
-                              <Link
-                                  href="/admin/users"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Users className="h-4 w-4" />
-                                <span className="text-sm font-medium">Users</span>
-                              </Link>
-                              <Link
-                                  href="/admin/products"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Package className="h-4 w-4" />
-                                <span className="text-sm font-medium">Products</span>
-                              </Link>
-                              <Link
-                                  href="/admin/orders"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <ShoppingCart className="h-4 w-4" />
-                                <span className="text-sm font-medium">Orders</span>
-                              </Link>
-                              <Link
-                                  href="/admin/settings"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Settings className="h-4 w-4" />
-                                <span className="text-sm font-medium">Settings</span>
-                              </Link>
-                            </>
-                        )}
-
-                        {user?.role === "OWNER" && (
-                            <>
-                              <Link
-                                  href="/owner/dashboard"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <LayoutDashboard className="h-4 w-4" />
-                                <span className="text-sm font-medium">Dashboard</span>
-                              </Link>
-                              <Link
-                                  href="/owner/users"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Users className="h-4 w-4" />
-                                <span className="text-sm font-medium">Users</span>
-                              </Link>
-                              <Link
-                                  href="/owner/products"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Package className="h-4 w-4" />
-                                <span className="text-sm font-medium">Products</span>
-                              </Link>
-                              <Link
-                                  href="/owner/orders"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <ShoppingCart className="h-4 w-4" />
-                                <span className="text-sm font-medium">Orders</span>
-                              </Link>
-                              <Link
-                                  href="/owner/settings"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Settings className="h-4 w-4" />
-                                <span className="text-sm font-medium">Settings</span>
-                              </Link>
-                              <Link
-                                  href="/owner/analytics"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <BarChart3 className="h-4 w-4" />
-                                <span className="text-sm font-medium">Analytics</span>
-                              </Link>
-                              <Link
-                                  href="/owner/promotions"
-                                  className="flex items-center gap-3 py-2.5 px-3 rounded-md hover:bg-muted transition-colors"
-                                  onClick={() => setIsMobileMenuOpen(false)}
-                              >
-                                <Tag className="h-4 w-4" />
-                                <span className="text-sm font-medium">Promotions</span>
-                              </Link>
-                            </>
-                        )}
-                      </div>
-                    </>
+                    </div>
                 ) : (
                     <div className="flex gap-2 pb-4 border-b border-border">
-                      <Button variant="secondary" className="flex-1" asChild>
-                        <Link href="/login">{t.auth.titleLogin}</Link>
+                      <Button className="flex-1 text-base" asChild>
+                        <Link href="/login" onClick={closeMobileMenu}>{t.auth.titleLogin}</Link>
                       </Button>
-                      <Button variant="outline" className="flex-1" asChild>
-                        <Link href="/register">{t.auth.signUp}</Link>
+                      <Button variant="outline" className="flex-1 text-base" asChild>
+                        <Link href="/register" onClick={closeMobileMenu}>{t.auth.titleRegister}</Link>
                       </Button>
                     </div>
                 )}
 
                 {/* Navigation Links */}
-                <nav className="space-y-1 pb-3 border-b border-border">
-                  {navigation.map((item) => (
-                      <Link
-                          key={item.href}
-                          href={item.href}
-                          className="block py-2.5 px-3 text-sm font-medium hover:bg-muted rounded-md transition-colors"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                  ))}
+                <nav className="space-y-1 pb-4 border-b border-border">
+                  <Link
+                      href="/search?hasPromotion=true"
+                      className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                      onClick={closeMobileMenu}
+                  >
+                    <span className="text-base font-semibold text-foreground">{t.nav.specialPromo}</span>
+                  </Link>
+                  <Link
+                      href="/about"
+                      className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                      onClick={closeMobileMenu}
+                  >
+                    <span className="text-base font-semibold text-foreground">About Us</span>
+                  </Link>
+                  <Link
+                      href="/search"
+                      className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                      onClick={closeMobileMenu}
+                  >
+                    <span className="text-base font-semibold text-foreground">All Products</span>
+                  </Link>
                 </nav>
 
-                {/* Logout Button for Mobile */}
+                {/* Categories */}
+                <div className="pb-4 border-b border-border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                    Categories
+                  </p>
+                  <div className="space-y-1">
+                    {categories.map((category) => (
+                        <Link
+                            key={category.id}
+                            href={`/search?category=${category.slug}`}
+                            className="block py-2.5 px-2 rounded-md text-foreground hover:bg-secondary transition-colors"
+                            onClick={closeMobileMenu}
+                        >
+                          {category.name}
+                        </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* User Menu */}
+                {isAuthenticated && (
+                    <div className="pb-4 border-b border-border">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                        Account
+                      </p>
+                      <div className="space-y-1">
+                        <Link
+                            href={getDashboardLink()}
+                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                            onClick={closeMobileMenu}
+                        >
+                          <LayoutDashboard className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-foreground">Dashboard</span>
+                        </Link>
+                        <Link
+                            href="/user/orders"
+                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                            onClick={closeMobileMenu}
+                        >
+                          <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-foreground">Orders</span>
+                        </Link>
+                        <Link
+                            href="/user/notifications"
+                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                            onClick={closeMobileMenu}
+                        >
+                          <Bell className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-foreground">Notifications</span>
+                        </Link>
+                        <Link
+                            href="/user/profile"
+                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                            onClick={closeMobileMenu}
+                        >
+                          <User className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-foreground">Profile</span>
+                        </Link>
+                      </div>
+                    </div>
+                )}
+
+                {/* Language Selector */}
+                <div className="pb-4 border-b border-border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                    Language
+                  </p>
+                  <div className="flex gap-2 px-2">
+                    <Button
+                        variant={locale === "id" ? "outline" : "secondary"}
+                        size="sm"
+                        onClick={() => setLocale("id")}
+                        className="flex-1 gap-2"
+                    >
+                      <Image src="/ic-flag-id.webp" alt="ID" width={20} height={14} className="rounded-sm" />
+                      Indonesia
+                    </Button>
+                    <Button
+                        variant={locale === "en" ? "outline" : "secondary"}
+                        size="sm"
+                        onClick={() => setLocale("en")}
+                        className="flex-1 gap-2"
+                    >
+                      <Image src="/ic-flag-uk.webp" alt="EN" width={20} height={14} className="rounded-sm" />
+                      English
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Logout */}
                 {isAuthenticated && (
                     <Button
-                        variant="destructive"
-                        className="w-full flex items-center justify-center gap-2"
+                        variant="outline"
+                        className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10"
                         onClick={handleLogout}
                     >
                       <LogOut className="h-4 w-4" />
-                      <span>Logout</span>
+                      Logout
                     </Button>
                 )}
               </div>
             </div>
         )}
 
-        {/* Command Dialog */}
-        {isSearchOpen && (
-            <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-              <CommandInput
-                  placeholder="Search products, categories, tags..."
-                  value={searchQuery}
-                  onValueChange={setSearchQuery}
-              />
-              <CommandList>
-                <CommandEmpty>
-                  {isSearching ? "Searching..." : searchQuery ? "No results found" : "Start typing to search..."}
-                </CommandEmpty>
+        {/* Search Dialog */}
+        <CommandDialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+          <CommandInput
+              placeholder={t.search.placeholder}
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+          />
+          <CommandList>
+            <CommandEmpty>
+              {isSearching ? "Searching..." : searchQuery ? "No results found" : "Start typing to search..."}
+            </CommandEmpty>
 
-                {!searchQuery && (
-                    <CommandGroup heading="Quick Links">
-                      {pages.map((page) => (
-                          <CommandItem
-                              key={page.href}
-                              onSelect={() => handleCommandSelect(() => router.push(page.href))}
-                          >
-                            <page.icon className="mr-2 h-4 w-4" />
-                            <span>{page.name}</span>
-                          </CommandItem>
-                      ))}
-                    </CommandGroup>
-                )}
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+                <CommandGroup heading="Products">
+                  {searchResults.map((product) => (
+                      <CommandItem
+                          key={product.id}
+                          value={product.name}
+                          onSelect={() => handleCommandSelect(() => router.push(`/products/${product.slug}`))}
+                      >
+                        <Package className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col flex-1">
+                          <span className="font-medium text-foreground">{product.name}</span>
+                          <span className="text-xs text-muted-foreground font-light">
+                      {formatCurrency(product.idPrice)}
+                    </span>
+                        </div>
+                      </CommandItem>
+                  ))}
+                  <CommandSeparator />
+                  <CommandItem
+                      onSelect={() => handleCommandSelect(() => router.push(`/search?search=${searchQuery}`))}
+                      className="justify-center"
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    View all results for &quot;{searchQuery}&quot;
+                  </CommandItem>
+                </CommandGroup>
+            )}
 
-                {searchQuery && searchResults.length > 0 && (
-                    <>
-                      <CommandSeparator />
-                      <CommandGroup heading={`Products (${searchResults.length})`}>
-                        {searchResults.map((product) => (
-                            <CommandItem
-                                key={product.id}
-                                value={product.name}
-                                onSelect={() => handleCommandSelect(() => router.push(`/products/${product.slug}`))}
-                            >
-                              <Package className="mr-2 h-4 w-4" />
-                              <div className="flex flex-col flex-1">
-                                <span className="font-medium">{product.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                                    {formatCurrency(product.idPrice)}
-                                  {product.category && ` • ${product.category.name}`}
-                                                </span>
-                              </div>
-                            </CommandItem>
-                        ))}
-                        <CommandItem
-                            value="view-all-search-results"
-                            onSelect={() => handleCommandSelect(() => router.push(`/search?search=${searchQuery}`))}
-                            className="justify-center text-primary"
-                        >
-                          <Search className="mr-2 h-4 w-4" />
-                          <span>View all results for &quot;{searchQuery}&quot;</span>
-                        </CommandItem>
-                      </CommandGroup>
-                    </>
-                )}
+            {/* Categories */}
+            {!searchQuery && categories.length > 0 && (
+                <CommandGroup heading="Categories">
+                  {categories.slice(0, 5).map((category) => (
+                      <CommandItem
+                          key={category.id}
+                          onSelect={() => handleCommandSelect(() => router.push(`/search?category=${category.slug}`))}
+                      >
+                        <Grid3x3 className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground">{category.name}</span>
+                      </CommandItem>
+                  ))}
+                </CommandGroup>
+            )}
 
-                {filteredCategories.length > 0 && (
-                    <>
-                      <CommandSeparator />
-                      <CommandGroup heading={`Categories ${searchQuery ? `(${filteredCategories.length})` : ''}`}>
-                        {filteredCategories.map((category) => (
-                            <CommandItem
-                                key={category.id}
-                                value={`category-${category.name}`}
-                                onSelect={() => handleCommandSelect(() => router.push(`/search?category=${category.slug}`))}
-                            >
-                              <Grid3x3 className="mr-2 h-4 w-4" />
-                              <span>{category.name}</span>
-                            </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </>
-                )}
-
-                {filteredTags.length > 0 && (
-                    <>
-                      <CommandSeparator />
-                      <CommandGroup heading={`Tags ${searchQuery ? `(${filteredTags.length})` : ''}`}>
-                        {filteredTags.map((tag) => (
-                            <CommandItem
-                                key={tag.id}
-                                value={`tag-${tag.name}`}
-                                onSelect={() => handleCommandSelect(() => router.push(`/search?tag=${tag.slug}`))}
-                            >
-                              <Tag className="mr-2 h-4 w-4" />
-                              <span>{tag.name}</span>
-                            </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </>
-                )}
-
-                {filteredPromotions.length > 0 && (
-                    <>
-                      <CommandSeparator />
-                      <CommandGroup heading={`Promotions ${searchQuery ? `(${filteredPromotions.length})` : ''}`}>
-                        {filteredPromotions.map((promotion) => (
-                            <CommandItem
-                                key={promotion.id}
-                                value={`promotion-${promotion.name}`}
-                                onSelect={() => handleCommandSelect(() => router.push(`/search?promotion=${promotion.id}`))}
-                            >
-                              <Percent className="mr-2 h-4 w-4" />
-                              <div className="flex items-center justify-between w-full">
-                                <span>{promotion.name}</span>
-                                <Badge variant="destructive" className="ml-2">
-                                  -{Math.round(promotion.discount * 100)}%
-                                </Badge>
-                              </div>
-                            </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </>
-                )}
-              </CommandList>
-            </CommandDialog>
-        )}
-
-        <style jsx global>{`
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-        `}</style>
+            {/* Promotions */}
+            {!searchQuery && promotions.length > 0 && (
+                <CommandGroup heading="Promotions">
+                  {promotions.slice(0, 3).map((promotion) => (
+                      <CommandItem
+                          key={promotion.id}
+                          onSelect={() => handleCommandSelect(() => router.push(`/search?promotion=${promotion.id}`))}
+                      >
+                        <Percent className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1 text-foreground">{promotion.name}</span>
+                        <Badge variant="destructive" className="ml-2">
+                          -{Math.round(promotion.discount * 100)}%
+                        </Badge>
+                      </CommandItem>
+                  ))}
+                </CommandGroup>
+            )}
+          </CommandList>
+        </CommandDialog>
       </>
   );
 }

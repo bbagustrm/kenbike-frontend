@@ -68,9 +68,6 @@ export function AnimatedImageSection() {
                 transition={{ duration: 1 }}
             />
 
-            {/* Floating Shapes */}
-            <FloatingShapes count={12} />
-
             {/* Content Overlay */}
             <div className="relative z-10 flex h-full flex-col justify-center p-8 lg:p-12 text-white">
                 {/* Logo */}
@@ -80,7 +77,7 @@ export function AnimatedImageSection() {
                     transition={{ delay: 0.3, duration: 0.8 }}
                     className="mb-6"
                 >
-                    <div className="relative w-72 h-14 mb-4">
+                    <div className="relative w-64 h-14 mb-4">
                         <Image
                             src="/logo-white.webp"
                             alt="KEN BIKE Logo"
@@ -89,9 +86,6 @@ export function AnimatedImageSection() {
                             priority
                         />
                     </div>
-                    <p className="text-base lg:text-lg text-white/90 max-w-md leading-relaxed">
-                        Sign in to continue your journey with us. Experience the best in class service and products.
-                    </p>
                 </motion.div>
 
                 {/* Image Indicators */}
@@ -119,49 +113,49 @@ export function AnimatedImageSection() {
                     ))}
                 </motion.div>
 
-                {/* Animated Stats - Marketplace Ratings */}
-                <motion.div
-                    className="space-y-5"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
-                >
-                    {/* Shopee */}
+                <div className="flex flex-row gap-16">
+                    {/* Animated Stats - Marketplace Ratings */}
                     <motion.div
-                        className="flex items-start space-x-4"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.8 }}
+                        className="space-y-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6, duration: 0.8 }}
                     >
-                        <div className="h-px w-12 bg-accent mt-3 flex-shrink-0" />
-                        <div>
-                            <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
-                                Tokopedia Store
-                            </p>
-                            <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl lg:text-3xl font-bold text-accent">5.0★</p>
-                                <p className="text-sm lg:text-base text-white/80">(3.125K penilaian)</p>
+                        {/* Shopee */}
+                        <motion.div
+                            className="flex items-start space-x-4"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.8 }}
+                        >
+                            <div>
+                                <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
+                                    Tokopedia Store
+                                </p>
+                                <div className="flex items-baseline space-x-2">
+                                    <p className="text-2xl lg:text-3xl font-bold text-yellow-300">5.0★</p>
+                                    <p className="text-sm lg:text-base text-white/80">(3.125K reviews)</p>
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
 
-                    {/* Tokopedia */}
-                    <motion.div
-                        className="flex items-start space-x-4"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.9 }}
-                    >
-                        <div className="h-px w-12 bg-secondary mt-3 flex-shrink-0" />
-                        <div>
-                            <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
-                                Shopee Store
-                            </p>
-                            <div className="flex items-baseline space-x-2">
-                                <p className="text-2xl lg:text-3xl font-bold text-secondary">4.9★</p>
-                                <p className="text-sm lg:text-base text-white/80">(1.6K penilaian)</p>
+                        {/* Tokopedia */}
+                        <motion.div
+                            className="flex items-start space-x-4"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.9 }}
+                        >
+                            <div>
+                                <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
+                                    Shopee Store
+                                </p>
+                                <div className="flex items-baseline space-x-2">
+                                    <p className="text-2xl lg:text-3xl font-bold text-yellow-300">4.9★</p>
+                                    <p className="text-sm lg:text-base text-white/80">(1.6K reviews)</p>
+                                </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </motion.div>
 
                     {/* Export */}
@@ -171,7 +165,6 @@ export function AnimatedImageSection() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 1.0 }}
                     >
-                        <div className="h-px w-12 bg-white/50 mt-3 flex-shrink-0" />
                         <div>
                             <p className="text-xs lg:text-sm text-white/60 uppercase tracking-wider mb-1 font-semibold">
                                 Global Export
@@ -186,7 +179,7 @@ export function AnimatedImageSection() {
                             </div>
                         </div>
                     </motion.div>
-                </motion.div>
+                </div>
             </div>
         </div>
     );

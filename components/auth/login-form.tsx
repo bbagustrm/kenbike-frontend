@@ -102,14 +102,14 @@ export default function LoginForm() {
     };
 
     return (
-        <>
+        <div className="flex items-center justify-center min-h-screen">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md"
             >
-                <Card className="border-2 shadow-2xl">
+                <Card className="bg-background rounded-lg shadow-[0px_0px_7px_1px_#00000024] p-12">
                     <CardHeader>
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -196,7 +196,7 @@ export default function LoginForm() {
                             </motion.div>
                         </CardContent>
 
-                        <CardFooter className="flex flex-col space-y-4">
+                        <CardFooter className="flex flex-col space-y-4 pt-4">
                             <motion.div
                                 className="w-full"
                                 initial={{ opacity: 0, y: 10 }}
@@ -205,7 +205,7 @@ export default function LoginForm() {
                             >
                                 <AnimatedButton
                                     type="submit"
-                                    variant="secondary"
+                                    variant="default"
                                     className="w-full text-base font-bold"
                                     disabled={isSubmitting}
                                 >
@@ -242,6 +242,6 @@ export default function LoginForm() {
                 </Card>
             </motion.div>
             <Toaster />
-        </>
+        </div>
     );
 }

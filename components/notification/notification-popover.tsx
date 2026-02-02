@@ -75,7 +75,6 @@ function NotificationItem({
     const config = notificationConfig[notification.type];
     const IconComponent = iconMap[config?.icon || 'Bell'] || Bell;
 
-    // ✅ FIX: Use single title/message from backend (not bilingual)
     const title = notification.title;
     const message = notification.message;
 
@@ -89,7 +88,7 @@ function NotificationItem({
             className={cn(
                 "p-3 rounded-lg cursor-pointer transition-colors relative group",
                 notification.isRead
-                    ? "bg-background hover:bg-muted"
+                    ? "bg-accent hover:bg-muted"
                     : config?.bgColor || "bg-blue-50 dark:bg-blue-950",
                 "hover:bg-opacity-80"
             )}
@@ -260,9 +259,9 @@ export function NotificationPopover() {
             <PopoverContent className="w-96 p-0" align="end">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    <h4 className="font-semibold">
+                    <h5 className="font-semibold">
                         {t.notifications?.title || "Notifications"}
-                    </h4>
+                    </h5>
                     <div className="flex items-center gap-1">
                         <Button
                             variant="ghost"

@@ -14,7 +14,7 @@ export function QuoteSection() {
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <Quote className="h-12 w-12 md:h-16 md:w-16 text-secondary mx-auto mb-6 opacity-60" />
+                    <Quote className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-6 opacity-60" />
                     <blockquote className="space-y-4">
                         <p className="text-xl md:text-2xl lg:text-3xl font-body text-foreground leading-relaxed">
                             {

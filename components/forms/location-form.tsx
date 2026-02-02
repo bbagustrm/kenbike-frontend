@@ -22,6 +22,7 @@ import {
     isIndonesia,
     type CountryCode
 } from "@/lib/countries";
+import {Textarea} from "@/components/ui/textarea";
 
 // ... (Interface dan tipe data lainnya tetap sama) ...
 
@@ -213,7 +214,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Country Type Selection (Domestic/International) */}
             <div className="space-y-2">
                 <Label htmlFor="country_type">
@@ -224,7 +225,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     onValueChange={(val) => handleCountryTypeChange(val as "domestic" | "international")}
                     disabled={disabled}
                 >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full rounded-md border border-border">
                         <SelectValue placeholder="Select shipping region" />
                     </SelectTrigger>
                     <SelectContent>
@@ -236,32 +237,27 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
 
             {/* Indonesia Form (Domestic) */}
             {isDomestic && (
-                <>
-                    {/* --- TAMBAHKAN BLOK INI --- */}
+                <div className="space-y-6">
                     {/* Country Selection for Domestic (Locked to Indonesia) */}
-                    <div className="space-y-2">
+                    <div className="flex-1 space-y-2 hidden">
                         <Label htmlFor="country_domestic">
                             Country {required && <span className="text-red-500">*</span>}
                         </Label>
                         <Select
                             value="ID"
-                            disabled={true} // Disabled karena user memilih Domestik
+                            disabled={true}
                         >
-                            <SelectTrigger className="bg-muted/50 cursor-not-allowed opacity-80">
+                            <SelectTrigger className="bg-muted/50 cursor-not-allowed opacity-80 w-full rounded-md border border-border">
                                 <SelectValue placeholder="Indonesia" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="ID">Indonesia</SelectItem>
                             </SelectContent>
                         </Select>
-                        <p className="text-[10px] text-muted-foreground">
-                            Automatically set for Domestic region.
-                        </p>
-                    </div>
-                    {/* -------------------------- */}
 
+                    </div>
                     {/* Province */}
-                    <div className="space-y-2">
+                    <div className="flex-1 space-y-2">
                         <Label htmlFor="province">
                             Province {required && <span className="text-red-500">*</span>}
                         </Label>
@@ -270,8 +266,8 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                             onValueChange={handleProvinceChange}
                             disabled={disabled}
                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select province" />
+                            <SelectTrigger className="w-full rounded-md border border-border">
+                                <SelectValue placeholder="Select province"/>
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
                                 {INDONESIA_PROVINCES.map((province) => (
@@ -282,6 +278,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                             </SelectContent>
                         </Select>
                     </div>
+                    {/* -------------------------- */}
 
                     {/* City, District & Postal Code Search */}
                     {value.province && (
@@ -292,10 +289,10 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                             <Popover open={openAreaCombobox} onOpenChange={setOpenAreaCombobox}>
                                 <PopoverTrigger asChild>
                                     <Button
-                                        variant="outline"
+                                        variant="secondary"
                                         role="combobox"
                                         aria-expanded={openAreaCombobox}
-                                        className="w-full justify-between text-left font-normal"
+                                        className="w-full justify-between text-left font-normal rounded-md border border-border"
                                         disabled={disabled}
                                     >
                                         {value.city && value.district && value.postal_code ? (
@@ -385,7 +382,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                             </div>
                         </div>
                     )}
-                </>
+                </div>
             )}
 
             {/* International Form */}
@@ -461,11 +458,11 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             )}
 
             {/* Full Address (Common for both) */}
-            <div className="space-y-2">
+            <div className="space-y-2 pt-4">
                 <Label htmlFor="address">
                     Full Address {required && <span className="text-red-500">*</span>}
                 </Label>
-                <Input
+                <Textarea
                     id="address"
                     value={value.address || ""}
                     onChange={(e) => onChange({ ...value, address: e.target.value })}
