@@ -65,9 +65,9 @@ export function DiscussionForm({ productId, onSuccess }: DiscussionFormProps) {
 
     if (!isAuthenticated) {
         return (
-            <Card className="bg-muted/50">
+            <Card className="bg-accent rounded-lg ">
                 <CardContent className="py-6">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-16">
                         <div className="flex items-center gap-3 text-center sm:text-left">
                             <HelpCircle className="w-10 h-10 text-muted-foreground shrink-0" />
                             <div>

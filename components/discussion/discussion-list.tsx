@@ -132,8 +132,8 @@ export function DiscussionList({ productId, productSlug }: DiscussionListProps) 
                             setOrder(newOrder);
                         }}
                     >
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder={locale === "id" ? "Urutkan" : "Sort by"} />
+                        <SelectTrigger className="w-full sm:w-[180px] border border-border">
+                            Sort by : <SelectValue placeholder={locale === "id" ? "Urutkan" : "Sort by"} />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="createdAt-desc">

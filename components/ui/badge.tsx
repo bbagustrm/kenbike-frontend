@@ -52,6 +52,10 @@ const badgeVariants = cva(
                 // Promotion
                 promotion:
                     "border-[#d7876d] text-[#d7876d] bg-transparent",
+
+                // Role Admin
+                adminRole:
+                    "bg-blue-400 text-white border-blue-400",
             },
         },
         defaultVariants: {

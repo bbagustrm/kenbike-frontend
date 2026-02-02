@@ -161,7 +161,7 @@ export function DiscussionItem({ discussion, onUpdate }: DiscussionItemProps) {
                                 {discussion.user.name || discussion.user.username}
                             </span>
                             {discussion.user.isAdmin && (
-                                <Badge variant="default" className="gap-1 text-xs">
+                                <Badge variant="adminRole" className="gap-1 text-xs bg-blue-400">
                                     <ShieldCheck className="w-3 h-3" />
                                     {discussion.user.role === "OWNER" ? "Owner" : "Admin"}
                                 </Badge>

@@ -83,7 +83,7 @@ export function ProductCard({ product, className, locale = "id" }: ProductCardPr
         >
             <Link href={`/products/${product.slug}`} className="block">
                 {/* Image */}
-                <div className="relative aspect-square overflow-hidden shadow-sm rounded-md">
+                <div className="relative aspect-square overflow-hidden rounded-md">
                     <motion.div
                         whileHover={{ scale: 1.2 }}
                         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}

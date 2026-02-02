@@ -36,6 +36,10 @@
   --font-body: var(--font-body), "Satoshi", system-ui, sans-serif;
   --font-mono: var(--font-mono), "JetBrains Mono", monospace;
 
+  --orangekenbike: #f15228;
+  --bluekenbike: #2a51b0;
+
+
   /* === COLOR PALETTE === */
   --background: #f8f8f8;
   --background-gradient-start: #e9e9e9;

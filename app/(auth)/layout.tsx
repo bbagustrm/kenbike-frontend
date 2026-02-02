@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="min-h-screen w-full bg-gradient-main">
+        <div className="min-h-screen w-full bg-accent">
             {children}
         </div>
     );

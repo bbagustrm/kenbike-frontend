@@ -71,7 +71,7 @@ function SelectContent({
             <SelectPrimitive.Content
                 data-slot="select-content"
                 className={cn(
-                    "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-hidden",
+                    "cursor-pointer relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-hidden",
                     "bg-background text-[#222222] rounded-md shadow-[0px_0px_7px_1px_#00000024]",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -123,7 +123,7 @@ function SelectItem({
         <SelectPrimitive.Item
             data-slot="select-item"
             className={cn(
-                "relative flex w-full cursor-default items-center gap-2 rounded-sm py-2 pr-8 pl-2 text-sm outline-none select-none transition-colors",
+                "cursor-pointer relative flex w-full cursor-default items-center gap-2 rounded-sm py-2 pr-8 pl-2 text-sm outline-none select-none transition-colors",
                 "text-[#222222]",
                 "hover:bg-[#f8f8f8] focus:bg-[#f8f8f8]",
                 "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

@@ -109,7 +109,7 @@ export default function LoginForm() {
                 transition={{ duration: 0.5 }}
                 className="w-full max-w-md"
             >
-                <Card className="bg-background rounded-lg shadow-[0px_0px_7px_1px_#00000024] p-12">
+                <Card className="bg-background rounded-lg p-12">
                     <CardHeader>
                         <motion.div
                             initial={{ opacity: 0 }}

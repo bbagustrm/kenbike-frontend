@@ -39,7 +39,7 @@ export function ReviewItem({ review }: ReviewItemProps) {
         <div className="border-b border-border pb-6 last:border-0 last:pb-0">
             {/* Review Header */}
             <div className="flex items-start justify-between mb-3">
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10">
                         <AvatarImage src={review.user.profileImage || undefined} />
                         <AvatarFallback className="bg-primary/10 text-primary text-sm">
@@ -51,12 +51,6 @@ export function ReviewItem({ review }: ReviewItemProps) {
                             <span className="font-semibold">
                                 {review.user.name || review.user.username}
                             </span>
-                            {review.isVerified && (
-                                <Badge variant="secondary" className="gap-1 text-xs">
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    {locale === "id" ? "Pembelian Terverifikasi" : "Verified Purchase"}
-                                </Badge>
-                            )}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-0.5">

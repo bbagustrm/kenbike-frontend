@@ -121,57 +121,56 @@ export function ReviewList({ productSlug }: ReviewListProps) {
             {summary && <ReviewSummary summary={summary} />}
 
             {/* Filters */}
-            {totalReviews > 0 && (
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    {/* Rating Filter */}
-                    <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder={locale === "id" ? "Filter rating" : "Filter by rating"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                {locale === "id" ? "Semua rating" : "All ratings"}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                {/* Rating Filter */}
+                <Select value={ratingFilter} onValueChange={setRatingFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px] border border-border rounded-md">
+                        <SelectValue placeholder={locale === "id" ? "Filter rating" : "Filter by rating"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">
+                            {locale === "id" ? "Semua rating" : "All ratings"} 1-5
+                        </SelectItem>
+                        {[5, 4, 3, 2, 1].map((rating) => (
+                            <SelectItem key={rating} value={rating.toString()}>
+                                <div className="flex items-center gap-1">
+                                    {rating}
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                </div>
                             </SelectItem>
-                            {[5, 4, 3, 2, 1].map((rating) => (
-                                <SelectItem key={rating} value={rating.toString()}>
-                                    <div className="flex items-center gap-1">
-                                        {rating}
-                                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        ))}
+                    </SelectContent>
+                </Select>
 
-                    {/* Sort */}
-                    <Select
-                        value={`${sortBy}-${order}`}
-                        onValueChange={(value) => {
-                            const [newSortBy, newOrder] = value.split("-") as [QueryReviewsParams["sortBy"], QueryReviewsParams["order"]];
-                            setSortBy(newSortBy);
-                            setOrder(newOrder);
-                        }}
-                    >
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder={locale === "id" ? "Urutkan" : "Sort by"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="createdAt-desc">
-                                {locale === "id" ? "Terbaru" : "Newest"}
-                            </SelectItem>
-                            <SelectItem value="createdAt-asc">
-                                {locale === "id" ? "Terlama" : "Oldest"}
-                            </SelectItem>
-                            <SelectItem value="rating-desc">
-                                {locale === "id" ? "Rating tertinggi" : "Highest rating"}
-                            </SelectItem>
-                            <SelectItem value="rating-asc">
-                                {locale === "id" ? "Rating terendah" : "Lowest rating"}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
+                {/* Sort */}
+                <Select
+                    value={`${sortBy}-${order}`}
+                    onValueChange={(value) => {
+                        const [newSortBy, newOrder] = value.split("-") as [QueryReviewsParams["sortBy"], QueryReviewsParams["order"]];
+                        setSortBy(newSortBy);
+                        setOrder(newOrder);
+                    }}
+                >
+                    <SelectTrigger className="w-full sm:w-[180px] border border-border rounded-md">
+                        Sort by : <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="createdAt-desc">
+                            {locale === "id" ? "Terbaru" : "Newest"}
+                        </SelectItem>
+                        <SelectItem value="createdAt-asc">
+                            {locale === "id" ? "Terlama" : "Oldest"}
+                        </SelectItem>
+                        <SelectItem value="rating-desc">
+                            {locale === "id" ? "Rating tertinggi" : "Highest rating"}
+                        </SelectItem>
+                        <SelectItem value="rating-asc">
+                            {locale === "id" ? "Rating terendah" : "Lowest rating"}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
 
             {/* Reviews List */}
             {reviews.length > 0 ? (

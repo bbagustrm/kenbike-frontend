@@ -558,7 +558,7 @@ export default function RegisterForm() {
                     {/* Progress Steps */}
 
                     {/* Card */}
-                    <Card className="w-full bg-background rounded-lg shadow-[0px_0px_7px_1px_#00000024] p-12">
+                    <Card className="w-full bg-background rounded-lg p-12">
                         <CardHeader className="pb-4">
                             <motion.div
                                 key={currentStep}
