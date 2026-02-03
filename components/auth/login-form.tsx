@@ -15,12 +15,14 @@ import {
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
-import { ArrowRight, Loader2} from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";
 import { AnimatedInput } from "@/components/animations/input-animation";
 import { AnimatedButton } from "@/components/animations/button-ripple";
+import { GoogleLoginButton } from "@/components/auth/google-login-button"; // 👈 Import
+import { AuthDivider } from "@/components/auth/auth-divider"; // 👈 Import
 
 export default function LoginForm() {
     const { login } = useAuth();
@@ -34,6 +36,7 @@ export default function LoginForm() {
 
     const registered = searchParams.get("registered");
     const redirect = searchParams.get("redirect");
+    const oauthError = searchParams.get("error"); // 👈 Handle OAuth error
 
     useEffect(() => {
         if (registered) {
@@ -49,7 +52,15 @@ export default function LoginForm() {
                 position: "top-center",
             });
         }
-    }, [registered, redirect, t]);
+
+        // 👇 Handle OAuth error from callback
+        if (oauthError) {
+            toast.error(decodeURIComponent(oauthError), {
+                duration: 5000,
+                position: "top-center",
+            });
+        }
+    }, [registered, redirect, oauthError, t]);
 
     useEffect(() => {
         if (error) {
@@ -92,7 +103,6 @@ export default function LoginForm() {
 
             setError(errorMessage);
 
-            // Shake animation on error
             const form = event.currentTarget;
             form.classList.add("animate-shake");
             setTimeout(() => form.classList.remove("animate-shake"), 500);
@@ -125,8 +135,9 @@ export default function LoginForm() {
                         </motion.div>
                     </CardHeader>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <CardContent className="space-y-6">
+                    <CardContent className="space-y-6">
+                        {/* Email/Password Form */}
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -194,11 +205,9 @@ export default function LoginForm() {
                                     </Link>
                                 </div>
                             </motion.div>
-                        </CardContent>
 
-                        <CardFooter className="flex flex-col space-y-4 pt-4">
                             <motion.div
-                                className="w-full"
+                                className="w-full pt-4"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5 }}
@@ -222,23 +231,31 @@ export default function LoginForm() {
                                     )}
                                 </AnimatedButton>
                             </motion.div>
+                        </form>
+                    </CardContent>
 
-                            <motion.p
-                                className="text-sm text-center text-muted-foreground"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.6 }}
+                    <CardFooter className="w-full flex flex-col gap-4 ">
+                        <AuthDivider text="or continue with email" />
+
+                        {/* 👇 Google Login Button */}
+                        <GoogleLoginButton mode="login" disabled={isSubmitting} />
+
+                        {/* 👇 Divider */}
+                        <motion.p
+                            className="text-sm text-center text-muted-foreground"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                        >
+                            {t.auth.login.noAccount}{" "}
+                            <Link
+                                href="/register"
+                                className="text-primary hover:text-accent font-medium hover:underline transition-colors"
                             >
-                                {t.auth.login.noAccount}{" "}
-                                <Link
-                                    href="/register"
-                                    className="text-primary hover:text-accent font-medium hover:underline transition-colors"
-                                >
-                                    {t.auth.login.signUpLink}
-                                </Link>
-                            </motion.p>
-                        </CardFooter>
-                    </form>
+                                {t.auth.login.signUpLink}
+                            </Link>
+                        </motion.p>
+                    </CardFooter>
                 </Card>
             </motion.div>
             <Toaster />

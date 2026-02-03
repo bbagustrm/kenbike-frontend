@@ -283,7 +283,7 @@ export default function ProductDetailPage() {
                             {/* Main Image Container */}
                             <div className="flex-1 space-y-4">
                                 <Carousel
-                                    className="bg-white relative aspect-square rounded-lg w-full max-w-[500px] mx-auto"
+                                    className="bg-white relative aspect-square rounded-xl w-full max-w-[500px] mx-auto"
                                     opts={{
                                         align: "center",
                                         loop: allImages.length > 1,
@@ -437,7 +437,7 @@ export default function ProductDetailPage() {
                                                             whileInView={{ opacity: 1, x: 0 }}
                                                             viewport={{ once: true }}
                                                             transition={{ delay: index * 0.1 }}
-                                                            className="relative w-[200px] sm:w-[240px] md:w-[280px] aspect-3/4 rounded-sm overflow-hidden bg-muted cursor-pointer flex-shrink-0"
+                                                            className="relative w-[200px] sm:w-[240px] md:w-[280px] aspect-3/4 rounded-lg overflow-hidden bg-muted cursor-pointer flex-shrink-0"
                                                         >
                                                             <Image
                                                                 src={image.imageUrl}
@@ -506,8 +506,8 @@ export default function ProductDetailPage() {
                 {/* RIGHT COLUMN: Sticky Product Info Card */}
                 <div className="lg:col-span-3 hidden lg:block">
                     <ScrollReveal direction="left" delay={0.2} className="sticky top-24">
-                        <Card>
-                            <CardContent className="rounded-xl space-y-4">
+                        <Card className="bg-transparent p-0">
+                            <CardContent className="space-y-4">
                                 {/* Tags & Category */}
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {product.category && (

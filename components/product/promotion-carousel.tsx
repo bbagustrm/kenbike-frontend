@@ -95,7 +95,7 @@ export function PromotionCarousel() {
 
     return (
         <div
-            className="shadow-[0px_0px_7px_1px_#00000024] rounded-md relative w-full overflow-hidden bg-muted group"
+            className="rounded-xl relative w-full overflow-hidden bg-muted group"
             onMouseEnter={() => {
                 setIsAutoPlaying(false);
                 setIsHovered(true);

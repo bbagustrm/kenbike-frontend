@@ -141,4 +141,10 @@ export class AuthService {
         const response = await apiClient.post<ApiResponse>("/auth/logout");
         return response.data;
     }
+
+    // Get Google OAuth URL
+    static getGoogleAuthUrl(): string {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.kenbike.store';
+        return `${apiUrl}/auth/google`;
+    }
 }

@@ -24,6 +24,8 @@ export interface User {
     created_at: string;
     updated_at: string;
     deleted_at?: string | null;
+    provider?: 'local' | 'google';
+    provider_id?: string;
 }
 
 export interface LoginCredentials {

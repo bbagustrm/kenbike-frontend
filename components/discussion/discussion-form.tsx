@@ -94,8 +94,8 @@ export function DiscussionForm({ productId, onSuccess }: DiscussionFormProps) {
     }
 
     return (
-        <Card>
-            <CardContent className="pt-6">
+        <Card className="rounded-lg bg-accent">
+            <CardContent>
                 <div className="flex items-start gap-3 mb-3">
                     <HelpCircle className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                     <div className="flex-1">
