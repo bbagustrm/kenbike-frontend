@@ -1,7 +1,5 @@
 // types/auth.ts
 
-import { CountryCode } from "@/lib/countries";
-
 export type UserRole = "USER" | "ADMIN" | "OWNER";
 
 export interface User {
@@ -11,7 +9,7 @@ export interface User {
     username: string;
     email: string;
     phone_number?: string;
-    country?: string; // 2-char ISO code (ID, US, GB, etc.)
+    country?: string;
     province?: string;
     city?: string;
     district?: string;
@@ -19,13 +17,24 @@ export interface User {
     address?: string;
     profile_image?: string;
     role: UserRole;
+    provider?: 'local' | 'google';
+    is_profile_complete?: boolean;
+    is_email_verified?: boolean;
     is_active?: boolean;
     last_login?: string;
     created_at: string;
     updated_at: string;
     deleted_at?: string | null;
-    provider?: 'local' | 'google';
-    provider_id?: string;
+}
+
+export interface CompleteProfileData {
+    phone_number: string;
+    country: string;
+    province: string;
+    city: string;
+    district?: string;
+    postal_code: string;
+    address: string;
 }
 
 export interface LoginCredentials {
@@ -47,7 +56,7 @@ export interface RegisterData {
     username: string;
     email: string;
     phone_number?: string;
-    country?: string; // 2-char ISO code (ID, US, GB, etc.)
+    country?: string;
     province?: string;
     city?: string;
     district?: string;
@@ -57,16 +66,17 @@ export interface RegisterData {
 }
 
 export interface RegisterResponse {
-    id: string;
+    id?: string;
     email: string;
-    username: string;
-    role: UserRole;
+    username?: string;
+    role?: UserRole;
+    requires_verification?: boolean;
 }
 
 export interface UpdateProfileData {
     phone_number?: string;
     address?: string;
-    country?: string; // 2-char ISO code (ID, US, GB, etc.)
+    country?: string;
     province?: string;
     city?: string;
     district?: string;
@@ -89,6 +99,36 @@ export interface ResetPasswordData {
     new_password: string;
     confirm_password: string;
 }
+
+// ============================================
+// OTP / Email Verification Types
+// ============================================
+
+export interface VerifyOtpData {
+    email: string;
+    otp: string;
+}
+
+export interface ResendOtpData {
+    email: string;
+}
+
+export interface VerifyOtpResponse {
+    email: string;
+}
+
+export interface LoginErrorResponse {
+    statusCode: number;
+    message: string;
+    error: string;
+    requires_verification?: boolean;
+    email?: string;
+    remainingAttempts?: number;
+}
+
+// ============================================
+// API Response Types
+// ============================================
 
 export interface ApiResponse<T = unknown> {
     status: "success" | "error";
@@ -135,7 +175,7 @@ export interface UpdateUserData {
     email?: string;
     phone_number?: string;
     address?: string;
-    country?: string; // 2-char ISO code (ID, US, GB, etc.)
+    country?: string;
     province?: string;
     city?: string;
     district?: string;
@@ -151,16 +191,14 @@ export interface ChangeUserStatusData {
     reason?: string;
 }
 
-// Extended interface for create user with password
 export interface CreateUserPayload extends RegisterData {
     role: UserRole;
 }
 
-// Extended interface for update profile with file
 export interface UpdateProfilePayload {
     phone_number?: string;
     address?: string;
-    country?: string; // 2-char ISO code (ID, US, GB, etc.)
+    country?: string;
     province?: string;
     city?: string;
     district?: string;

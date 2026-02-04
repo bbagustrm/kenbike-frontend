@@ -20,15 +20,13 @@ export default function AuthCallbackPage() {
             const success = searchParams.get("success");
             const dataParam = searchParams.get("data");
             const error = searchParams.get("error");
-            const completeProfile = searchParams.get("complete_profile");
 
             if (success === "true" && dataParam) {
                 try {
-                    // Decode and parse callback data
                     const data = JSON.parse(decodeURIComponent(dataParam));
                     const { user, access_token, refresh_token } = data;
 
-                    // Set cookies di frontend (untuk cross-origin development)
+                    // Set tokens in cookies
                     Cookies.set("access_token", access_token, {
                         expires: 1 / 96, // 15 minutes
                         sameSite: "lax",
@@ -36,7 +34,7 @@ export default function AuthCallbackPage() {
                     });
 
                     Cookies.set("refresh_token", refresh_token, {
-                        expires: 7, // 7 days
+                        expires: 7,
                         sameSite: "lax",
                         ...(COOKIE_DOMAIN && { domain: COOKIE_DOMAIN }),
                     });
@@ -49,22 +47,30 @@ export default function AuthCallbackPage() {
                     });
 
                     setStatus("success");
-                    setMessage("Login successful! Redirecting...");
 
-                    toast.success("Welcome! You've been signed in with Google.", {
-                        duration: 3000,
-                        position: "top-center",
-                    });
+                    // Check if profile is complete
+                    const isProfileComplete = user.is_profile_complete;
 
-                    // Check if user needs to complete profile
-                    if (completeProfile === "true") {
+                    if (!isProfileComplete) {
+                        setMessage("Redirecting to complete your profile...");
+                        toast.info("Please complete your profile to continue", {
+                            duration: 3000,
+                            position: "top-center",
+                        });
+
                         setTimeout(() => {
-                            router.push("/user/profile?complete=true");
+                            router.push("/complete-profile");
                         }, 1500);
                         return;
                     }
 
-                    // Redirect based on role
+                    // Profile is complete - redirect based on role
+                    setMessage("Login successful! Redirecting...");
+                    toast.success("Welcome back!", {
+                        duration: 3000,
+                        position: "top-center",
+                    });
+
                     setTimeout(() => {
                         if (user.role === "ADMIN") {
                             router.push("/admin/dashboard");
@@ -145,7 +151,9 @@ export default function AuthCallbackPage() {
                             <XCircle className="h-12 w-12 mx-auto text-destructive" />
                         </motion.div>
                         <p className="text-lg font-medium text-destructive">{message}</p>
-                        <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+                        <p className="text-sm text-muted-foreground">
+                            Redirecting to login...
+                        </p>
                     </>
                 )}
             </motion.div>

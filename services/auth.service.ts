@@ -1,4 +1,5 @@
 // services/auth.service.ts
+
 import apiClient from "@/lib/api-client";
 import {
     LoginCredentials,
@@ -11,6 +12,10 @@ import {
     ForgotPasswordData,
     ResetPasswordData,
     ApiResponse,
+    CompleteProfileData,
+    VerifyOtpData,
+    ResendOtpData,
+    VerifyOtpResponse,
 } from "@/types/auth";
 
 export class AuthService {
@@ -54,47 +59,38 @@ export class AuthService {
     static async updateProfile(data: UpdateProfileData): Promise<ApiResponse<Partial<User>>> {
         const formData = new FormData();
 
-        // Phone number
         if (data.phone_number !== undefined) {
             formData.append("phone_number", data.phone_number || "");
         }
 
-        // Country (2-char ISO code: ID, US, GB, etc.)
         if (data.country !== undefined) {
             formData.append("country", data.country);
         }
 
-        // Province
         if (data.province !== undefined) {
             formData.append("province", data.province || "");
         }
 
-        // City
         if (data.city !== undefined) {
             formData.append("city", data.city || "");
         }
 
-        // District
         if (data.district !== undefined) {
             formData.append("district", data.district || "");
         }
 
-        // Postal code
         if (data.postal_code !== undefined) {
             formData.append("postal_code", data.postal_code || "");
         }
 
-        // Address
         if (data.address !== undefined) {
             formData.append("address", data.address || "");
         }
 
-        // Profile image
         if (data.profile_image) {
             formData.append("profile_image", data.profile_image);
         }
 
-        // Debug log
         console.log("📤 FormData entries:");
         formData.forEach((value, key) => {
             console.log(`  ${key}:`, value);
@@ -146,5 +142,44 @@ export class AuthService {
     static getGoogleAuthUrl(): string {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.kenbike.store';
         return `${apiUrl}/auth/google`;
+    }
+
+    // Complete profile (for Google OAuth users)
+    static async completeProfile(data: CompleteProfileData): Promise<ApiResponse<User>> {
+        const response = await apiClient.post<ApiResponse<User>>(
+            "/auth/complete-profile",
+            data
+        );
+        return response.data;
+    }
+
+    // Check profile completion status
+    static async checkProfileStatus(): Promise<ApiResponse<{ is_profile_complete: boolean }>> {
+        const response = await apiClient.get<ApiResponse<{ is_profile_complete: boolean }>>(
+            "/auth/profile-status"
+        );
+        return response.data;
+    }
+
+    // ============================================
+    // OTP / Email Verification
+    // ============================================
+
+    // Verify OTP
+    static async verifyOtp(data: VerifyOtpData): Promise<ApiResponse<VerifyOtpResponse>> {
+        const response = await apiClient.post<ApiResponse<VerifyOtpResponse>>(
+            "/auth/verify-otp",
+            data
+        );
+        return response.data;
+    }
+
+    // Resend OTP
+    static async resendOtp(data: ResendOtpData): Promise<ApiResponse<{ email: string }>> {
+        const response = await apiClient.post<ApiResponse<{ email: string }>>(
+            "/auth/resend-otp",
+            data
+        );
+        return response.data;
     }
 }

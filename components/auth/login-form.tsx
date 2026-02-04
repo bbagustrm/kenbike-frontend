@@ -21,8 +21,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { useTranslation } from "@/hooks/use-translation";
 import { AnimatedInput } from "@/components/animations/input-animation";
 import { AnimatedButton } from "@/components/animations/button-ripple";
-import { GoogleLoginButton } from "@/components/auth/google-login-button"; // 👈 Import
-import { AuthDivider } from "@/components/auth/auth-divider"; // 👈 Import
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
+import { AuthDivider } from "@/components/auth/auth-divider";
 
 export default function LoginForm() {
     const { login } = useAuth();
@@ -36,11 +36,20 @@ export default function LoginForm() {
 
     const registered = searchParams.get("registered");
     const redirect = searchParams.get("redirect");
-    const oauthError = searchParams.get("error"); // 👈 Handle OAuth error
+    const oauthError = searchParams.get("error");
+    const verified = searchParams.get("verified"); // 👈 NEW
 
     useEffect(() => {
         if (registered) {
             toast.success(t.auth.login.registrationSuccess, {
+                duration: 5000,
+                position: "top-center",
+            });
+        }
+
+        // 👇 NEW: Handle verified success
+        if (verified) {
+            toast.success("Email verified successfully! Please login.", {
                 duration: 5000,
                 position: "top-center",
             });
@@ -53,14 +62,13 @@ export default function LoginForm() {
             });
         }
 
-        // 👇 Handle OAuth error from callback
         if (oauthError) {
             toast.error(decodeURIComponent(oauthError), {
                 duration: 5000,
                 position: "top-center",
             });
         }
-    }, [registered, redirect, oauthError, t]);
+    }, [registered, redirect, oauthError, verified, t]);
 
     useEffect(() => {
         if (error) {
@@ -199,7 +207,7 @@ export default function LoginForm() {
                                     <span></span>
                                     <Link
                                         href="/forgot-password"
-                                        className="hover:underline font-medium hover:text-accent transition-colors"
+                                        className="hover:underline font-medium transition-colors"
                                     >
                                         {t.auth.login.forgotPassword}
                                     </Link>
@@ -237,10 +245,10 @@ export default function LoginForm() {
                     <CardFooter className="w-full flex flex-col gap-4 ">
                         <AuthDivider text="or continue with email" />
 
-                        {/* 👇 Google Login Button */}
+                        {/* Google Login Button */}
                         <GoogleLoginButton mode="login" disabled={isSubmitting} />
 
-                        {/* 👇 Divider */}
+                        {/* Divider */}
                         <motion.p
                             className="text-sm text-center text-muted-foreground"
                             initial={{ opacity: 0 }}
@@ -250,7 +258,7 @@ export default function LoginForm() {
                             {t.auth.login.noAccount}{" "}
                             <Link
                                 href="/register"
-                                className="text-primary hover:text-accent font-medium hover:underline transition-colors"
+                                className="text-primary font-medium hover:underline transition-colors"
                             >
                                 {t.auth.login.signUpLink}
                             </Link>

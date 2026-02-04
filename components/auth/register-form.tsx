@@ -34,7 +34,6 @@ import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { RegisterData } from "@/types/auth";
 import { isIndonesia } from "@/lib/countries";
 import { cn } from "@/lib/utils";
-import {Separator} from "@radix-ui/react-menu";
 
 // Step configuration
 const STEPS = [

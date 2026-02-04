@@ -17,6 +17,7 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
+    isProfileComplete: boolean;
     login: (credentials: LoginCredentials) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
@@ -41,13 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const isAuthenticated = !!user;
 
+    const isProfileComplete = user?.is_profile_complete ?? true;
+
     const logout = useCallback(async () => {
         try {
             await AuthService.logout();
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
-            // ✅ CHANGED: Conditional cookie removal based on environment
             Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
             setUser(null);
             hasInitialized.current = false;
@@ -99,7 +101,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (freshUser) {
                         setUser(freshUser);
 
-                        // ✅ CHANGED: Conditional domain for cookie
                         Cookies.set("user", JSON.stringify(freshUser), {
                             expires: 7,
                             sameSite: "lax",
@@ -111,7 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } catch (apiError) {
                     console.error("Failed to verify user from API:", apiError);
 
-                    // Type guard for axios error with 401 status
                     if (
                         apiError &&
                         typeof apiError === 'object' &&
@@ -122,7 +122,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         apiError.response.status === 401
                     ) {
                         console.log("⚠️ Token invalid, logging out...");
-                        // ✅ CHANGED: Conditional cookie removal
                         Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
                         setUser(null);
                     }
@@ -146,7 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
                 await AuthService.getCurrentUser();
             } catch (error) {
-                // Type guard for axios error with 401 status
                 if (
                     error &&
                     typeof error === 'object' &&
@@ -197,7 +195,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
                 router.push("/");
             }
-        } catch (error) {
+        } catch (error: any) {
+            // 👇 Handle email not verified error
+            const errorResponse = error?.response?.data;
+
+            if (errorResponse?.requires_verification && errorResponse?.email) {
+                // Redirect to verify email page
+                router.push(`/verify-email?email=${encodeURIComponent(errorResponse.email)}`);
+                throw new Error("Please verify your email first");
+            }
+
             const apiError = handleApiError(error);
             const errorWithFields = new Error(apiError.message) as Error & { fieldErrors?: Record<string, string> };
             errorWithFields.fieldErrors = apiError.fieldErrors;
@@ -207,8 +214,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const register = useCallback(async (data: RegisterData) => {
         try {
-            await AuthService.register(data);
-            router.push("/login?registered=true");
+            const response = await AuthService.register(data);
+
+            // 👇 Redirect to verify-email with email param
+            if (response.data?.requires_verification || response.data?.email) {
+                router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+            } else {
+                // Fallback for backward compatibility
+                router.push("/login?registered=true");
+            }
         } catch (error) {
             const apiError = handleApiError(error);
             const errorWithFields = new Error(apiError.message) as Error & { fieldErrors?: Record<string, string> };
@@ -225,7 +239,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (!prevUser || !response.data) return prevUser;
 
                 const updatedUser = { ...prevUser, ...response.data };
-                // ✅ CHANGED: Conditional domain for cookie
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
@@ -254,7 +267,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (!prevUser) return prevUser;
 
                 const updatedUser = { ...prevUser, profile_image: undefined };
-                // ✅ CHANGED: Conditional domain for cookie
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
@@ -274,7 +286,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (updatedUser) {
                 setUser(updatedUser);
-                // ✅ CHANGED: Conditional domain for cookie
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
                     sameSite: "lax",
@@ -292,6 +303,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 user,
                 isLoading,
                 isAuthenticated,
+                isProfileComplete,
                 login,
                 register,
                 logout,
