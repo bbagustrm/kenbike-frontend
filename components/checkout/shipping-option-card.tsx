@@ -21,12 +21,12 @@ interface ShippingOptionCardProps {
 }
 
 export function ShippingOptionCard({
-                                       option,
-                                       currency,
-                                       selected,
-                                       onSelect,
-                                       disabled = false,
-                                   }: ShippingOptionCardProps) {
+    option,
+    currency,
+    selected,
+    onSelect,
+    disabled = false,
+}: ShippingOptionCardProps) {
     const { locale } = useTranslation();
 
     // Get icon based on shipping type

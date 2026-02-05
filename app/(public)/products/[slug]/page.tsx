@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Minus, Plus, ShoppingCart, Star, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { Minus, Plus, ShoppingCart, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {

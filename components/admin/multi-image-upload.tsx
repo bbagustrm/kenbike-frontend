@@ -79,13 +79,7 @@ export function MultiImageUpload({
     };
 
     const handleRemove = async (index: number) => {
-        //  ✅ IMPROVEMENT: Optionally delete from storage
-        // const urlToRemove = value[index];
-
         try {
-            // Optional: Call delete API if you want to clean up storage
-            // await UploadService.deleteImage(urlToRemove);
-
             const newUrls = value.filter((_, i) => i !== index);
             onChange(newUrls);
             toast.success("Image removed");
@@ -123,7 +117,6 @@ export function MultiImageUpload({
                             className="object-cover"
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
                         />
-                        {/* ✅ IMPROVEMENT: Primary badge */}
                         {index === 0 && (
                             <div className="absolute bottom-2 left-2">
                                 <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
@@ -185,7 +178,6 @@ export function MultiImageUpload({
                 className="hidden"
             />
 
-            {/* ✅ IMPROVEMENT: Show description only once */}
             <p className="text-xs text-muted-foreground">
                 PNG, JPG, WEBP up to {maxSizeMB}MB each. Max {maxFiles} images. First image will be the primary image.
             </p>

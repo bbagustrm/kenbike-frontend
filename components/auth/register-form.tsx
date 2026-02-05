@@ -25,7 +25,7 @@ import {
     User,
     Mail,
     MapPin,
-    Lock, SeparatorHorizontal,
+    Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";

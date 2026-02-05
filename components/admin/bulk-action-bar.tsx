@@ -15,13 +15,13 @@ interface BulkActionBarProps {
 }
 
 export function BulkActionBar({
-                                  selectedCount,
-                                  onDelete,
-                                  onRestore,
-                                  onClearSelection,
-                                  isDeleted = false,
-                                  className,
-                              }: BulkActionBarProps) {
+    selectedCount,
+    onDelete,
+    onRestore,
+    onClearSelection,
+    isDeleted = false,
+    className,
+}: BulkActionBarProps) {
     if (selectedCount === 0) return null;
 
     return (

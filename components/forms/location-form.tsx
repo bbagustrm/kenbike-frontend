@@ -25,9 +25,6 @@ import {
 import {Textarea} from "@/components/ui/textarea";
 import { useTranslation } from "@/hooks/use-translation";
 
-
-// ... (Interface dan tipe data lainnya tetap sama) ...
-
 interface LocationFormProps {
     value: LocationData;
     onChange: (data: LocationData) => void;

@@ -10,9 +10,9 @@ interface PaymentLoadingProps {
 }
 
 export function PaymentLoading({
-                                   message = "Processing payment...",
-                                   submessage = "Please wait, do not close this window",
-                               }: PaymentLoadingProps) {
+    message = "Processing payment...",
+    submessage = "Please wait, do not close this window",
+}: PaymentLoadingProps) {
     return (
         <motion.div
             initial={{ opacity: 0 }}

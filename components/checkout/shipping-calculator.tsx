@@ -32,11 +32,11 @@ interface ShippingCalculatorProps {
 const DEBOUNCE_DELAY = 500;
 
 export function ShippingCalculator({
-                                       currency,
-                                       onSelect,
-                                       selected,
-                                       disabled = false,
-                                   }: ShippingCalculatorProps) {
+    currency,
+    onSelect,
+    selected,
+    disabled = false,
+}: ShippingCalculatorProps) {
     const { user } = useAuth();
     const { cart, guestCartWithDetails } = useCart();
     const { t, locale } = useTranslation();

@@ -70,7 +70,6 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 
-// Interface untuk props yang akan diterima komponen
 interface ProductsPageProps {
     userRole: "admin" | "owner";
     customTitle?: string;
@@ -78,10 +77,10 @@ interface ProductsPageProps {
 }
 
 export default function ProductsPage({
-                                         userRole,
-                                         customTitle = "Product Management",
-                                         customDescription = "Manage your products, variants, and inventory"
-                                     }: ProductsPageProps) {
+    userRole,
+    customTitle = "Product Management",
+    customDescription = "Manage your products, variants, and inventory"
+}: ProductsPageProps) {
     const router = useRouter();
     const [products, setProducts] = useState<ProductListItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);

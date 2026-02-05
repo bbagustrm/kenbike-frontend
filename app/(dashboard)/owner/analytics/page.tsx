@@ -15,7 +15,6 @@ import {
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { OrderStatusChart } from "@/components/dashboard/order-status-chart";
-import { TopProductsTable } from "@/components/dashboard/top-products-table";
 import { PromotionPerformanceCard } from "@/components/dashboard/promotion-performance";
 import { AiInsightsPanel } from "@/components/dashboard/ai-insights-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

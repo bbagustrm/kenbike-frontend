@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order/order-status-badge";
 import { formatCurrency } from "@/lib/format-currency";
-import { Eye, ExternalLink } from "lucide-react";
+import { Eye } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PackageOpen } from "lucide-react";
 

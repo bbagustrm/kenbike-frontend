@@ -26,7 +26,6 @@ import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { UpdateProfilePayload } from "@/types/auth";
 import { type CountryCode } from "@/lib/countries";
 
-// Interface untuk props yang akan diterima komponen
 interface SettingsPageProps {
     userRole: "admin" | "owner";
 }

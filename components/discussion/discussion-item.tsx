@@ -25,7 +25,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ShieldCheck, MessageCircle, MoreVertical, Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { ShieldCheck, MessageCircle, MoreVertical, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/contexts/auth-context";
 import { toast } from "sonner";

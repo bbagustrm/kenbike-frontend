@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { OtpInput } from "@/components/ui/otp-input";
 import { AuthService } from "@/services/auth.service";
 import { handleApiError } from "@/lib/api-client";
-import { Loader2, Mail, ArrowLeft, CheckCircle2, RefreshCw } from "lucide-react";
+import { Loader2, Mail, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import Link from "next/link";

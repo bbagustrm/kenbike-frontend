@@ -11,10 +11,10 @@ interface ParallaxSectionProps {
 }
 
 export function ParallaxSection({
-                                    children,
-                                    speed = 0.5,
-                                    className = "",
-                                }: ParallaxSectionProps) {
+    children,
+    speed = 0.5,
+    className = "",
+}: ParallaxSectionProps) {
     const ref = useRef(null);
     const { scrollYProgress } = useScroll({
         target: ref,

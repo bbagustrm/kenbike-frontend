@@ -1,7 +1,6 @@
 // lib/image-utils.ts
 
 /**
- * ✅ FIXED: Get full image URL with proper environment detection
  *
  * Development:
  * - Return: /uploads/products/uuid.webp (relative)

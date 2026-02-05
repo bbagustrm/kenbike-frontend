@@ -12,11 +12,11 @@ interface FadeInViewProps {
 }
 
 export function FadeInView({
-                               children,
-                               delay = 0,
-                               duration = 0.5,
-                               className = "",
-                           }: FadeInViewProps) {
+    children,
+    delay = 0,
+    duration = 0.5,
+    className = "",
+}: FadeInViewProps) {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-50px" });
 

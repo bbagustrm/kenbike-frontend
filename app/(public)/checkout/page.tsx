@@ -17,8 +17,6 @@ export default function CheckoutPage() {
     const { t, locale } = useTranslation();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const {
-        cart,
-        guestCartWithDetails,
         cartItemsCount,
         isLoading: cartLoading,
     } = useCart();

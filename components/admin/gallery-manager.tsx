@@ -14,11 +14,11 @@ interface GalleryManagerProps {
 }
 
 export function GalleryManager({
-                                   value,
-                                   onChange,
-                                   maxImages = 20,
-                                   disabled = false
-                               }: GalleryManagerProps) {
+    value,
+    onChange,
+    maxImages = 20,
+    disabled = false
+}: GalleryManagerProps) {
     // Extract URLs from gallery objects
     const imageUrls = value
         .filter(g => g._action !== "delete")

@@ -13,12 +13,12 @@ interface ScrollRevealProps {
 }
 
 export function ScrollReveal({
-                                 children,
-                                 delay = 0,
-                                 direction = "up",
-                                 fullWidth = false,
-                                 className = "",
-                             }: ScrollRevealProps) {
+    children,
+    delay = 0,
+    direction = "up",
+    fullWidth = false,
+    className = "",
+}: ScrollRevealProps) {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 

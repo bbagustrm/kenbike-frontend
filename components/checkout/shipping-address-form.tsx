@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LocationForm, LocationData } from "@/components/forms/location-form";
 import { ShippingAddressData } from "@/types/shipping";
 import { useEffect, useState } from "react";
-import { isIndonesia, type CountryCode } from "@/lib/countries";
+import { type CountryCode } from "@/lib/countries";
 
 interface ShippingAddressFormProps {
     value: ShippingAddressData;

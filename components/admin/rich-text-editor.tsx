@@ -134,7 +134,6 @@ export function RichTextEditor({
         <div className={cn("border rounded-lg overflow-hidden", className)}>
             {/* Toolbar */}
             <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
-                {/* ... (Tombol formatting yang sudah ada) ... */}
                 <Button
                     type="button"
                     variant="ghost"
@@ -280,7 +279,6 @@ export function RichTextEditor({
 
                 <div className="w-px h-6 bg-border mx-1" />
 
-                {/* Tombol Tabel Baru */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -373,7 +371,6 @@ export function RichTextEditor({
                 )}
             />
 
-            {/* Character Count */}
             <div className="flex items-center justify-between px-4 py-2 border-t bg-muted/30 text-xs text-muted-foreground">
                 <span>Supports: Bold, Italic, Lists, Links, Tables, and more</span>
                 <span className={cn(isOverLimit && "text-destructive font-medium")}>

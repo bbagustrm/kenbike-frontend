@@ -15,10 +15,10 @@ interface PayPalRedirectButtonProps {
 }
 
 export function PayPalRedirectButton({
-                                         orderNumber,
-                                         disabled,
-                                         className,
-                                     }: PayPalRedirectButtonProps) {
+    orderNumber,
+    disabled,
+    className,
+}: PayPalRedirectButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handlePayment = async () => {

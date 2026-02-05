@@ -65,7 +65,6 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 
-// Interface untuk props yang akan diterima komponen
 interface CategoriesPageProps {
     userRole: "admin" | "owner";
     customTitle?: string;
@@ -73,10 +72,10 @@ interface CategoriesPageProps {
 }
 
 export default function CategoriesPage({
-                                           userRole,
-                                           customTitle = "Category Management",
-                                           customDescription = "Organize your products into categories"
-                                       }: CategoriesPageProps) {
+    userRole,
+    customTitle = "Category Management",
+    customDescription = "Organize your products into categories"
+}: CategoriesPageProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -112,11 +111,6 @@ export default function CategoriesPage({
     const fetchCategories = useCallback(async () => {
         setIsLoading(true);
         try {
-            // Karena logika pemanggilan API sama, kita bisa gunakan service yang sama.
-            // Jika di masa depan ada endpoint berbeda untuk owner, kita bisa tambahkan kondisi di sini.
-            // const response = userRole === 'admin'
-            //   ? await CategoryService.getAdminCategories(...)
-            //   : await CategoryService.getOwnerCategories(...);
             const response = await CategoryService.getAdminCategories({
                 page,
                 limit,
@@ -142,7 +136,7 @@ export default function CategoriesPage({
         } finally {
             setIsLoading(false);
         }
-    }, [page, limit, search, activeTab, userRole]); // Tambahkan userRole ke dependency jika menggunakan kondisi API
+    }, [page, limit, search, activeTab, userRole]);
 
     useEffect(() => {
         fetchCategories();

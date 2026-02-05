@@ -23,19 +23,16 @@ import { LowStockAlert } from "@/components/dashboard/low-stock-alert";
 import { PromotionPerformanceCard } from "@/components/dashboard/promotion-performance";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import {
     DollarSign,
-    TrendingUp,
     ShoppingCart,
     Users,
-    Package,
     BarChart3,
     RefreshCw,
     Sparkles,
-    ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 

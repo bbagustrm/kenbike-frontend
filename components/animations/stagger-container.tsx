@@ -23,10 +23,10 @@ export const item = {
 };
 
 export function StaggerContainer({
-                                     children,
-                                     className = "",
-                                     staggerDelay = 0.1
-                                 }: StaggerContainerProps) {
+    children,
+    className = "",
+    staggerDelay = 0.1
+}: StaggerContainerProps) {
     const containerVariants = {
         hidden: { opacity: 0 },
         show: {
@@ -49,7 +49,6 @@ export function StaggerContainer({
     );
 }
 
-// Export item variant untuk digunakan di child components
 export function StaggerItem({ children, className = "" }: { children: ReactNode; className?: string }) {
     return (
         <motion.div variants={item} className={className}>

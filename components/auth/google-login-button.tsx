@@ -13,10 +13,10 @@ interface GoogleLoginButtonProps {
 }
 
 export function GoogleLoginButton({
-                                      mode = "login",
-                                      disabled = false,
-                                      className = "w-full"
-                                  }: GoogleLoginButtonProps) {
+    mode = "login",
+    disabled = false,
+    className = "w-full"
+}: GoogleLoginButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
     const { t } = useTranslation();
 

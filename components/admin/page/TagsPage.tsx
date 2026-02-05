@@ -41,7 +41,7 @@ import {
     Edit,
     Trash2,
     RotateCcw,
-    AlertTriangle, // Tambahkan icon ini
+    AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { BulkActionBar } from "@/components/admin/bulk-action-bar";
@@ -72,10 +72,10 @@ interface TagsPageProps {
 }
 
 export default function TagsPage({
-                                     userRole,
-                                     customTitle = "Tag Management",
-                                     customDescription = "Label and organize your products with tags"
-                                 }: TagsPageProps) {
+    userRole,
+    customTitle = "Tag Management",
+    customDescription = "Label and organize your products with tags"
+}: TagsPageProps) {
     const [tags, setTags] = useState<Tag[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
