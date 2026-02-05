@@ -32,22 +32,6 @@ import { cn } from "@/lib/utils";
 import { AuthService } from "@/services/auth.service";
 import Cookies from "js-cookie";
 
-// Step configuration
-const STEPS = [
-    {
-        id: 1,
-        title: "Contact Information",
-        description: "How can we reach you?",
-        icon: Phone,
-    },
-    {
-        id: 2,
-        title: "Shipping Address",
-        description: "Where should we deliver your orders?",
-        icon: MapPin,
-    },
-];
-
 // Animation variants
 const pageVariants = {
     initial: (direction: number) => ({
@@ -70,7 +54,7 @@ const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || undefined;
 
 export default function CompleteProfileForm() {
     const { user, refreshUser } = useAuth();
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const router = useRouter();
 
     // Current step state
@@ -87,18 +71,34 @@ export default function CompleteProfileForm() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Step configuration
+    const STEPS = [
+        {
+            id: 1,
+            title: t.auth.completeProfile?.contactInfo || "Contact Information",
+            description: t.auth.completeProfile?.contactInfoDesc || "How can we reach you?",
+            icon: Phone,
+        },
+        {
+            id: 2,
+            title: t.auth.completeProfile?.shippingAddress || "Shipping Address",
+            description: t.auth.completeProfile?.shippingAddressDesc || "Where should we deliver your orders?",
+            icon: MapPin,
+        },
+    ];
+
     // Step validation
     const validateStep = (step: number): boolean => {
         switch (step) {
             case 1:
                 if (!phoneNumber.trim()) {
-                    toast.error("Please enter your phone number", {
+                    toast.error(t.auth.completeProfile?.enterPhoneNumber || "Please enter your phone number", {
                         position: "top-center",
                     });
                     return false;
                 }
                 if (phoneNumber.length < 10) {
-                    toast.error("Phone number must be at least 10 digits", {
+                    toast.error(t.auth.completeProfile?.phoneMinLength || "Phone number must be at least 10 digits", {
                         position: "top-center",
                     });
                     return false;
@@ -108,33 +108,33 @@ export default function CompleteProfileForm() {
             case 2:
                 if (isIndonesia(locationData.country)) {
                     if (!locationData.province || !locationData.city) {
-                        toast.error("Please select province and complete location", {
+                        toast.error(t.auth.completeProfile?.selectProvinceAndLocation || "Please select province and complete location", {
                             position: "top-center",
                         });
                         return false;
                     }
                 } else {
                     if (!locationData.city) {
-                        toast.error("Please enter your city", {
+                        toast.error(t.auth.completeProfile?.enterCity || "Please enter your city", {
                             position: "top-center",
                         });
                         return false;
                     }
                 }
                 if (!locationData.postal_code?.trim()) {
-                    toast.error("Please enter your postal code", {
+                    toast.error(t.auth.completeProfile?.enterPostalCode || "Please enter your postal code", {
                         position: "top-center",
                     });
                     return false;
                 }
                 if (!locationData.address?.trim()) {
-                    toast.error("Please enter your full address", {
+                    toast.error(t.auth.completeProfile?.enterFullAddress || "Please enter your full address", {
                         position: "top-center",
                     });
                     return false;
                 }
                 if (locationData.address.length < 10) {
-                    toast.error("Address must be at least 10 characters", {
+                    toast.error(t.auth.completeProfile?.addressMinLength || "Address must be at least 10 characters", {
                         position: "top-center",
                     });
                     return false;
@@ -188,7 +188,7 @@ export default function CompleteProfileForm() {
             // Refresh user context
             await refreshUser();
 
-            toast.success("Profile completed successfully!", {
+            toast.success(t.auth.completeProfile?.profileCompleted || "Profile completed successfully!", {
                 duration: 3000,
                 position: "top-center",
             });
@@ -205,7 +205,7 @@ export default function CompleteProfileForm() {
             }, 1000);
         } catch (err) {
             const error = err as Error;
-            toast.error(error.message || "Failed to complete profile", {
+            toast.error(error.message || t.auth.completeProfile?.failedToComplete || "Failed to complete profile", {
                 duration: 5000,
                 position: "top-center",
             });
@@ -225,23 +225,22 @@ export default function CompleteProfileForm() {
                             <div className="flex items-center gap-2">
                                 <CheckCircle className="h-5 w-5 text-green-500" />
                                 <span className="font-medium">
-                                    Welcome, {user?.first_name}!
+                                    {t.auth.completeProfile?.welcome || "Welcome"}, {user?.first_name}!
                                 </span>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                You&apos;re signed in with Google. Please complete your profile
-                                to start shopping.
+                                {t.auth.completeProfile?.signedInWithGoogle || "You're signed in with Google. Please complete your profile to start shopping."}
                             </p>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="phone_number">
-                                Phone Number <span className="text-destructive">*</span>
+                                {t.auth.completeProfile?.phoneNumber || "Phone Number"} <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="phone_number"
                                 type="tel"
-                                placeholder="e.g., 081234567890"
+                                placeholder={t.auth.completeProfile?.phonePlaceholder || "e.g., 081234567890"}
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 disabled={isSubmitting}
@@ -249,7 +248,7 @@ export default function CompleteProfileForm() {
                                 autoFocus
                             />
                             <p className="text-xs text-muted-foreground">
-                                We&apos;ll use this for order updates and delivery
+                                {t.auth.completeProfile?.phoneHelp || "We'll use this for order updates and delivery"}
                             </p>
                         </div>
                     </div>
@@ -303,7 +302,7 @@ export default function CompleteProfileForm() {
                                 transition={{ duration: 0.2 }}
                             >
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                                    Step {currentStep} of {STEPS.length}
+                                    {t.auth.completeProfile?.step || "Step"} {currentStep} {t.auth.completeProfile?.of || "of"} {STEPS.length}
                                 </div>
                                 <CardTitle className="text-2xl font-semibold">
                                     {STEPS[currentStep - 1].title}
@@ -341,7 +340,7 @@ export default function CompleteProfileForm() {
                                         className="flex-1"
                                     >
                                         <ArrowLeft className="mr-2 h-4 w-4" />
-                                        Back
+                                        {t.auth.completeProfile?.back || "Back"}
                                     </Button>
                                 )}
 
@@ -352,7 +351,7 @@ export default function CompleteProfileForm() {
                                         disabled={isSubmitting}
                                         className={cn("flex-1", currentStep === 1 && "w-full")}
                                     >
-                                        Continue
+                                        {t.auth.completeProfile?.continue || "Continue"}
                                         <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 ) : (
@@ -365,11 +364,11 @@ export default function CompleteProfileForm() {
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Saving...
+                                                {t.auth.completeProfile?.saving || "Saving..."}
                                             </>
                                         ) : (
                                             <>
-                                                Complete Profile
+                                                {t.auth.completeProfile?.completeProfile || "Complete Profile"}
                                                 <CheckCircle className="ml-2 h-4 w-4" />
                                             </>
                                         )}

@@ -6,27 +6,30 @@ import { Badge } from "@/components/ui/badge";
 import { Currency } from "@/types/payment";
 import { CheckCircle2 } from "lucide-react";
 import Image from "next/image";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface PaymentMethodDisplayProps {
     currency: Currency;
 }
 
-const paymentMethods = {
-    IDR: {
-        id: "MIDTRANS_SNAP",
-        name: "Midtrans",
-        description: "Pay with bank transfer, e-wallet, credit card, and more",
-        logo: "/images/payments/midtrans.png",
-    },
-    USD: {
-        id: "PAYPAL",
-        name: "PayPal",
-        description: "Pay securely with PayPal or credit/debit card",
-        logo: "/images/payments/paypal.png",
-    },
-};
-
 export function PaymentMethodDisplay({ currency }: PaymentMethodDisplayProps) {
+    const { t } = useTranslation();
+
+    const paymentMethods = {
+        IDR: {
+            id: "MIDTRANS_SNAP",
+            name: "Midtrans",
+            description: t.checkout?.paymentInfo?.midtrans || "Pay with bank transfer, e-wallet, credit card, and more",
+            logo: "/images/payments/midtrans.png",
+        },
+        USD: {
+            id: "PAYPAL",
+            name: "PayPal",
+            description: t.checkout?.paymentInfo?.paypal || "Pay securely with PayPal or credit/debit card",
+            logo: "/images/payments/paypal.png",
+        },
+    };
+
     const method = paymentMethods[currency];
 
     return (
@@ -64,7 +67,7 @@ export function PaymentMethodDisplay({ currency }: PaymentMethodDisplayProps) {
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-3 pl-20">
-                    💡 Payment method is automatically selected based on your shipping destination
+                    💡 {t.checkout?.paymentInfo?.autoSelected || "Payment method is automatically selected based on your shipping destination"}
                 </p>
             </CardContent>
         </Card>

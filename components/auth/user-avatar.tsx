@@ -25,9 +25,11 @@ import {
 import { getUserInitials } from "@/lib/auth-utils";
 import { getImageUrl } from "@/lib/image-utils";
 import Link from "next/link";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function UserAvatar() {
     const { user, logout } = useAuth();
+    const { t } = useTranslation();
 
     if (!user) return null;
 
@@ -96,13 +98,13 @@ export function UserAvatar() {
                         <DropdownMenuItem asChild>
                             <Link href="/user/orders" className="cursor-pointer">
                                 <ShoppingCart className="mr-2 h-4 w-4" />
-                                Orders
+                                {t.user.orders}
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/user/profile" className="cursor-pointer">
                                 <User className="mr-2 h-4 w-4" />
-                                Profile
+                                {t.user.profile}
                             </Link>
                         </DropdownMenuItem>
                     </>
@@ -114,31 +116,31 @@ export function UserAvatar() {
                         <DropdownMenuItem asChild>
                             <Link href="/admin/dashboard" className="cursor-pointer">
                                 <LayoutDashboard className="mr-2 h-4 w-4" />
-                                Dashboard
+                                {t.user.dashboard}
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/admin/users" className="cursor-pointer">
                                 <Users className="mr-2 h-4 w-4" />
-                                Users
+                                {t.user.users}
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/admin/products" className="cursor-pointer">
                                 <Package className="mr-2 h-4 w-4" />
-                                Products
+                                {t.user.products}
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/admin/orders" className="cursor-pointer">
                                 <ShoppingCart className="mr-2 h-4 w-4" />
-                                Orders
+                                {t.user.orders}
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/admin/settings" className="cursor-pointer">
                                 <Settings className="mr-2 h-4 w-4" />
-                                Settings
+                                {t.user.settings}
                             </Link>
                         </DropdownMenuItem>
                     </>
@@ -148,45 +150,45 @@ export function UserAvatar() {
                 {user.role === "OWNER" && (
                     <>
                         <DropdownMenuItem asChild>
-                            <Link href="/owner/dashboard" className="cursor-pointer">
-                                <LayoutDashboard className="mr-2 h-4 w-4" />
-                                Dashboard
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/owner/users" className="cursor-pointer">
-                                <Users className="mr-2 h-4 w-4" />
-                                Users
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/owner/products" className="cursor-pointer">
-                                <Package className="mr-2 h-4 w-4" />
-                                Products
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/owner/orders" className="cursor-pointer">
-                                <ShoppingCart className="mr-2 h-4 w-4" />
-                                Orders
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link href="/owner/settings" className="cursor-pointer">
-                                <Settings className="mr-2 h-4 w-4" />
-                                Settings
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
                             <Link href="/owner/analytics" className="cursor-pointer">
                                 <BarChart3 className="mr-2 h-4 w-4" />
-                                Analytics
+                                {t.user.analytics}
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Link href="/owner/promotions" className="cursor-pointer">
                                 <Tag className="mr-2 h-4 w-4" />
-                                Promotions
+                                {t.user.promotions}
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/owner/products" className="cursor-pointer">
+                                <Package className="mr-2 h-4 w-4" />
+                                {t.user.products}
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/owner/orders" className="cursor-pointer">
+                                <ShoppingCart className="mr-2 h-4 w-4" />
+                                {t.user.orders}
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/owner/settings" className="cursor-pointer">
+                                <Settings className="mr-2 h-4 w-4" />
+                                {t.user.settings}
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/owner/analytics" className="cursor-pointer">
+                                <BarChart3 className="mr-2 h-4 w-4" />
+                                {t.user.analytics}
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link href="/owner/promotions" className="cursor-pointer">
+                                <Tag className="mr-2 h-4 w-4" />
+                                {t.user.promotions}
                             </Link>
                         </DropdownMenuItem>
                     </>
@@ -199,7 +201,7 @@ export function UserAvatar() {
                     className="text-red-600 focus:text-red-300 hover:bg-red-300 hover:text-primary dark:hover:bg-red-300 dark:hover:text-primary  transition-colors "
                 >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    {t.user.logout}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

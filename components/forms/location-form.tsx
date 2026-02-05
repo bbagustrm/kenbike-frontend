@@ -13,7 +13,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown, Loader2, Globe } from "lucide-react"; // Tambahkan Globe jika ingin ikon
+import { Check, ChevronsUpDown, Loader2} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -23,6 +23,8 @@ import {
     type CountryCode
 } from "@/lib/countries";
 import {Textarea} from "@/components/ui/textarea";
+import { useTranslation } from "@/hooks/use-translation";
+
 
 // ... (Interface dan tipe data lainnya tetap sama) ...
 
@@ -97,6 +99,7 @@ const INDONESIA_PROVINCES = [
 ];
 
 export function LocationForm({ value, onChange, disabled, required }: LocationFormProps) {
+    const { t } = useTranslation();
     const [areas, setAreas] = useState<KodePosArea[]>([]);
     const [loadingAreas, setLoadingAreas] = useState(false);
     const [openAreaCombobox, setOpenAreaCombobox] = useState(false);
@@ -218,7 +221,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             {/* Country Type Selection (Domestic/International) */}
             <div className="space-y-2">
                 <Label htmlFor="country_type">
-                    Shipping Region {required && <span className="text-red-500">*</span>}
+                    {t.locationForm?.shippingRegion || "Shipping Region"} {required && <span className="text-red-500">*</span>}
                 </Label>
                 <Select
                     value={isDomestic ? "domestic" : "international"}
@@ -226,11 +229,11 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     disabled={disabled}
                 >
                     <SelectTrigger className="w-full rounded-md border border-border">
-                        <SelectValue placeholder="Select shipping region" />
+                        <SelectValue placeholder={t.locationForm?.selectShippingRegion || "Select shipping region"} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="domestic">Indonesia (Domestic)</SelectItem>
-                        <SelectItem value="international">International</SelectItem>
+                        <SelectItem value="domestic">{t.locationForm?.domestic || "Indonesia (Domestic)"}</SelectItem>
+                        <SelectItem value="international">{t.locationForm?.international || "International"}</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -259,7 +262,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     {/* Province */}
                     <div className="flex-1 space-y-2">
                         <Label htmlFor="province">
-                            Province {required && <span className="text-red-500">*</span>}
+                            {t.locationForm?.province || "Province"} {required && <span className="text-red-500">*</span>}
                         </Label>
                         <Select
                             value={value.province}
@@ -267,7 +270,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                             disabled={disabled}
                         >
                             <SelectTrigger className="w-full rounded-md border border-border">
-                                <SelectValue placeholder="Select province"/>
+                                <SelectValue placeholder={t.locationForm?.selectProvince || "Select province"}/>
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
                                 {INDONESIA_PROVINCES.map((province) => (
@@ -284,7 +287,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     {value.province && (
                         <div className="space-y-2">
                             <Label>
-                                City, District & Postal Code {required && <span className="text-red-500">*</span>}
+                                {t.locationForm?.cityDistrictPostal || "City, District & Postal Code"} {required && <span className="text-red-500">*</span>}
                             </Label>
                             <Popover open={openAreaCombobox} onOpenChange={setOpenAreaCombobox}>
                                 <PopoverTrigger asChild>
@@ -300,7 +303,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                                 {value.district}, {value.city}, {value.province} - {value.postal_code}
                                             </span>
                                         ) : (
-                                            <span className="text-muted-foreground">Search city or district...</span>
+                                            <span className="text-muted-foreground">{t.locationForm?.searchCityOrDistrict || "Search city or district..."}</span>
                                         )}
                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                     </Button>
@@ -308,7 +311,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                 <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                                     <Command shouldFilter={false}>
                                         <CommandInput
-                                            placeholder={`Type city or district in ${value.province}...`}
+                                            placeholder={`${t.locationForm?.typeCityOrDistrict || "Type city or district name"} (${value.province})...`}
                                             value={searchQuery}
                                             onValueChange={setSearchQuery}
                                         />
@@ -317,15 +320,15 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                                 {loadingAreas ? (
                                                     <div className="flex items-center justify-center py-6">
                                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                        <span className="text-sm text-muted-foreground">Searching...</span>
+                                                        <span className="text-sm text-muted-foreground">{t.locationForm?.searching || "Searching..."}</span>
                                                     </div>
                                                 ) : searchQuery.length < 3 ? (
                                                     <div className="py-6 text-center text-sm text-muted-foreground">
-                                                        Type at least 3 characters to search
+                                                        {t.locationForm?.typeAtLeast3Chars || "Type at least 3 characters to search"}
                                                     </div>
                                                 ) : (
                                                     <div className="py-6 text-center text-sm text-muted-foreground">
-                                                        No results found. Try different keywords.
+                                                        {t.locationForm?.noResultsFound || "No results found. Try different keywords."}
                                                     </div>
                                                 )}
                                             </CommandEmpty>
@@ -364,7 +367,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                                 </PopoverContent>
                             </Popover>
                             <p className="text-xs text-muted-foreground">
-                                Type city or district name (e.g., Semarang, Menteng, Denpasar)
+                                {t.locationForm?.typeCityOrDistrict || "Type city or district name"} (e.g., Semarang, Menteng, Denpasar)
                             </p>
                         </div>
                     )}
@@ -372,13 +375,13 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     {/* Display selected location */}
                     {value.city && value.district && value.postal_code && (
                         <div className="rounded-lg border bg-muted/50 p-3 space-y-1">
-                            <div className="text-sm font-medium">Selected Location:</div>
+                            <div className="text-sm font-medium">{t.locationForm?.selectedLocation || "Selected Location:"}</div>
                             <div className="text-sm text-muted-foreground">
-                                <div>Country: <span className="font-medium text-foreground">Indonesia ({value.country})</span></div>
-                                <div>Province: <span className="font-medium text-foreground">{value.province}</span></div>
-                                <div>City: <span className="font-medium text-foreground">{value.city}</span></div>
+                                <div>{t.locationForm?.country || "Country"}: <span className="font-medium text-foreground">Indonesia ({value.country})</span></div>
+                                <div>{t.locationForm?.province || "Province"}: <span className="font-medium text-foreground">{value.province}</span></div>
+                                <div>{t.locationForm?.city || "City"}: <span className="font-medium text-foreground">{value.city}</span></div>
                                 <div>District: <span className="font-medium text-foreground">{value.district}</span></div>
-                                <div>Postal Code: <span className="font-medium text-foreground">{value.postal_code}</span></div>
+                                <div>{t.locationForm?.postalCode || "Postal Code"}: <span className="font-medium text-foreground">{value.postal_code}</span></div>
                             </div>
                         </div>
                     )}
@@ -390,7 +393,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                 <>
                     <div className="space-y-2">
                         <Label htmlFor="country">
-                            Country {required && <span className="text-red-500">*</span>}
+                            {t.locationForm?.country || "Country"} {required && <span className="text-red-500">*</span>}
                         </Label>
                         <Select
                             value={value.country}
@@ -398,7 +401,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                             disabled={disabled}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select country" />
+                                <SelectValue placeholder={t.locationForm?.selectCountry || "Select country"} />
                             </SelectTrigger>
                             <SelectContent className="max-h-[300px]">
                                 {INTERNATIONAL_COUNTRIES.map((country) => (
@@ -412,7 +415,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="province_intl">State/Province</Label>
+                            <Label htmlFor="province_intl">{t.locationForm?.stateProvince || "State/Province"}</Label>
                             <Input
                                 id="province_intl"
                                 value={value.province || ""}
@@ -424,7 +427,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="city_intl">City</Label>
+                            <Label htmlFor="city_intl">{t.locationForm?.city || "City"}</Label>
                             <Input
                                 id="city_intl"
                                 value={value.city || ""}
@@ -437,7 +440,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="postal_code_intl">Postal/ZIP Code</Label>
+                        <Label htmlFor="postal_code_intl">{t.locationForm?.postalCode || "Postal/ZIP Code"}</Label>
                         <Input
                             id="postal_code_intl"
                             value={value.postal_code || ""}
@@ -450,7 +453,7 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
 
                     <div className="rounded-lg border bg-muted/50 p-3">
                         <div className="text-sm">
-                            <span className="text-muted-foreground">Selected Country: </span>
+                            <span className="text-muted-foreground">{t.locationForm?.country || "Country"}: </span>
                             <span className="font-medium">{getCountryName(value.country)} ({value.country})</span>
                         </div>
                     </div>
@@ -460,13 +463,13 @@ export function LocationForm({ value, onChange, disabled, required }: LocationFo
             {/* Full Address (Common for both) */}
             <div className="space-y-2 pt-4">
                 <Label htmlFor="address">
-                    Full Address {required && <span className="text-red-500">*</span>}
+                    {t.locationForm?.fullAddress || "Full Address"} {required && <span className="text-red-500">*</span>}
                 </Label>
                 <Textarea
                     id="address"
                     value={value.address || ""}
                     onChange={(e) => onChange({ ...value, address: e.target.value })}
-                    placeholder="Street address, building number, floor, etc."
+                    placeholder={t.locationForm?.addressPlaceholder || "Street address, building number, floor, etc."}
                     disabled={disabled}
                     maxLength={500}
                 />

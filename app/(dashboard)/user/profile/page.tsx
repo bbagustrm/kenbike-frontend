@@ -1,5 +1,4 @@
-// (dashboard)/user/profile/page.tsx
-
+// app/(dashboard)/user/profile/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -27,7 +26,7 @@ import { isIndonesia, type CountryCode } from "@/lib/countries";
 
 export default function ProfilePage() {
   const { user, isLoading, updateProfile, updatePassword, deleteProfileImage } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [profileData, setProfileData] = useState({
@@ -94,7 +93,7 @@ export default function ProfilePage() {
 
     const validation = validateImageFile(file, 2);
     if (!validation.valid) {
-      toast.error(validation.error || "Invalid file");
+      toast.error(validation.error || (locale === "id" ? "File tidak valid" : "Invalid file"));
       return;
     }
 
@@ -312,7 +311,9 @@ export default function ProfilePage() {
 
                   {/* Personal Information (Read-only) */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      {t.profile.sections?.personalInfo || (locale === "id" ? "Informasi Pribadi" : "Personal Information")}
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>{t.profile.fields.firstName}</Label>
@@ -335,7 +336,9 @@ export default function ProfilePage() {
 
                   {/* Contact Information */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      {t.profile.sections?.contactInfo || (locale === "id" ? "Informasi Kontak" : "Contact Information")}
+                    </h3>
                     <div className="space-y-2">
                       <Label htmlFor="phone_number">{t.profile.fields.phone}</Label>
                       <Input
@@ -353,7 +356,9 @@ export default function ProfilePage() {
 
                   {/* Location Information */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Location Information</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      {t.profile.sections?.locationInfo || (locale === "id" ? "Informasi Lokasi" : "Location Information")}
+                    </h3>
                     <LocationForm
                         value={locationData}
                         onChange={setLocationData}

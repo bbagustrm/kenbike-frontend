@@ -54,16 +54,12 @@ export default function CheckoutPage() {
             <div className="container mx-auto px-4 py-12">
                 <EmptyState
                     icon={<ShoppingCart className="h-10 w-10 text-muted-foreground" />}
-                    title={locale === "id" ? "Keranjang Kosong" : "Cart is Empty"}
-                    description={
-                        locale === "id"
-                            ? "Tambahkan produk ke keranjang untuk melanjutkan checkout"
-                            : "Add products to cart to continue checkout"
-                    }
+                    title={t.cart?.cartEmpty || (locale === "id" ? "Keranjang Kosong" : "Cart is Empty")}
+                    description={t.cart?.addProductsToCheckout || (locale === "id" ? "Tambahkan produk ke keranjang untuk melanjutkan checkout" : "Add products to cart to continue checkout")}
                 />
                 <div className="flex justify-center mt-6">
                     <Button onClick={() => router.push("/search")}>
-                        {locale === "id" ? "Belanja Sekarang" : "Shop Now"}
+                        {t.cart?.shopNow || (locale === "id" ? "Belanja Sekarang" : "Shop Now")}
                     </Button>
                 </div>
             </div>
@@ -81,12 +77,10 @@ export default function CheckoutPage() {
                     className="mb-8"
                 >
                     <h1 className="text-3xl font-bold mb-2">
-                        {locale === "id" ? "Checkout" : "Checkout"}
+                        {t.checkout?.title || "Checkout"}
                     </h1>
                     <p className="text-muted-foreground">
-                        {locale === "id"
-                            ? "Lengkapi informasi pengiriman dan pembayaran"
-                            : "Complete your shipping and payment information"}
+                        {t.checkout?.description || (locale === "id" ? "Lengkapi informasi pengiriman dan pembayaran" : "Complete your shipping and payment information")}
                     </p>
                 </motion.div>
 

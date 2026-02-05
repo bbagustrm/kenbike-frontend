@@ -40,7 +40,7 @@ import { ProductCard } from "@/components/product/product-card";
 import { ProductDetailSkeleton } from "@/components/product/product-detail-skeleton";
 import { ReviewList } from "@/components/review/review-list";
 import { DiscussionList } from "@/components/discussion/discussion-list";
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { CarouselApi } from "@/components/ui/carousel";
 
 const COLOR_MAP: Record<string, string> = {
@@ -182,7 +182,7 @@ export default function ProductDetailPage() {
 
     const handleAddToCart = async () => {
         if (!selectedVariant) {
-            toast.error(locale === "id" ? "Pilih varian terlebih dahulu" : "Please select a variant");
+            toast.error(t.productDetail?.selectVariantFirst || (locale === "id" ? "Pilih varian terlebih dahulu" : "Please select a variant"));
             return;
         }
         if (selectedVariant.stock === 0) {
@@ -204,8 +204,8 @@ export default function ProductDetailPage() {
         return (
             <div className="container mx-auto px-4 py-12">
                 <EmptyState
-                    title={locale === "id" ? "Produk tidak ditemukan" : "Product not found"}
-                    description={locale === "id" ? "Produk yang Anda cari tidak ada." : "The product you're looking for doesn't exist."}
+                    title={t.productDetail?.productNotFound || (locale === "id" ? "Produk tidak ditemukan" : "Product not found")}
+                    description={t.productDetail?.productNotFoundDesc || (locale === "id" ? "Produk yang Anda cari tidak ada." : "The product you're looking for doesn't exist.")}
                 />
             </div>
         );
@@ -218,11 +218,11 @@ export default function ProductDetailPage() {
                 <Breadcrumb className="mb-6">
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                            <BreadcrumbLink href="/">{t.productDetail?.breadcrumb?.home || t.nav.home}</BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/search">Product</BreadcrumbLink>
+                            <BreadcrumbLink href="/search">{t.productDetail?.breadcrumb?.product || t.nav.products}</BreadcrumbLink>
                         </BreadcrumbItem>
                         {product.category && (
                             <>
@@ -368,7 +368,7 @@ export default function ProductDetailPage() {
                                             <div>
                                                 <h3 className="font-bold text-lg">{product.promotion.name}</h3>
                                                 <p className="text-sm">
-                                                    {locale === "id" ? "Berlaku hingga" : "Valid until"}{" "}
+                                                    {t.productDetail?.validUntil || (locale === "id" ? "Berlaku hingga" : "Valid until")}{" "}
                                                     {new Date(product.promotion.endDate).toLocaleDateString(
                                                         locale === "id" ? "id-ID" : "en-US",
                                                         {
@@ -493,7 +493,7 @@ export default function ProductDetailPage() {
                             {/* Q&A / Discussions - Using DiscussionList Component */}
                             <AccordionItem value="discussions">
                                 <AccordionTrigger className="text-xl font-bold">
-                                    {locale === "id" ? "Tanya Jawab" : "Q&A"}
+                                    {t.productDetail?.qna || (locale === "id" ? "Tanya Jawab" : "Q&A")}
                                 </AccordionTrigger>
                                 <AccordionContent>
                                     <DiscussionList productId={product.id} productSlug={slug} />
@@ -516,7 +516,7 @@ export default function ProductDetailPage() {
                                     {isPreOrder && (
                                         <Badge className="bg-accent text-accent-foreground gap-1">
                                             <Clock className="w-3 h-3" />
-                                            Pre Order
+                                            {t.productDetail?.preOrder || "Pre Order"}
                                         </Badge>
                                     )}
                                     {product.tags?.map((tag) => (

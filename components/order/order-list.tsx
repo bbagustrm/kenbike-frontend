@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PackageOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface OrderListProps {
     orders: OrderListItem[];
@@ -15,6 +16,7 @@ interface OrderListProps {
 
 export function OrderList({ orders, isLoading }: OrderListProps) {
     const router = useRouter();
+    const { t, locale } = useTranslation();
 
     if (isLoading) {
         return (
@@ -30,11 +32,11 @@ export function OrderList({ orders, isLoading }: OrderListProps) {
         return (
             <EmptyState
                 icon={<PackageOpen className="h-10 w-10 text-muted-foreground" />}
-                title="No orders found"
-                description="You haven't placed any orders yet or no orders match your filters"
+                title={t.orders?.noOrders || (locale === "id" ? "Tidak ada pesanan ditemukan" : "No orders found")}
+                description={t.orders?.noOrdersDesc || (locale === "id" ? "Anda belum membuat pesanan atau tidak ada pesanan yang sesuai filter" : "You haven't placed any orders yet or no orders match your filters")}
             >
                 <Button onClick={() => router.push("/search")} className="mt-4">
-                    Start Shopping
+                    {t.orders?.startShopping || (locale === "id" ? "Mulai Belanja" : "Start Shopping")}
                 </Button>
             </EmptyState>
         );

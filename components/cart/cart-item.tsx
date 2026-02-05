@@ -37,7 +37,7 @@ export function CartItem({
     onRemove,
     isLoading = false,
 }: CartItemProps) {
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
     const [quantity, setQuantity] = useState(item.quantity);
 
     const handleQuantityChange = (newQuantity: number) => {
@@ -114,7 +114,7 @@ export function CartItem({
                     <div className="flex items-center gap-1 mt-1">
                         <AlertCircle className="w-3 h-3 text-red-500 dark:text-red-400" />
                         <span className="text-xs text-red-500 dark:text-red-400">
-                            {item.variant.stock === 0 ? 'Out of stock' : 'Unavailable'}
+                            {item.variant.stock === 0 ? t.cart.outOfStock : t.cart.unavailable}
                         </span>
                     </div>
                 )}
@@ -122,7 +122,7 @@ export function CartItem({
                 {/* Stock Info */}
                 {item.isAvailable && item.variant.stock < 10 && (
                     <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                        Only {item.variant.stock} left in stock
+                        {t.cart.onlyLeftInStock?.replace('{count}', String(item.variant.stock))}
                     </p>
                 )}
             </div>
@@ -177,7 +177,7 @@ export function CartItem({
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Remove from cart</p>
+                            <p>{t.cart.removeItem}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

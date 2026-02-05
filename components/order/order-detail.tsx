@@ -3,6 +3,7 @@
 
 import Image from "next/image";
 import { Order } from "@/types/order";
+import { useTranslation } from "@/hooks/use-translation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,8 @@ interface OrderDetailProps {
 }
 
 export function OrderDetail({ order }: OrderDetailProps) {
+    const { t, locale } = useTranslation();
+
     return (
         <div className="space-y-6">
             {/* Order Items */}
@@ -21,7 +24,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Package className="h-5 w-5" />
-                        Order Items
+                        {t.orders?.detail?.orderItems || (locale === "id" ? "Item Pesanan" : "Order Items")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -90,7 +93,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <MapPin className="h-5 w-5" />
-                        Shipping Address
+                        {t.orders?.detail?.shippingAddress || (locale === "id" ? "Alamat Pengiriman" : "Shipping Address")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -118,7 +121,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             <>
                                 <Separator />
                                 <div className="text-sm">
-                                    <p className="font-medium mb-1">Delivery Notes:</p>
+                                    <p className="font-medium mb-1">
+                                        {t.orders?.detail?.deliveryNotes || (locale === "id" ? "Catatan Pengiriman" : "Delivery Notes")}:
+                                    </p>
                                     <p className="text-muted-foreground">{order.shipping.notes}</p>
                                 </div>
                             </>
@@ -133,30 +138,38 @@ export function OrderDetail({ order }: OrderDetailProps) {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Truck className="h-5 w-5" />
-                            Shipping Method
+                            {t.orders?.detail?.shippingMethod || (locale === "id" ? "Metode Pengiriman" : "Shipping Method")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Type:</span>
+                                <span className="text-muted-foreground">
+                                    {t.orders?.detail?.type || (locale === "id" ? "Tipe" : "Type")}:
+                                </span>
                                 <span className="font-medium capitalize">
                                     {order.shipping.type?.toLowerCase() ?? "-"}
                                 </span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Method:</span>
+                                <span className="text-muted-foreground">
+                                    {t.orders?.detail?.method || (locale === "id" ? "Metode" : "Method")}:
+                                </span>
                                 <span className="font-medium">{order.shipping.method}</span>
                             </div>
                             {order.shipping.courier && (
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Courier:</span>
+                                    <span className="text-muted-foreground">
+                                        {t.orders?.detail?.courier || (locale === "id" ? "Kurir" : "Courier")}:
+                                    </span>
                                     <span className="font-medium">{order.shipping.courier}</span>
                                 </div>
                             )}
                             {order.shipping.service && (
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Service:</span>
+                                    <span className="text-muted-foreground">
+                                        {t.orders?.detail?.service || (locale === "id" ? "Layanan" : "Service")}:
+                                    </span>
                                     <span className="font-medium">{order.shipping.service}</span>
                                 </div>
                             )}
@@ -164,7 +177,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                                 <>
                                     <Separator />
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Tracking Number:</span>
+                                        <span className="text-muted-foreground">
+                                            {t.orders?.detail?.trackingNumber || (locale === "id" ? "Nomor Resi" : "Tracking Number")}:
+                                        </span>
                                         <span className="font-mono font-semibold">
                                             {order.tracking_number}
                                         </span>
@@ -182,13 +197,15 @@ export function OrderDetail({ order }: OrderDetailProps) {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <CreditCard className="h-5 w-5" />
-                            Payment Information
+                            {t.orders?.detail?.paymentInfo || (locale === "id" ? "Informasi Pembayaran" : "Payment Information")}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Payment Method:</span>
+                                <span className="text-muted-foreground">
+                                    {t.orders?.detail?.paymentMethod || (locale === "id" ? "Metode Pembayaran" : "Payment Method")}:
+                                </span>
                                 <span className="font-medium">
                                     {order.payment_method === "MIDTRANS_SNAP"
                                         ? "Midtrans"
@@ -199,15 +216,19 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             </div>
                             {order.payment_id && (
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Payment ID:</span>
+                                    <span className="text-muted-foreground">
+                                        {t.orders?.detail?.paymentId || (locale === "id" ? "ID Pembayaran" : "Payment ID")}:
+                                    </span>
                                     <span className="font-mono text-xs">{order.payment_id}</span>
                                 </div>
                             )}
                             {order.paid_at && (
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Paid At:</span>
+                                    <span className="text-muted-foreground">
+                                        {t.orders?.detail?.paidAt || (locale === "id" ? "Dibayar pada" : "Paid at")}:
+                                    </span>
                                     <span className="font-medium">
-                                        {new Date(order.paid_at).toLocaleString()}
+                                        {new Date(order.paid_at).toLocaleString(locale === "id" ? "id-ID" : "en-US")}
                                     </span>
                                 </div>
                             )}
@@ -219,12 +240,16 @@ export function OrderDetail({ order }: OrderDetailProps) {
             {/* Order Summary */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Order Summary</CardTitle>
+                    <CardTitle>
+                        {t.orders?.detail?.orderSummary || (locale === "id" ? "Ringkasan Pesanan" : "Order Summary")}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Subtotal</span>
+                            <span className="text-muted-foreground">
+                                {t.orders?.detail?.subtotal || (locale === "id" ? "Subtotal" : "Subtotal")}
+                            </span>
                             <span className="font-medium">
                                 {formatCurrency(order.subtotal, order.currency)}
                             </span>
@@ -232,7 +257,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
 
                         {order.discount > 0 && (
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Discount</span>
+                                <span className="text-muted-foreground">
+                                    {t.orders?.detail?.discount || (locale === "id" ? "Diskon" : "Discount")}
+                                </span>
                                 <span className="font-medium text-green-600">
                                     -{formatCurrency(order.discount, order.currency)}
                                 </span>
@@ -240,7 +267,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         )}
 
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Shipping</span>
+                            <span className="text-muted-foreground">
+                                {t.orders?.detail?.shipping || (locale === "id" ? "Pengiriman" : "Shipping")}
+                            </span>
                             <span className="font-medium">
                                 {formatCurrency(order.shipping_cost, order.currency)}
                             </span>
@@ -248,7 +277,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
 
                         {order.tax > 0 && (
                             <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Tax</span>
+                                <span className="text-muted-foreground">
+                                    {t.orders?.detail?.tax || (locale === "id" ? "Pajak" : "Tax")}
+                                </span>
                                 <span className="font-medium">
                                     {formatCurrency(order.tax, order.currency)}
                                 </span>
@@ -258,7 +289,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         <Separator />
 
                         <div className="flex justify-between">
-                            <span className="font-semibold">Total</span>
+                            <span className="font-semibold">
+                                {t.orders?.detail?.total || (locale === "id" ? "Total" : "Total")}
+                            </span>
                             <span className="font-bold text-lg">
                                 {formatCurrency(order.total, order.currency)}
                             </span>
@@ -266,7 +299,8 @@ export function OrderDetail({ order }: OrderDetailProps) {
 
                         {order.exchange_rate && order.currency === "USD" && (
                             <p className="text-xs text-muted-foreground text-center">
-                                Exchange rate: 1 USD = {order.exchange_rate.toFixed(2)} IDR
+                                {(t.orders?.detail?.exchangeRate || "Exchange rate: 1 USD = {rate} IDR")
+                                    .replace("{rate}", order.exchange_rate.toFixed(2))}
                             </p>
                         )}
                     </div>

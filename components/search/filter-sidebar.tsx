@@ -1,7 +1,8 @@
+// components/search/filter-sidebar.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import {Minus} from "lucide-react";
+import { Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -54,11 +55,11 @@ const PRICE_RANGES = {
 };
 
 export function FilterSidebar({
-    filters,
-    onFilterChange,
-    className,
-    onClose,
-}: FilterSidebarProps) {
+                                  filters,
+                                  onFilterChange,
+                                  className,
+                                  onClose,
+                              }: FilterSidebarProps) {
     const { t, locale } = useTranslation();
     const currency = locale === "id" ? "IDR" : "USD";
     const priceConfig = PRICE_RANGES[currency];
@@ -171,7 +172,7 @@ export function FilterSidebar({
                             variant="outline"
                             size="sm"
                             onClick={handleClearFilters}
-                            className="w-full text-xs my-2 py-0 px-2.5 mb-4 "
+                            className="w-full text-xs my-2 py-0 px-2.5 mb-4"
                         >
                             <Minus />
                             {t.search.clearFilters}
@@ -189,7 +190,7 @@ export function FilterSidebar({
             ) : (
                 <Accordion
                     type="multiple"
-                    defaultValue={["category","promotion", "price"]}
+                    defaultValue={["category", "promotion", "price"]}
                     className="px-2 md:px-0 py-0"
                 >
                     {/* Category */}
@@ -206,7 +207,7 @@ export function FilterSidebar({
                                 >
                                     <div className="flex items-center space-x-3">
                                         <RadioGroupItem value="all" id="category-all" />
-                                        <Label htmlFor="category-all" className=" cursor-pointer font-normal">
+                                        <Label htmlFor="category-all" className="cursor-pointer font-normal">
                                             {t.search.allCategories}
                                         </Label>
                                     </div>
@@ -222,7 +223,7 @@ export function FilterSidebar({
                                             />
                                             <Label
                                                 htmlFor={`category-${category.id}`}
-                                                className=" cursor-pointer font-normal"
+                                                className="cursor-pointer font-normal"
                                             >
                                                 {category.name}
                                             </Label>
@@ -236,7 +237,7 @@ export function FilterSidebar({
                     {/* Tags */}
                     {tags.length > 0 && (
                         <AccordionItem value="tag" className="border-0">
-                            <AccordionTrigger className=" font-semibold pt-3 pb-2 px-4 cursor-pointer hover:no-underline">
+                            <AccordionTrigger className="font-semibold pt-3 pb-2 px-4 cursor-pointer hover:no-underline">
                                 {t.search.tags}
                             </AccordionTrigger>
                             <AccordionContent className="p-4">
@@ -253,7 +254,7 @@ export function FilterSidebar({
                                     </div>
 
                                     {tags.map((tag) => (
-                                        <div key={tag.id} className="flex items-center space-x-2 ">
+                                        <div key={tag.id} className="flex items-center space-x-2">
                                             <RadioGroupItem
                                                 value={tag.slug}
                                                 id={`tag-${tag.id}`}
@@ -284,14 +285,14 @@ export function FilterSidebar({
                                     className="gap-4 px-4"
                                 >
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="all" id="tag-all" />
-                                        <Label htmlFor="tag-all" className="font-normal cursor-pointer">
+                                        <RadioGroupItem value="all" id="promotion-all" />
+                                        <Label htmlFor="promotion-all" className="font-normal cursor-pointer">
                                             {t.search.allPromotions}
                                         </Label>
                                     </div>
 
                                     {promotions.map((promotion) => (
-                                        <div key={promotion.id} className="flex items-center space-x-2 ">
+                                        <div key={promotion.id} className="flex items-center space-x-2">
                                             <RadioGroupItem
                                                 value={promotion.id}
                                                 id={`promotion-${promotion.id}`}
@@ -334,7 +335,7 @@ export function FilterSidebar({
 
                     {/* Available Only */}
                     <div className="flex items-center justify-between p-4">
-                        <Label className=" font-semibold cursor-pointer hover:no-underline">
+                        <Label className="font-semibold cursor-pointer hover:no-underline">
                             {t.search.availableOnly}
                         </Label>
                         <Switch

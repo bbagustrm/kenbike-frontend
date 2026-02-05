@@ -1,3 +1,4 @@
+// app/(public)/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -136,10 +137,10 @@ export default function HomePage() {
                             >
                                 <div>
                                     <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
-                                        Hot Deals & Trending Products
+                                        {t.home?.hotDeals || "Hot Deals & Trending Products"}
                                     </h2>
                                     <p className="text-xs md:text-sm text-muted-foreground">
-                                        Special promotions and trending products this week
+                                        {t.home?.hotDealsDescription || "Special promotions and trending products this week"}
                                     </p>
                                 </div>
                                 {!isLoadingMerged && mergedProducts.length > 0 && (
@@ -173,7 +174,7 @@ export default function HomePage() {
                         ) : (
                             <EmptyState
                                 title={t.search.noResults}
-                                description="No promotions available at the moment"
+                                description={t.home?.noPromotionsAvailable || "No promotions available at the moment"}
                             />
                         )}
                     </div>
@@ -193,10 +194,10 @@ export default function HomePage() {
                             >
                                 <div>
                                     <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
-                                        Shop by Category
+                                        {t.home?.shopByCategory || "Shop by Category"}
                                     </h2>
                                     <p className="text-xs md:text-sm text-muted-foreground">
-                                        Explore our wide range of bike components
+                                        {t.home?.shopByCategoryDescription || "Explore our wide range of bike components"}
                                     </p>
                                 </div>
                             </motion.div>
@@ -226,7 +227,7 @@ export default function HomePage() {
                                     {t.home.featuredTitle}
                                 </h2>
                                 <p className="text-xs md:text-sm text-muted-foreground">
-                                    Handpicked products just for you
+                                    {t.home?.handpickedForYou || "Handpicked products just for you"}
                                 </p>
                             </div>
                             {!isLoadingFeatured && featuredProducts.length > 0 && (
@@ -258,7 +259,7 @@ export default function HomePage() {
                     ) : (
                         <EmptyState
                             title={t.search.noResults}
-                            description="Belum ada produk unggulan saat ini"
+                            description={t.home?.noFeaturedProducts || "No featured products at the moment"}
                         />
                     )}
                 </div>

@@ -2,6 +2,7 @@
 "use client";
 
 import { Order, OrderStatus } from "@/types/order";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import {
     Clock,
@@ -20,10 +21,12 @@ interface TimelineStep {
     status: OrderStatus;
     label: string;
     icon: typeof Clock;
-    date?: string | null;  // ✅ FIX: Accept null
+    date?: string | null;
 }
 
 export function OrderTimeline({ order }: OrderTimelineProps) {
+    const { t, locale } = useTranslation();
+
     // Handle both flat and nested timestamps
     const getTimestamp = (flat?: string | null, nested?: string | null): string | null | undefined => {
         return flat ?? nested;
@@ -32,36 +35,36 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
     const steps: TimelineStep[] = [
         {
             status: "PENDING",
-            label: "Order Placed",
+            label: t.orders?.timeline?.orderPlaced || (locale === "id" ? "Pesanan Dibuat" : "Order Placed"),
             icon: Clock,
             date: getTimestamp(order.created_at, order.timestamps?.created_at),
         },
         {
             status: "PAID",
-            label: "Payment Confirmed",
+            label: t.orders?.timeline?.paymentConfirmed || (locale === "id" ? "Pembayaran Dikonfirmasi" : "Payment Confirmed"),
             icon: CheckCircle2,
             date: getTimestamp(order.paid_at, order.timestamps?.paid_at),
         },
         {
             status: "PROCESSING",
-            label: "Processing",
+            label: t.orders?.timeline?.processing || (locale === "id" ? "Sedang Diproses" : "Processing"),
             icon: Package,
         },
         {
             status: "SHIPPED",
-            label: "Shipped",
+            label: t.orders?.timeline?.shipped || (locale === "id" ? "Dikirim" : "Shipped"),
             icon: Truck,
             date: getTimestamp(order.shipped_at, order.timestamps?.shipped_at),
         },
         {
             status: "DELIVERED",
-            label: "Delivered",
+            label: t.orders?.timeline?.delivered || (locale === "id" ? "Terkirim" : "Delivered"),
             icon: Home,
             date: getTimestamp(order.delivered_at, order.timestamps?.delivered_at),
         },
         {
             status: "COMPLETED",
-            label: "Completed",
+            label: t.orders?.timeline?.completed || (locale === "id" ? "Selesai" : "Completed"),
             icon: CircleCheck,
             date: getTimestamp(order.completed_at, order.timestamps?.completed_at),
         },
@@ -85,11 +88,15 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
             order.timestamps?.canceled_at
         ) || order.updated_at || order.timestamps?.updated_at || order.created_at;
 
+        const statusText = order.status.toLowerCase();
+        const cancelledText = (t.orders?.timeline?.cancelledOn || "Order {status} on")
+            .replace("{status}", statusText);
+
         return (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm font-medium text-red-800">
-                    Order {order.status.toLowerCase()} on{" "}
-                    {new Date(cancelDate).toLocaleDateString()}
+                    {cancelledText}{" "}
+                    {new Date(cancelDate).toLocaleDateString(locale === "id" ? "id-ID" : "en-US")}
                 </p>
             </div>
         );
@@ -140,7 +147,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                             </p>
                             {step.date && isCompleted && (
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {new Date(step.date).toLocaleDateString("en-US", {
+                                    {new Date(step.date).toLocaleDateString(locale === "id" ? "id-ID" : "en-US", {
                                         year: "numeric",
                                         month: "short",
                                         day: "numeric",
@@ -150,7 +157,9 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                                 </p>
                             )}
                             {isCurrent && (
-                                <p className="text-xs text-primary mt-1">Current Status</p>
+                                <p className="text-xs text-primary mt-1">
+                                    {t.orders?.timeline?.currentStatus || (locale === "id" ? "Status Saat Ini" : "Current Status")}
+                                </p>
                             )}
                         </div>
                     </div>

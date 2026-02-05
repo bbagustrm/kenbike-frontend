@@ -45,7 +45,7 @@ export default function OrderDetailPage() {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
     const orderNumber = params.orderNumber as string;
 
     const [order, setOrder] = useState<Order | null>(null);
@@ -91,11 +91,11 @@ export default function OrderDetailPage() {
             }
         } catch (error) {
             console.error("Failed to fetch order:", error);
-            toast.error("Failed to load order details");
+            toast.error(locale === "id" ? "Gagal memuat detail pesanan" : "Failed to load order details");
         } finally {
             setIsLoading(false);
         }
-    }, [orderNumber]);
+    }, [orderNumber, locale]);
 
     // Fetch pending reviews for this order
     const fetchPendingReviews = async () => {
@@ -126,7 +126,7 @@ export default function OrderDetailPage() {
             setPaymentStatus(status.payment_status);
 
             if (status.payment_status === "PAID") {
-                toast.success("Payment confirmed!");
+                toast.success(t.orders?.payment?.paymentSuccess || (locale === "id" ? "Pembayaran berhasil!" : "Payment confirmed!"));
                 fetchOrder();
             }
         } catch (error) {
@@ -134,7 +134,7 @@ export default function OrderDetailPage() {
         } finally {
             setIsPolling(false);
         }
-    }, [order, orderNumber, fetchOrder]);
+    }, [order, orderNumber, fetchOrder, t, locale]);
 
     // Handle PayPal callback
     const handlePayPalCallback = useCallback(async () => {
@@ -146,7 +146,7 @@ export default function OrderDetailPage() {
         paypalCaptureAttempted.current = true;
 
         if (payment === 'cancelled') {
-            toast.error("Payment was cancelled");
+            toast.error(t.orders?.payment?.paymentCancelled || (locale === "id" ? "Pembayaran dibatalkan" : "Payment was cancelled"));
             setPaypalCallbackProcessed(true);
             router.replace(`/user/orders/${orderNumber}`);
             return;
@@ -161,14 +161,14 @@ export default function OrderDetailPage() {
                     paypal_order_id: token,
                 });
 
-                toast.success("Payment successful! Thank you for your order.");
+                toast.success(t.orders?.payment?.paymentSuccess || (locale === "id" ? "Pembayaran berhasil! Terima kasih atas pesanan Anda." : "Payment successful! Thank you for your order."));
                 setPaymentStatus('PAID');
                 await fetchOrder();
             } catch (error: unknown) {
-                const errorMessage = error instanceof Error ? error.message : "Failed to capture PayPal payment";
+                const errorMessage = error instanceof Error ? error.message : (locale === "id" ? "Gagal memproses pembayaran PayPal" : "Failed to capture PayPal payment");
 
                 if (errorMessage.includes('already') || errorMessage.includes('PAID')) {
-                    toast.success("Payment already confirmed!");
+                    toast.success(t.orders?.payment?.paymentConfirmed || (locale === "id" ? "Pembayaran sudah dikonfirmasi!" : "Payment already confirmed!"));
                     setPaymentStatus('PAID');
                     await fetchOrder();
                 } else {
@@ -180,17 +180,22 @@ export default function OrderDetailPage() {
                 router.replace(`/user/orders/${orderNumber}`);
             }
         }
-    }, [searchParams, orderNumber, fetchOrder, router]);
+    }, [searchParams, orderNumber, fetchOrder, router, t, locale]);
 
     // Handle review submission success
     const handleReviewSuccess = (productId: string) => {
         setReviewedProductIds((prev) => new Set([...prev, productId]));
         setPendingReviews((prev) => prev.filter((p) => p.product.id !== productId));
         setExpandedReviewForm(null);
+
+        // Get product name for toast message
+        const product = pendingReviews.find(p => p.product.id === productId);
+        const productName = product?.product.name || "";
+
         toast.success(
-            locale === "id"
-                ? "Ulasan berhasil dikirim! Terima kasih."
-                : "Review submitted successfully! Thank you."
+            (t.orders?.review?.reviewSubmitted || (locale === "id"
+                ? "Ulasan untuk {product} berhasil dikirim!"
+                : "Review for {product} submitted!")).replace("{product}", productName)
         );
     };
 
@@ -223,9 +228,13 @@ export default function OrderDetailPage() {
             <div className="min-h-screen flex flex-col items-center justify-center gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">Processing Payment...</h2>
+                    <h2 className="text-xl font-semibold mb-2">
+                        {t.orders?.payment?.processingPayment || (locale === "id" ? "Memproses Pembayaran..." : "Processing Payment...")}
+                    </h2>
                     <p className="text-muted-foreground">
-                        Please wait while we confirm your PayPal payment.
+                        {t.orders?.payment?.processingPaymentDesc || (locale === "id"
+                            ? "Mohon tunggu sementara kami mengonfirmasi pembayaran PayPal Anda."
+                            : "Please wait while we confirm your PayPal payment.")}
                     </p>
                 </div>
             </div>
@@ -244,12 +253,16 @@ export default function OrderDetailPage() {
         return (
             <div className="container mx-auto px-4 py-12 text-center">
                 <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                    {t.orders?.notFound?.title || (locale === "id" ? "Pesanan Tidak Ditemukan" : "Order Not Found")}
+                </h2>
                 <p className="text-muted-foreground mb-6">
-                    The order you&apos;re looking for doesn&apos;t exist or has been deleted.
+                    {t.orders?.notFound?.description || (locale === "id"
+                        ? "Pesanan yang Anda cari tidak ada atau telah dihapus."
+                        : "The order you're looking for doesn't exist or has been deleted.")}
                 </p>
                 <Button onClick={() => router.push("/user/orders")}>
-                    View All Orders
+                    {t.orders?.notFound?.viewAllOrders || (locale === "id" ? "Lihat Semua Pesanan" : "View All Orders")}
                 </Button>
             </div>
         );
@@ -272,7 +285,7 @@ export default function OrderDetailPage() {
                     className="mb-4"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    {locale === "id" ? "Kembali ke Pesanan" : "Back to Orders"}
+                    {t.orders?.backToOrders || (locale === "id" ? "Kembali ke Pesanan" : "Back to Orders")}
                 </Button>
 
                 {/* Header */}
@@ -281,10 +294,10 @@ export default function OrderDetailPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                             <div>
                                 <h1 className="text-3xl font-bold mb-2">
-                                    {locale === "id" ? "Pesanan" : "Order"} #{order.order_number}
+                                    {t.orders?.order || (locale === "id" ? "Pesanan" : "Order")} #{order.order_number}
                                 </h1>
                                 <p className="text-muted-foreground">
-                                    {locale === "id" ? "Dibuat pada" : "Placed on"}{" "}
+                                    {t.orders?.placedOn || (locale === "id" ? "Dibuat pada" : "Placed on")}{" "}
                                     {new Date(order.created_at).toLocaleDateString(
                                         locale === "id" ? "id-ID" : "en-US",
                                         {
@@ -317,12 +330,12 @@ export default function OrderDetailPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <CreditCard className="h-5 w-5" />
-                                    {locale === "id" ? "Selesaikan Pembayaran" : "Complete Payment"}
+                                    {t.orders?.payment?.completePayment || (locale === "id" ? "Selesaikan Pembayaran" : "Complete Payment")}
                                 </CardTitle>
                                 <CardDescription>
-                                    {locale === "id"
+                                    {t.orders?.payment?.completePaymentDesc || (locale === "id"
                                         ? "Pilih metode pembayaran untuk menyelesaikan pesanan"
-                                        : "Choose your payment method to complete this order"}
+                                        : "Choose your payment method to complete this order")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -330,7 +343,7 @@ export default function OrderDetailPage() {
                                 <div className="bg-muted p-4 rounded-lg">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-muted-foreground">
-                                            {locale === "id" ? "Total Pembayaran" : "Total Amount"}
+                                            {t.orders?.payment?.totalAmount || (locale === "id" ? "Total Pembayaran" : "Total Amount")}
                                         </span>
                                         <span className="text-2xl font-bold">
                                             {formatCurrency(order.total, order.currency)}
@@ -370,19 +383,19 @@ export default function OrderDetailPage() {
                                         {isPolling ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                {locale === "id" ? "Memeriksa Status..." : "Checking Status..."}
+                                                {t.orders?.payment?.checkingStatus || (locale === "id" ? "Memeriksa Status..." : "Checking Status...")}
                                             </>
                                         ) : (
                                             <>
                                                 <RefreshCw className="h-4 w-4 mr-2" />
-                                                {locale === "id" ? "Perbarui Status Pembayaran" : "Refresh Payment Status"}
+                                                {t.orders?.payment?.refreshStatus || (locale === "id" ? "Perbarui Status Pembayaran" : "Refresh Payment Status")}
                                             </>
                                         )}
                                     </Button>
                                     <p className="text-xs text-muted-foreground text-center mt-2">
-                                        {locale === "id"
+                                        {t.orders?.payment?.statusAutoUpdate || (locale === "id"
                                             ? "Status diperbarui otomatis setiap 5 detik"
-                                            : "Status updates automatically every 5 seconds"}
+                                            : "Status updates automatically every 5 seconds")}
                                     </p>
                                 </div>
                             </CardContent>
@@ -402,7 +415,7 @@ export default function OrderDetailPage() {
                                     <div className="flex items-center gap-2">
                                         <Star className="h-5 w-5 text-yellow-500" />
                                         <CardTitle>
-                                            {locale === "id" ? "Tulis Ulasan" : "Write Reviews"}
+                                            {t.orders?.review?.writeReviews || (locale === "id" ? "Tulis Ulasan" : "Write Reviews")}
                                         </CardTitle>
                                         <Badge variant="secondary">{pendingReviews.length}</Badge>
                                     </div>
@@ -413,9 +426,9 @@ export default function OrderDetailPage() {
                                     )}
                                 </div>
                                 <CardDescription>
-                                    {locale === "id"
+                                    {t.orders?.review?.writeReviewsDesc || (locale === "id"
                                         ? "Bagikan pengalaman Anda dengan produk yang dibeli"
-                                        : "Share your experience with the products you purchased"}
+                                        : "Share your experience with the products you purchased")}
                                 </CardDescription>
                             </CardHeader>
 
@@ -440,9 +453,9 @@ export default function OrderDetailPage() {
                                                         >
                                                             <CheckCircle2 className="h-5 w-5 text-green-600" />
                                                             <span className="font-medium">
-                                                                {locale === "id"
-                                                                    ? `Ulasan untuk ${item.product.name} berhasil dikirim!`
-                                                                    : `Review for ${item.product.name} submitted!`}
+                                                                {(t.orders?.review?.reviewSubmitted || (locale === "id"
+                                                                    ? "Ulasan untuk {product} berhasil dikirim!"
+                                                                    : "Review for {product} submitted!")).replace("{product}", item.product.name)}
                                                             </span>
                                                         </div>
                                                     );
@@ -471,9 +484,9 @@ export default function OrderDetailPage() {
                                                                     {item.product.name}
                                                                 </p>
                                                                 <p className="text-sm text-muted-foreground">
-                                                                    {locale === "id"
+                                                                    {t.orders?.review?.clickToWriteReview || (locale === "id"
                                                                         ? "Klik untuk menulis ulasan"
-                                                                        : "Click to write a review"}
+                                                                        : "Click to write a review")}
                                                                 </p>
                                                             </div>
 
@@ -481,7 +494,7 @@ export default function OrderDetailPage() {
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <Badge variant="outline" className="gap-1">
                                                                     <Star className="w-3 h-3" />
-                                                                    {locale === "id" ? "Tulis Ulasan" : "Write Review"}
+                                                                    {t.orders?.review?.writeReview || (locale === "id" ? "Tulis Ulasan" : "Write Review")}
                                                                 </Badge>
                                                                 {isExpanded ? (
                                                                     <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -538,12 +551,12 @@ export default function OrderDetailPage() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
-                                        {locale === "id" ? "Timeline Pesanan" : "Order Timeline"}
+                                        {t.orders?.detail?.timeline || (locale === "id" ? "Timeline Pesanan" : "Order Timeline")}
                                     </CardTitle>
                                     <CardDescription>
-                                        {locale === "id"
+                                        {t.orders?.detail?.timelineDesc || (locale === "id"
                                             ? "Pantau progres pesanan Anda"
-                                            : "Track the progress of your order"}
+                                            : "Track the progress of your order")}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>

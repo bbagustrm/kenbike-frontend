@@ -68,11 +68,11 @@ export function CheckoutForm() {
         const newErrors: string[] = [];
 
         if (!isAddressComplete) {
-            newErrors.push("Please complete your shipping address");
+            newErrors.push(t.checkout?.pleaseCompleteAddress || "Please complete your shipping address");
         }
 
         if (!selectedShipping) {
-            newErrors.push("Please select a shipping method");
+            newErrors.push(t.checkout?.pleaseSelectShipping || "Please select a shipping method");
         }
 
         setErrors(newErrors);
@@ -81,13 +81,13 @@ export function CheckoutForm() {
 
     const handleCreateOrder = async () => {
         if (!validateForm()) {
-            toast.error("Please fix the errors before continuing");
+            toast.error(t.checkout?.pleaseFixErrors || "Please fix the errors before continuing");
             window.scrollTo({ top: 0, behavior: "smooth" });
             return;
         }
 
         if (!selectedShipping || !user) {
-            toast.error("Missing required information");
+            toast.error(t.checkout?.missingInfo || "Missing required information");
             return;
         }
 
@@ -150,7 +150,9 @@ export function CheckoutForm() {
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
-                                <p className="font-semibold mb-2">Please fix the following:</p>
+                                <p className="font-semibold mb-2">
+                                    {locale === "id" ? "Mohon perbaiki yang berikut:" : "Please fix the following:"}
+                                </p>
                                 <ul className="list-disc list-inside space-y-1">
                                     {errors.map((error, index) => (
                                         <li key={index}>{error}</li>
@@ -165,9 +167,9 @@ export function CheckoutForm() {
                 <ScrollReveal delay={0.1}>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Shipping Address</CardTitle>
+                            <CardTitle>{t.checkout?.shippingAddress || "Shipping Address"}</CardTitle>
                             <CardDescription>
-                                Your order will be delivered to this address
+                                {t.checkout?.shippingAddressDesc || "Your order will be delivered to this address"}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -180,9 +182,9 @@ export function CheckoutForm() {
                 <ScrollReveal delay={0.2}>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Shipping Method</CardTitle>
+                            <CardTitle>{t.checkout?.shippingMethod || "Shipping Method"}</CardTitle>
                             <CardDescription>
-                                Choose your preferred delivery option
+                                {t.checkout?.shippingMethodDesc || "Choose your preferred delivery option"}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -202,9 +204,9 @@ export function CheckoutForm() {
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle>Payment Method</CardTitle>
+                                    <CardTitle>{t.checkout?.paymentMethod || "Payment Method"}</CardTitle>
                                     <CardDescription>
-                                        Auto-selected based on your location
+                                        {t.checkout?.paymentMethodDesc || "Auto-selected based on your location"}
                                     </CardDescription>
                                 </div>
                                 <Badge variant="outline" className="gap-1">
@@ -230,9 +232,9 @@ export function CheckoutForm() {
                     <div className="sticky top-24">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Order Summary</CardTitle>
+                                <CardTitle>{t.checkout?.orderSummary || "Order Summary"}</CardTitle>
                                 <CardDescription>
-                                    {cartItemsCount} {cartItemsCount === 1 ? "item" : "items"}
+                                    {cartItemsCount} {cartItemsCount === 1 ? (t.common?.item || "item") : (t.common?.items || "items")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -250,11 +252,11 @@ export function CheckoutForm() {
                                     {isCreatingOrder ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Creating Order...
+                                            {t.checkout?.creatingOrder || "Creating Order..."}
                                         </>
                                     ) : (
                                         <>
-                                            Continue to Payment
+                                            {t.checkout?.continueToPayment || "Continue to Payment"}
                                             <ArrowRight className="ml-2 h-4 w-4" />
                                         </>
                                     )}
@@ -262,7 +264,7 @@ export function CheckoutForm() {
 
                                 {!isAddressComplete && (
                                     <p className="text-xs text-destructive text-center mt-2">
-                                        Please complete your shipping address
+                                        {t.checkout?.pleaseCompleteAddress || "Please complete your shipping address"}
                                     </p>
                                 )}
                             </CardContent>

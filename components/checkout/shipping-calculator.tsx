@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useCart } from "@/contexts/cart-context";
+import { useTranslation } from "@/hooks/use-translation";
 import { ShippingService } from "@/services/shipping.service";
 import {
     SelectedShippingMethod,
@@ -38,6 +39,7 @@ export function ShippingCalculator({
                                    }: ShippingCalculatorProps) {
     const { user } = useAuth();
     const { cart, guestCartWithDetails } = useCart();
+    const { t, locale } = useTranslation();
 
     const [options, setOptions] = useState<ShippingOption[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -80,7 +82,7 @@ export function ShippingCalculator({
             setError(null);
 
             if (response.options.length === 0) {
-                setError("No shipping options available for this destination");
+                setError(t.checkout?.shippingCalculator?.noOptions || "No shipping options available for this destination");
                 onSelect(null);
             } else {
                 // Auto-select cheapest option if nothing selected
@@ -110,13 +112,15 @@ export function ShippingCalculator({
                                 option: cheapest,
                                 cost: cheapest.cost,
                             });
-                            toast.info("Your selected shipping option was updated");
+                            toast.info(locale === "id"
+                                ? "Opsi pengiriman Anda telah diperbarui"
+                                : "Your selected shipping option was updated");
                         }
                     }
                 }
             }
         },
-        [onSelect, selected]
+        [onSelect, selected, t, locale]
     );
 
     // Debounced shipping calculation
@@ -126,7 +130,7 @@ export function ShippingCalculator({
                 setIsWaitingDebounce(false);
 
                 if (!isAddressComplete() || !user) {
-                    setError("Please complete your shipping address");
+                    setError(t.checkout?.pleaseCompleteAddress || "Please complete your shipping address");
                     setOptions([]);
                     onSelect(null);
                     return;
@@ -163,11 +167,11 @@ export function ShippingCalculator({
                     setError(
                         err instanceof Error
                             ? err.message
-                            : "Failed to calculate shipping rates"
+                            : (locale === "id" ? "Gagal menghitung tarif pengiriman" : "Failed to calculate shipping rates")
                     );
                     setOptions([]);
                     onSelect(null);
-                    toast.error("Failed to load shipping options");
+                    toast.error(locale === "id" ? "Gagal memuat opsi pengiriman" : "Failed to load shipping options");
                 }
             },
             DEBOUNCE_DELAY
@@ -225,13 +229,11 @@ export function ShippingCalculator({
             <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                     {isLoading ? (
-                        "Calculating shipping rates..."
+                        t.checkout?.shippingCalculator?.calculating || "Calculating shipping rates..."
                     ) : options.length > 0 ? (
-                        `${options.length} shipping ${
-                            options.length === 1 ? "option" : "options"
-                        } available`
+                        (t.checkout?.shippingCalculator?.optionsAvailable || "{count} shipping options available").replace("{count}", options.length.toString())
                     ) : (
-                        "Complete your address to see shipping options"
+                        t.checkout?.shippingCalculator?.completeAddress || "Complete your address to see shipping options"
                     )}
                 </p>
 
@@ -244,7 +246,7 @@ export function ShippingCalculator({
                         className="gap-2"
                     >
                         <RefreshCw className="h-4 w-4" />
-                        Refresh
+                        {t.checkout?.shippingCalculator?.refresh || t.common?.refresh || "Refresh"}
                     </Button>
                 )}
             </div>
@@ -259,7 +261,7 @@ export function ShippingCalculator({
                     <div className="text-center">
                         <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">
-                            Calculating best shipping rates...
+                            {t.checkout?.shippingCalculator?.calculatingBest || "Calculating best shipping rates..."}
                         </p>
                     </div>
                 </motion.div>
@@ -318,7 +320,7 @@ export function ShippingCalculator({
                 >
                     <Package className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
                     <p className="text-sm text-muted-foreground">
-                        Complete your shipping address to see available options
+                        {t.checkout?.shippingCalculator?.completeAddress || "Complete your shipping address to see available options"}
                     </p>
                 </motion.div>
             )}

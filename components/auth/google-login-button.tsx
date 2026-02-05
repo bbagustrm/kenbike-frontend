@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface GoogleLoginButtonProps {
     mode?: "login" | "register";
@@ -17,6 +18,7 @@ export function GoogleLoginButton({
                                       className = "w-full"
                                   }: GoogleLoginButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const { t } = useTranslation();
 
     const handleGoogleAuth = () => {
         setIsLoading(true);
@@ -27,8 +29,8 @@ export function GoogleLoginButton({
     };
 
     const buttonText = mode === "login"
-        ? "Continue with Google"
-        : "Sign up with Google";
+        ? (t.auth.google?.continueWith || "Continue with Google")
+        : (t.auth.google?.signUpWith || "Sign up with Google");
 
     return (
         <motion.div
@@ -66,7 +68,7 @@ export function GoogleLoginButton({
                         />
                     </svg>
                 )}
-                {isLoading ? "Connecting..." : buttonText}
+                {isLoading ? (t.auth.google?.connecting || "Connecting...") : buttonText}
             </Button>
         </motion.div>
     );

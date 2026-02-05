@@ -132,7 +132,7 @@ export function CartSheet({ className }: CartSheetProps) {
                     <SheetDescription>
                         {isEmpty
                             ? t.cart.emptyCart
-                            : `${cartItemsCount} ${cartItemsCount === 1 ? "item" : "items"} in cart`}
+                            : `${cartItemsCount} ${cartItemsCount === 1 ? t.cart.itemInCart : t.cart.itemsInCartPlural}`}
                     </SheetDescription>
                 </SheetHeader>
 
@@ -146,7 +146,7 @@ export function CartSheet({ className }: CartSheetProps) {
                                 router.push("/search");
                             }}
                         >
-                            Continue Shopping
+                            {t.cart.continueShopping}
                         </Button>
                     </div>
                 ) : (
@@ -291,8 +291,7 @@ export function CartSheet({ className }: CartSheetProps) {
                                     <div className="flex items-start gap-2">
                                         <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                                         <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                            Some items in your cart are unavailable or out of stock.
-                                            Please review before checkout.
+                                            {t.cart.unavailableItemsWarning}
                                         </p>
                                     </div>
                                 </div>
@@ -302,7 +301,7 @@ export function CartSheet({ className }: CartSheetProps) {
                         <SheetFooter className="border-t border-border p-6 space-y-4">
                             <div className="w-full space-y-2">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Subtotal</span>
+                                    <span className="text-muted-foreground">{t.cart.subtotal}</span>
                                     <span className="font-semibold">
                                         {formatCurrency(displaySubtotal, currency)}
                                     </span>
@@ -316,7 +315,7 @@ export function CartSheet({ className }: CartSheetProps) {
                                     onClick={handleCheckout}
                                     disabled={hasUnavailableItems || isLoading}
                                 >
-                                    {isAuthenticated ? t.cart.checkout : "Login to Checkout"}
+                                    {isAuthenticated ? t.cart.checkout : t.cart.loginToCheckout}
                                 </Button>
 
                                 <Button

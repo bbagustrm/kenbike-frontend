@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { useTranslation } from "@/hooks/use-translation";
 import dynamic from "next/dynamic";
+import { useTranslation } from "@/hooks/use-translation";
 
 // Dynamic imports for client components
 const CartSheet = dynamic(
@@ -215,7 +215,7 @@ export default function Navbar() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="gap-2 px-4 uppercase">
-                      Categories
+                      {t.nav.categories}
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -237,8 +237,8 @@ export default function Navbar() {
                 </DropdownMenu>
 
                 <Link href="/about">
-                  <Button variant="ghost" className="px-4 uppercase" >
-                    About Us
+                  <Button variant="ghost" className="px-4 uppercase">
+                    {t.nav.about}
                   </Button>
                 </Link>
               </nav>
@@ -255,7 +255,7 @@ export default function Navbar() {
                     size="default"
                 >
                   <Search className="h-4 w-4"/>
-                  <span className="text-sm font-normal truncate">Search products, categories, or tags ...</span>
+                  <span className="text-sm font-normal truncate">{t.search.placeholder}</span>
                 </Button>
               </div>
               {/* Language Selector - Desktop */}
@@ -320,25 +320,25 @@ export default function Navbar() {
                         <DropdownMenuItem asChild>
                           <Link href={getDashboardLink()} className="gap-2">
                             <LayoutDashboard className="h-4 w-4" />
-                            Dashboard
+                            {t.nav.dashboard}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href="/user/profile" className="gap-2">
                             <User className="h-4 w-4" />
-                            Profile
+                            {t.nav.profile}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href="/user/orders" className="gap-2">
                             <ShoppingCart className="h-4 w-4" />
-                            Orders
+                            {t.nav.orders}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout} className="gap-2 text-destructive">
                           <LogOut className="h-4 w-4" />
-                          Logout
+                          {t.nav.logout}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -413,21 +413,21 @@ export default function Navbar() {
                       className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
                       onClick={closeMobileMenu}
                   >
-                    <span className="text-base font-semibold text-foreground">About Us</span>
+                    <span className="text-base font-semibold text-foreground">{t.nav.about}</span>
                   </Link>
                   <Link
                       href="/search"
                       className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
                       onClick={closeMobileMenu}
                   >
-                    <span className="text-base font-semibold text-foreground">All Products</span>
+                    <span className="text-base font-semibold text-foreground">{t.nav.allProducts}</span>
                   </Link>
                 </nav>
 
                 {/* Categories */}
                 <div className="pb-4 border-b border-border">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
-                    Categories
+                    {t.nav.categories}
                   </p>
                   <div className="space-y-1">
                     {categories.map((category) => (
@@ -447,7 +447,7 @@ export default function Navbar() {
                 {isAuthenticated && (
                     <div className="pb-4 border-b border-border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
-                        Account
+                        {t.nav.account}
                       </p>
                       <div className="space-y-1">
                         <Link
@@ -456,7 +456,7 @@ export default function Navbar() {
                             onClick={closeMobileMenu}
                         >
                           <LayoutDashboard className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">Dashboard</span>
+                          <span className="text-foreground">{t.nav.dashboard}</span>
                         </Link>
                         <Link
                             href="/user/orders"
@@ -464,7 +464,7 @@ export default function Navbar() {
                             onClick={closeMobileMenu}
                         >
                           <ShoppingCart className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">Orders</span>
+                          <span className="text-foreground">{t.nav.orders}</span>
                         </Link>
                         <Link
                             href="/user/notifications"
@@ -472,7 +472,7 @@ export default function Navbar() {
                             onClick={closeMobileMenu}
                         >
                           <Bell className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">Notifications</span>
+                          <span className="text-foreground">{t.nav.notifications}</span>
                         </Link>
                         <Link
                             href="/user/profile"
@@ -480,7 +480,7 @@ export default function Navbar() {
                             onClick={closeMobileMenu}
                         >
                           <User className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">Profile</span>
+                          <span className="text-foreground">{t.nav.profile}</span>
                         </Link>
                       </div>
                     </div>
@@ -489,7 +489,7 @@ export default function Navbar() {
                 {/* Language Selector */}
                 <div className="pb-4 border-b border-border">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
-                    Language
+                    {t.nav.language}
                   </p>
                   <div className="flex gap-2 px-2">
                     <Button
@@ -521,7 +521,7 @@ export default function Navbar() {
                         onClick={handleLogout}
                     >
                       <LogOut className="h-4 w-4" />
-                      Logout
+                      {t.nav.logout}
                     </Button>
                 )}
               </div>
@@ -537,12 +537,16 @@ export default function Navbar() {
           />
           <CommandList>
             <CommandEmpty>
-              {isSearching ? "Searching..." : searchQuery ? "No results found" : "Start typing to search..."}
+              {isSearching
+                  ? t.search.searching
+                  : searchQuery
+                      ? t.search.noResults
+                      : t.search.startTyping}
             </CommandEmpty>
 
             {/* Search Results */}
             {searchResults.length > 0 && (
-                <CommandGroup heading="Products">
+                <CommandGroup heading={t.search.products}>
                   {searchResults.map((product) => (
                       <CommandItem
                           key={product.id}
@@ -564,14 +568,14 @@ export default function Navbar() {
                       className="justify-center"
                   >
                     <Search className="mr-2 h-4 w-4" />
-                    View all results for &quot;{searchQuery}&quot;
+                    {t.search.viewAllResults} &quot;{searchQuery}&quot;
                   </CommandItem>
                 </CommandGroup>
             )}
 
             {/* Categories */}
             {!searchQuery && categories.length > 0 && (
-                <CommandGroup heading="Categories">
+                <CommandGroup heading={t.nav.categories}>
                   {categories.slice(0, 5).map((category) => (
                       <CommandItem
                           key={category.id}
@@ -586,7 +590,7 @@ export default function Navbar() {
 
             {/* Promotions */}
             {!searchQuery && promotions.length > 0 && (
-                <CommandGroup heading="Promotions">
+                <CommandGroup heading={t.search.promotions}>
                   {promotions.slice(0, 3).map((promotion) => (
                       <CommandItem
                           key={promotion.id}

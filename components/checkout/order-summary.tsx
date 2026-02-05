@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { useCart } from "@/contexts/cart-context";
 import { useAuth } from "@/contexts/auth-context";
+import { useTranslation } from "@/hooks/use-translation";
 import { Currency } from "@/types/payment";
 import type { CartItem, GuestCartItemWithDetails } from "@/types/cart";
 import { formatCurrency } from "@/lib/format-currency";
@@ -20,6 +21,7 @@ interface OrderSummaryProps {
 export function OrderSummary({ currency, shippingCost }: OrderSummaryProps) {
     const { isAuthenticated } = useAuth();
     const { cart, guestCartWithDetails } = useCart();
+    const { t } = useTranslation();
 
     // Calculate totals
     const summary = useMemo(() => {
@@ -137,17 +139,17 @@ export function OrderSummary({ currency, shippingCost }: OrderSummaryProps) {
                     <p className="text-sm font-medium line-clamp-1">{productName}</p>
                     <p className="text-xs text-muted-foreground">{variantName}</p>
                     <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs font-semibold">
-              {formatCurrency(finalPrice, currency)}
-            </span>
+                        <span className="text-xs font-semibold">
+                            {formatCurrency(finalPrice, currency)}
+                        </span>
                         {hasPromo && (
                             <span className="text-xs text-muted-foreground line-through">
-                {formatCurrency(price, currency)}
-              </span>
+                                {formatCurrency(price, currency)}
+                            </span>
                         )}
                         <span className="text-xs text-muted-foreground">
-              × {item.quantity}
-            </span>
+                            × {item.quantity}
+                        </span>
                     </div>
                 </div>
 
@@ -165,7 +167,9 @@ export function OrderSummary({ currency, shippingCost }: OrderSummaryProps) {
         <div className="space-y-4">
             {/* Items List */}
             <div>
-                <h4 className="font-semibold text-sm mb-3">Items ({items.length})</h4>
+                <h4 className="font-semibold text-sm mb-3">
+                    {t.checkout?.items || "Items"} ({items.length})
+                </h4>
                 <ScrollArea className="max-h-[300px]">
                     <div className="space-y-3">
                         {items.map((item, index) => renderCartItem(item, index))}
@@ -178,41 +182,49 @@ export function OrderSummary({ currency, shippingCost }: OrderSummaryProps) {
             {/* Totals Breakdown */}
             <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-muted-foreground">
+                        {t.checkout?.subtotal || "Subtotal"}
+                    </span>
                     <span className="font-medium">
-            {formatCurrency(summary.subtotal, currency)}
-          </span>
+                        {formatCurrency(summary.subtotal, currency)}
+                    </span>
                 </div>
 
                 {summary.discount > 0 && (
                     <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Discount</span>
+                        <span className="text-muted-foreground">
+                            {t.checkout?.discount || "Discount"}
+                        </span>
                         <span className="font-medium text-green-600">
-              -{formatCurrency(summary.discount, currency)}
-            </span>
+                            -{formatCurrency(summary.discount, currency)}
+                        </span>
                     </div>
                 )}
 
                 <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
+                    <span className="text-muted-foreground">
+                        {t.checkout?.shipping || "Shipping"}
+                    </span>
                     <span className="font-medium">
-            {shippingCost > 0
-                ? formatCurrency(shippingCost, currency)
-                : "Not selected"}
-          </span>
+                        {shippingCost > 0
+                            ? formatCurrency(shippingCost, currency)
+                            : (t.checkout?.notSelected || "Not selected")}
+                    </span>
                 </div>
 
                 <Separator />
 
                 <div className="flex justify-between text-base">
-                    <span className="font-semibold">Total</span>
+                    <span className="font-semibold">
+                        {t.checkout?.total || "Total"}
+                    </span>
                     <span className="font-bold text-lg">
-            {formatCurrency(summary.total, currency)}
-          </span>
+                        {formatCurrency(summary.total, currency)}
+                    </span>
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-2">
-                    Tax included in product prices
+                    {t.checkout?.taxIncluded || "Tax included in product prices"}
                 </p>
             </div>
         </div>

@@ -16,15 +16,15 @@ export default function Footer() {
   ];
 
   const customerService = [
-    { name: locale === "id" ? "Pengembalian" : "Returns", href: "/help/returns" },
+    { name: t.footer.returns, href: "/help/returns" },
     { name: "FAQ", href: "/faq" },
   ];
 
   const aboutLinks = [
     { name: t.nav.about, href: "/about" },
     { name: t.nav.contact, href: "/contact" },
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms & Conditions", href: "/terms" },
+    { name: t.footer.privacyPolicy, href: "/privacy" },
+    { name: t.footer.termsOfService, href: "/terms" },
   ];
 
   const socialMedia = [
@@ -38,7 +38,6 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-2">
               <Link href="/" className="inline-block mb-4">
-                {/* ✅ Lazy load logo di footer */}
                 <Image
                     src="/logo.webp"
                     alt="Kenbike Logo"
@@ -49,9 +48,7 @@ export default function Footer() {
                 />
               </Link>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                {locale === "id"
-                    ? "Kenbike menyediakan komponen sepeda berkualitas tinggi untuk para penggemar sepeda di Indonesia. Kami berkomitmen memberikan produk terbaik dengan harga terjangkau."
-                    : "Kenbike provides high-quality bike components for cycling enthusiasts in Indonesia. We are committed to delivering the best products at affordable prices."}
+                {t.footer.description}
               </p>
 
               <div className="space-y-2 text-sm">
@@ -217,11 +214,11 @@ export default function Footer() {
                 © {new Date().getFullYear()} Kenbike. {t.footer.copyright}.
               </p>
               <div className="flex flex-wrap items-center gap-6">
-                <Link href="/" className="hover:text-primary transition-colors">
-                  Privacy Policy
+                <Link href="/privacy" className="hover:text-primary transition-colors">
+                  {t.footer.privacyPolicy}
                 </Link>
-                <Link href="/" className="hover:text-primary transition-colors">
-                  Terms of Service
+                <Link href="/terms" className="hover:text-primary transition-colors">
+                  {t.footer.termsOfService}
                 </Link>
               </div>
             </div>

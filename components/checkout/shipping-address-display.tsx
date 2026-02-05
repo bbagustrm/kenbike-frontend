@@ -3,6 +3,7 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { useTranslation } from "@/hooks/use-translation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ interface ShippingAddressDisplayProps {
 export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisplayProps) {
     const router = useRouter();
     const { user } = useAuth();
+    const { t, locale } = useTranslation();
 
     // Check if address is complete
     const isAddressComplete = Boolean(
@@ -54,7 +56,9 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="flex items-center justify-between">
-                    <span>Please complete your shipping address to continue</span>
+                    <span>
+                        {t.checkout?.addressIncomplete?.description || "Please complete your shipping address to continue"}
+                    </span>
                     <Button
                         variant="outline"
                         size="sm"
@@ -62,7 +66,7 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
                         disabled={disabled}
                     >
                         <Edit className="h-4 w-4 mr-2" />
-                        Complete Address
+                        {t.checkout?.addressIncomplete?.completeButton || "Complete Address"}
                     </Button>
                 </AlertDescription>
             </Alert>
@@ -80,8 +84,12 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
                                 <User className="h-4 w-4 text-primary" />
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Recipient</p>
-                                <p className="font-semibold">{recipientName || "Not set"}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {t.checkout?.recipient || "Recipient"}
+                                </p>
+                                <p className="font-semibold">
+                                    {recipientName || (t.checkout?.notSet || "Not set")}
+                                </p>
                             </div>
                         </div>
 
@@ -91,8 +99,12 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
                                 <Phone className="h-4 w-4 text-primary" />
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Phone Number</p>
-                                <p className="font-semibold">{user?.phone_number || "Not set"}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {t.checkout?.phoneNumber || "Phone Number"}
+                                </p>
+                                <p className="font-semibold">
+                                    {user?.phone_number || (t.checkout?.notSet || "Not set")}
+                                </p>
                             </div>
                         </div>
 
@@ -105,9 +117,13 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <p className="text-xs text-muted-foreground">Shipping Address</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t.checkout?.address || "Shipping Address"}
+                                    </p>
                                     <Badge variant="outline" className="text-xs">
-                                        {isDomestic ? "Domestic" : "International"}
+                                        {isDomestic
+                                            ? (t.checkout?.domestic || "Domestic")
+                                            : (t.checkout?.international || "International")}
                                     </Badge>
                                 </div>
                                 <p className="text-sm">{formatAddress()}</p>
@@ -124,7 +140,7 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
                         className="shrink-0"
                     >
                         <Edit className="h-4 w-4 mr-2" />
-                        Edit
+                        {t.checkout?.edit || t.common.edit}
                     </Button>
                 </div>
             </CardContent>

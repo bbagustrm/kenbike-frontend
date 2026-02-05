@@ -17,7 +17,7 @@ import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function OrdersPage() {
     const router = useRouter();
-    const { locale } = useTranslation();
+    const { t, locale } = useTranslation();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const { orders, isLoading, page, totalPages, setPage, getOrders } = useOrder();
 
@@ -72,12 +72,12 @@ export default function OrdersPage() {
                     className="mb-8"
                 >
                     <h1 className="text-3xl font-bold mb-2">
-                        {locale === "id" ? "Pesanan Saya" : "My Orders"}
+                        {t.orders?.title || (locale === "id" ? "Pesanan Saya" : "My Orders")}
                     </h1>
                     <p className="text-muted-foreground">
-                        {locale === "id"
+                        {t.orders?.description || (locale === "id"
                             ? "Lihat dan kelola riwayat pesanan Anda"
-                            : "View and manage your order history"}
+                            : "View and manage your order history")}
                     </p>
                 </motion.div>
 
@@ -136,7 +136,7 @@ export default function OrdersPage() {
                             disabled={page === 1 || isLoading}
                         >
                             <ChevronLeft className="h-4 w-4 mr-1" />
-                            {locale === "id" ? "Sebelumnya" : "Previous"}
+                            {t.common?.previous || (locale === "id" ? "Sebelumnya" : "Previous")}
                         </Button>
 
                         <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ export default function OrdersPage() {
                             onClick={() => setPage(page + 1)}
                             disabled={page === totalPages || isLoading}
                         >
-                            {locale === "id" ? "Selanjutnya" : "Next"}
+                            {t.common?.next || (locale === "id" ? "Selanjutnya" : "Next")}
                             <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                     </motion.div>

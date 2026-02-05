@@ -19,12 +19,14 @@ import { Loader2, Mail, ArrowLeft, CheckCircle2, RefreshCw } from "lucide-react"
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import Link from "next/link";
+import { useTranslation } from "@/hooks/use-translation";
 
 const RESEND_COOLDOWN = 60; // seconds
 
 export default function VerifyEmailForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t } = useTranslation();
 
     const email = searchParams.get("email") || "";
 
@@ -57,14 +59,14 @@ export default function VerifyEmailForm() {
 
     const handleVerify = async () => {
         if (otp.length !== 6) {
-            toast.error("Please enter the complete 6-digit code", {
+            toast.error(t.auth.verification?.enterCompleteCode || "Please enter the complete 6-digit code", {
                 position: "top-center",
             });
             return;
         }
 
         if (!email) {
-            toast.error("Email not found. Please register again.", {
+            toast.error(t.auth.verification?.emailNotFound || "Email not found. Please register again.", {
                 position: "top-center",
             });
             return;
@@ -76,7 +78,7 @@ export default function VerifyEmailForm() {
             await AuthService.verifyOtp({ email, otp });
 
             setIsVerified(true);
-            toast.success("Email verified successfully!", {
+            toast.success(t.auth.verification?.verificationSuccess || "Email verified successfully!", {
                 position: "top-center",
             });
 
@@ -87,7 +89,7 @@ export default function VerifyEmailForm() {
 
         } catch (error) {
             const apiError = handleApiError(error);
-            toast.error(apiError.message || "Invalid or expired OTP", {
+            toast.error(apiError.message || t.auth.verification?.invalidOrExpiredOtp || "Invalid or expired OTP", {
                 position: "top-center",
             });
             setOtp(""); // Clear OTP on error
@@ -100,7 +102,7 @@ export default function VerifyEmailForm() {
         if (countdown > 0 || isResending) return;
 
         if (!email) {
-            toast.error("Email not found. Please register again.", {
+            toast.error(t.auth.verification?.emailNotFound || "Email not found. Please register again.", {
                 position: "top-center",
             });
             return;
@@ -110,7 +112,7 @@ export default function VerifyEmailForm() {
 
         try {
             await AuthService.resendOtp({ email });
-            toast.success("New OTP sent to your email!", {
+            toast.success(t.auth.verification?.newOtpSent || "New OTP sent to your email!", {
                 position: "top-center",
             });
             setCountdown(RESEND_COOLDOWN);
@@ -123,7 +125,7 @@ export default function VerifyEmailForm() {
                     position: "top-center",
                 });
             } else {
-                toast.error(apiError.message || "Failed to resend OTP", {
+                toast.error(apiError.message || t.auth.verification?.failedToResend || "Failed to resend OTP", {
                     position: "top-center",
                 });
             }
@@ -140,12 +142,12 @@ export default function VerifyEmailForm() {
                     <CardHeader className="text-center">
                         <CardTitle className="text-2xl">Invalid Request</CardTitle>
                         <CardDescription>
-                            No email address provided. Please register first.
+                            {t.auth.verification?.noEmailProvided || "No email address provided. Please register first."}
                         </CardDescription>
                     </CardHeader>
                     <CardFooter className="justify-center">
                         <Button asChild>
-                            <Link href="/register">Go to Register</Link>
+                            <Link href="/register">{t.auth.verification?.goToRegister || "Go to Register"}</Link>
                         </Button>
                     </CardFooter>
                 </Card>
@@ -177,14 +179,14 @@ export default function VerifyEmailForm() {
                         </motion.div>
 
                         <CardTitle className="text-2xl font-semibold">
-                            {isVerified ? "Email Verified!" : "Verify Your Email"}
+                            {isVerified ? t.auth.verification?.verificationSuccess : t.auth.verification?.title}
                         </CardTitle>
                         <CardDescription className="mt-2">
                             {isVerified ? (
-                                "Redirecting you to login..."
+                                t.auth.verification?.redirectingToLogin || "Redirecting you to login..."
                             ) : (
                                 <>
-                                    We&apos;ve sent a 6-digit code to
+                                    {t.auth.verification?.weSentCodeTo || "We've sent a 6-digit code to"}
                                     <br />
                                     <span className="font-medium text-foreground">{email}</span>
                                 </>
@@ -205,7 +207,7 @@ export default function VerifyEmailForm() {
                                     />
 
                                     <p className="text-xs text-muted-foreground text-center">
-                                        Code expires in 15 minutes
+                                        {t.auth.verification?.codeExpiresIn || "Code expires in 15 minutes"}
                                     </p>
                                 </div>
 
@@ -219,10 +221,10 @@ export default function VerifyEmailForm() {
                                     {isVerifying ? (
                                         <>
                                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            Verifying...
+                                            {t.auth.verification?.verifying || "Verifying..."}
                                         </>
                                     ) : (
-                                        "Verify Email"
+                                        t.auth.verification?.verifyButton || "Verify Email"
                                     )}
                                 </Button>
                             </CardContent>
@@ -231,7 +233,7 @@ export default function VerifyEmailForm() {
                                 {/* Resend Button */}
                                 <div className="text-center w-full">
                                     <p className="text-sm text-muted-foreground mb-2">
-                                        Didn&apos;t receive the code?
+                                        {t.auth.verification?.didntReceiveCode || "Didn't receive the code?"}
                                     </p>
                                     <Button
                                         variant="outline"
@@ -241,17 +243,17 @@ export default function VerifyEmailForm() {
                                         {isResending ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Sending...
+                                                {t.auth.verification?.sending || "Sending..."}
                                             </>
                                         ) : countdown > 0 ? (
                                             <>
                                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                                Resend in {countdown}s
+                                                {t.auth.verification?.resendIn?.replace('{seconds}', String(countdown)) || `Resend in ${countdown}s`}
                                             </>
                                         ) : (
                                             <>
                                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                                Resend Code
+                                                {t.auth.verification?.resendCode || "Resend Code"}
                                             </>
                                         )}
                                     </Button>
