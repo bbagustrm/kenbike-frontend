@@ -337,7 +337,7 @@ export default function Navbar() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout} className="gap-2 text-destructive">
-                          <LogOut className="h-4 w-4" />
+                          <LogOut className="h-4 w-4 fill-destructive" />
                           {t.nav.logout}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -374,7 +374,7 @@ export default function Navbar() {
               <div className="container mx-auto px-4 py-4 space-y-4">
                 {/* User Info */}
                 {isAuthenticated ? (
-                    <div className="flex items-center gap-3 pb-4 border-b border-border">
+                    <div className="flex items-center gap-3 pb-4 border-b border-border cursor-pointer">
                       <Avatar className="h-14 w-14">
                         <AvatarImage src={user?.profile_image} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-lg">

@@ -44,28 +44,29 @@ export function UserAvatar() {
             case "OWNER":
                 return "bg-purple-100 text-purple-700 border-purple-200";
             default:
-                return "bg-muted text-muted-foreground border-border";
+                return "bg-white text-muted-foreground border-border";
         }
     };
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                    <Avatar className="h-9 w-9 cursor-pointer">
+                <button className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
+                    <Avatar className="h-10 w-10">
                         <AvatarImage
                             src={getImageUrl(user.profile_image)}
                             alt={user.username}
                         />
-                        <AvatarFallback className="bg-secondary text-secondary-foreground">
+                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                             {getUserInitials(user)}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="hidden md:block text-left">
+
+                    <div className="hidden md:block text-left text-foreground">
                         <p className="text-sm font-medium leading-none">
                             {user.first_name} {user.last_name}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-1 font-light">
                             @{user.username}
                         </p>
                     </div>

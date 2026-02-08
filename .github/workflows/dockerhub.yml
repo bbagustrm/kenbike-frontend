@@ -2,46 +2,90 @@ name: CI/CD Frontend
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  DOCKER_IMAGE: bbagustrm/kenbike-frontend
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push Docker image
-        uses: docker/build-push-action@v4
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: |
-            bbagustrm/kenbike-frontend:latest
-            bbagustrm/kenbike-frontend:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=${{ secrets.PROD_API_BASE_URL }}
             NEXT_PUBLIC_APP_URL=${{ secrets.PROD_APP_URL }}
             NEXT_PUBLIC_IMAGE_BASE_URL=${{ secrets.PROD_IMAGE_BASE_URL }}
+            NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=${{ secrets.PROD_MIDTRANS_CLIENT_KEY }}
+            NEXT_PUBLIC_PAYPAL_CLIENT_ID=${{ secrets.PROD_PAYPAL_CLIENT_ID }}
+            NEXT_PUBLIC_PAYPAL_MODE=${{ secrets.PROD_PAYPAL_MODE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
-          port: 54321
-          timeout: 60m
-          command_timeout: 60m
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script_stop: true
           script: |
-            cd /var/www/kenbike/frontend
-            docker compose pull
-            docker compose down
-            docker compose up -d
+            echo "🚀 Deploying KenBike Frontend..."
+            
+            cd /var/www/kenbike
+            
+            # Pull latest image
+            docker compose pull frontend
+            
+            # Restart frontend container only
+            docker compose up -d frontend
+            
+            # Clean up old images
+            docker image prune -f
+            
+            # Health check
+            sleep 10
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3001 | grep -q "200\|301\|302"; then
+              echo "✅ Frontend deployment successful!"
+            else
+              echo "⚠️ Frontend might need more time to start"
+            fi
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** ${{ env.DOCKER_IMAGE }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://kenbikestore.com" >> $GITHUB_STEP_SUMMARY

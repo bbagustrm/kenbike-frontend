@@ -108,10 +108,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-colors",
                         isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-secondary"
+                            ? "bg-accent"
+                            : "text-primary hover:bg-accent"
                     )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -125,16 +125,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
       <ProtectedRoute>
-        <div className="flex h-screen bg-neutral-50 overflow-hidden">
+        <div className="flex h-screen bg-secondary overflow-hidden">
           {/* Desktop Sidebar */}
-          <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-white">
+          <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-secondary">
             <Sidebar />
           </aside>
 
           {/* Main Content */}
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Header */}
-            <header className="flex h-16 items-center justify-between border-b bg-white px-6">
+            <header className="flex h-16 items-center justify-between border-b bg-secondary px-6">
               <div className="flex items-center gap-4">
                 {/* Mobile Menu */}
                 <Sheet>
