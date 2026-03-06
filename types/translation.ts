@@ -939,4 +939,121 @@ export interface Translation {
         addressPlaceholder: string;
         selectCountry: string;
     };
+
+    returns?: {
+        title: string;
+        requestReturn: string;
+        returnStatus: string;
+        returnDetail: string;
+        returnWindow: string;
+        returnWindowExpired: string;
+        alreadyRequested: string;
+        noReturn: string;
+        viewReturnStatus: string;
+
+        reasons: {
+            DAMAGED_ITEM: string;
+            WRONG_ITEM: string;
+            NOT_AS_DESCRIBED: string;
+            MISSING_PARTS: string;
+            OTHER: string;
+        };
+
+        status: {
+            REQUESTED: string;
+            APPROVED: string;
+            REJECTED: string;
+            ITEM_SENT: string;
+            ITEM_RECEIVED: string;
+            REFUNDED: string;
+            CANCELLED: string;
+        };
+
+        statusDesc: {
+            REQUESTED: string;
+            APPROVED: string;
+            REJECTED: string;
+            ITEM_SENT: string;
+            ITEM_RECEIVED: string;
+            REFUNDED: string;
+            CANCELLED: string;
+        };
+
+        form: {
+            step1: string;
+            step2: string;
+            reasonLabel: string;
+            selectReason: string;
+            descLabel: string;
+            descPlaceholder: string;
+            descMinLength: string;
+            photosLabel: string;
+            photoUrlPlaceholder: string;
+            addPhoto: string;
+            maxPhotos: string;
+            minPhotos: string;
+            bankLabel: string;
+            bankPlaceholder: string;
+            accountNumLabel: string;
+            accountNumPlaceholder: string;
+            accountNameLabel: string;
+            accountNamePlaceholder: string;
+            completeAccount: string;
+            refundInfo: string;
+            submitSuccess: string;
+            submitError: string;
+        };
+
+        confirmSent: {
+            title: string;
+            desc: string;
+            courierLabel: string;
+            courierPlaceholder: string;
+            trackingLabel: string;
+            trackingPlaceholder: string;
+            submit: string;
+            submitting: string;
+            success: string;
+            error: string;
+            note: string;
+        };
+
+        cancel: {
+            title: string;
+            desc: string;
+            reasonLabel: string;
+            reasonPlaceholder: string;
+            confirm: string;
+            keep: string;
+            success: string;
+            error: string;
+        };
+
+        detail: {
+            reason: string;
+            description: string;
+            proofPhotos: string;
+            photo: string;
+            bankInfo: string;
+            bank: string;
+            accountNumber: string;
+            accountName: string;
+            refundAmount: string;
+            shippingInfo: string;
+            courier: string;
+            trackingNumber: string;
+            sentAt: string;
+            adminNotes: string;
+            refundMethod: string;
+            refundProof: string;
+            viewProof: string;
+            refundedAt: string;
+            requestedAt: string;
+        };
+
+        whatsapp: {
+            askAboutReturn: string;
+            approvedMessage: string;
+        };
+    };
 }

@@ -58,6 +58,10 @@ import {
   LayoutDashboard,
   LogOut,
   Bell,
+  RotateCcw,
+  Users,
+  BarChart3,
+  Shield,
 } from "lucide-react";
 import { getUserInitials } from "@/lib/auth-utils";
 import { formatCurrency } from "@/lib/format-currency";
@@ -74,6 +78,10 @@ export default function Navbar() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { t, locale, setLocale } = useTranslation();
+
+  const isAdmin = user?.role === "ADMIN";
+  const isOwner = user?.role === "OWNER";
+  const isStaff = isAdmin || isOwner;
 
   // States
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -148,7 +156,6 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  // Close mobile menu
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const handleCommandSelect = (callback: () => void) => {
@@ -164,13 +171,29 @@ export default function Navbar() {
 
   const getDashboardLink = () => {
     switch (user?.role) {
-      case "ADMIN":
-        return "/admin/dashboard";
-      case "OWNER":
-        return "/owner/dashboard";
-      default:
-        return "/user/orders";
+      case "ADMIN": return "/admin/dashboard";
+      case "OWNER": return "/owner/dashboard";
+      default: return "/user/orders";
     }
+  };
+
+  const getDashboardLabel = () => {
+    if (isAdmin) return t.user.adminDashboard ?? "Admin Dashboard";
+    if (isOwner) return t.user.ownerDashboard ?? "Owner Dashboard";
+    return t.nav.dashboard ?? "Dashboard";
+  };
+
+  // ─── ROLE BADGE ───────────────────────────────────────────────
+  const RoleBadge = () => {
+    if (!isStaff) return null;
+    return (
+        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide ${
+            isAdmin ? "bg-red-100 text-red-700" : "bg-purple-100 text-purple-700"
+        }`}>
+          <Shield className="h-2.5 w-2.5" />
+          {isAdmin ? "Admin" : "Owner"}
+        </span>
+    );
   };
 
   return (
@@ -178,7 +201,7 @@ export default function Navbar() {
         {/* Main Navbar */}
         <header className="sticky top-0 z-50 w-full bg-background">
           <div className="container mx-auto flex h-16 items-center justify-between gap-6 px-4">
-            {/* Left: Logo - LARGER */}
+            {/* Left: Logo */}
             <div className="flex items-center md:gap-8 lg:gap-12">
               <Link href="/" className="flex-shrink-0">
                 <Image
@@ -197,21 +220,16 @@ export default function Navbar() {
                     priority
                     className="h-10 w-auto lg:hidden"
                 />
-
               </Link>
 
-              {/* Center: Navigation - Desktop - LARGER FONT */}
+              {/* Center: Navigation - Desktop */}
               <nav className="hidden lg:flex items-center">
                 <Link href="/search?hasPromotion=true">
-                  <Button variant="ghost" className="gap-0 px-4 uppercase" >
+                  <Button variant="ghost" className="gap-0 px-4 uppercase">
                     {t.nav.specialPromo}
-                    {/*<Badge className="ml-2">*/}
-                    {/*  2.2*/}
-                    {/*</Badge>*/}
                   </Button>
                 </Link>
 
-                {/* Category Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="gap-2 px-4 uppercase">
@@ -230,7 +248,7 @@ export default function Navbar() {
                     {categories.length > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuItem asChild>
                       <Link href="/search" className="font-semibold">
-                        View All Products
+                        {t.nav.viewAllProducts ?? "View All Products"}
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -246,7 +264,7 @@ export default function Navbar() {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
-              {/* Center: Search Button - Desktop - SMALLER */}
+              {/* Search Button - Desktop */}
               <div className="hidden lg:flex lg:max-w-[240px] xl:max-w-md w-full items-center justify-center gap-2">
                 <Button
                     variant="secondary"
@@ -254,10 +272,11 @@ export default function Navbar() {
                     onClick={() => setIsSearchOpen(true)}
                     size="default"
                 >
-                  <Search className="h-4 w-4"/>
+                  <Search className="h-4 w-4" />
                   <span className="text-sm font-normal truncate">{t.search.placeholder}</span>
                 </Button>
               </div>
+
               {/* Language Selector - Desktop */}
               <div className="hidden md:block">
                 <Select value={locale} onValueChange={(value) => setLocale(value as "id" | "en")}>
@@ -297,7 +316,10 @@ export default function Navbar() {
                 <Search className="h-4 w-4" onClick={() => setIsSearchOpen(true)} />
               </div>
 
-              {/* Auth Buttons - Desktop */}
+              {/* ──────────────────────────────────────────────────────────
+                  Auth Buttons - Desktop
+                  Dinamis berdasarkan role: USER vs ADMIN/OWNER
+              ────────────────────────────────────────────────────────── */}
               <div className="hidden md:flex items-center gap-2">
                 {isAuthenticated ? (
                     <DropdownMenu>
@@ -311,30 +333,99 @@ export default function Navbar() {
                           </Avatar>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <div className="px-2 py-1.5">
-                          <p className="text-sm font-semibold text-foreground">{user?.first_name} {user?.last_name}</p>
+                      <DropdownMenuContent align="end" className="w-60">
+                        {/* User Info */}
+                        <div className="px-2 py-1.5 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">
+                              {user?.first_name} {user?.last_name}
+                            </p>
+                            <RoleBadge />
+                          </div>
                           <p className="text-xs text-muted-foreground font-light">{user?.email}</p>
                         </div>
                         <DropdownMenuSeparator />
+
+                        {/* Dashboard link — semua role */}
                         <DropdownMenuItem asChild>
                           <Link href={getDashboardLink()} className="gap-2">
                             <LayoutDashboard className="h-4 w-4" />
-                            {t.nav.dashboard}
+                            {getDashboardLabel()}
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/user/profile" className="gap-2">
-                            <User className="h-4 w-4" />
-                            {t.nav.profile}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/user/orders" className="gap-2">
-                            <ShoppingCart className="h-4 w-4" />
-                            {t.nav.orders}
-                          </Link>
-                        </DropdownMenuItem>
+
+                        {/* ADMIN-specific links */}
+                        {isAdmin && (
+                            <>
+                              <DropdownMenuItem asChild>
+                                <Link href="/admin/orders" className="gap-2">
+                                  <ShoppingCart className="h-4 w-4" />
+                                  {t.user.orders ?? "Orders"}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/admin/returns" className="gap-2">
+                                  <RotateCcw className="h-4 w-4" />
+                                  {t.returns?.title ?? "Returns"}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/admin/users" className="gap-2">
+                                  <Users className="h-4 w-4" />
+                                  {t.user.users ?? "Users"}
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
+                        )}
+
+                        {/* OWNER-specific links */}
+                        {isOwner && (
+                            <>
+                              <DropdownMenuItem asChild>
+                                <Link href="/owner/orders" className="gap-2">
+                                  <ShoppingCart className="h-4 w-4" />
+                                  {t.user.orders ?? "Orders"}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/admin/returns" className="gap-2">
+                                  <RotateCcw className="h-4 w-4" />
+                                  {t.returns?.title ?? "Returns"}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/owner/analytics" className="gap-2">
+                                  <BarChart3 className="h-4 w-4" />
+                                  {t.user.analytics ?? "Analytics"}
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
+                        )}
+
+                        {/* USER-specific links */}
+                        {!isStaff && (
+                            <>
+                              <DropdownMenuItem asChild>
+                                <Link href="/user/profile" className="gap-2">
+                                  <User className="h-4 w-4" />
+                                  {t.nav.profile}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/user/orders" className="gap-2">
+                                  <ShoppingCart className="h-4 w-4" />
+                                  {t.nav.orders}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/user/notifications" className="gap-2">
+                                  <Bell className="h-4 w-4" />
+                                  {t.nav.notifications}
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
+                        )}
+
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout} className="gap-2 text-destructive">
                           <LogOut className="h-4 w-4 fill-destructive" />
@@ -365,16 +456,19 @@ export default function Navbar() {
               </Button>
             </div>
           </div>
-
         </header>
 
-        {/* Mobile Menu */}
+        {/* ──────────────────────────────────────────────────────────────
+            Mobile Menu
+            Dinamis berdasarkan role
+        ────────────────────────────────────────────────────────────── */}
         {isMobileMenuOpen && (
             <div className="fixed inset-0 top-[64px] z-40 bg-background md:hidden overflow-y-auto">
               <div className="container mx-auto px-4 py-4 space-y-4">
+
                 {/* User Info */}
                 {isAuthenticated ? (
-                    <div className="flex items-center gap-3 pb-4 border-b border-border cursor-pointer">
+                    <div className="flex items-center gap-3 pb-4 border-b border-border">
                       <Avatar className="h-14 w-14">
                         <AvatarImage src={user?.profile_image} />
                         <AvatarFallback className="bg-primary text-primary-foreground text-lg">
@@ -382,9 +476,12 @@ export default function Navbar() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-lg font-semibold text-foreground">
-                          {user?.first_name} {user?.last_name}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-lg font-semibold text-foreground">
+                            {user?.first_name} {user?.last_name}
+                          </p>
+                          <RoleBadge />
+                        </div>
                         <p className="text-sm text-muted-foreground font-light">{user?.email}</p>
                       </div>
                     </div>
@@ -443,45 +540,112 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                {/* User Menu */}
+                {/* ── Account Menu — DINAMIS per role ── */}
                 {isAuthenticated && (
                     <div className="pb-4 border-b border-border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
                         {t.nav.account}
                       </p>
                       <div className="space-y-1">
+                        {/* Dashboard — semua role */}
                         <Link
                             href={getDashboardLink()}
                             className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
                             onClick={closeMobileMenu}
                         >
                           <LayoutDashboard className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">{t.nav.dashboard}</span>
+                          <span className="text-foreground">{getDashboardLabel()}</span>
                         </Link>
-                        <Link
-                            href="/user/orders"
-                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
-                            onClick={closeMobileMenu}
-                        >
-                          <ShoppingCart className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">{t.nav.orders}</span>
-                        </Link>
-                        <Link
-                            href="/user/notifications"
-                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
-                            onClick={closeMobileMenu}
-                        >
-                          <Bell className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">{t.nav.notifications}</span>
-                        </Link>
-                        <Link
-                            href="/user/profile"
-                            className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
-                            onClick={closeMobileMenu}
-                        >
-                          <User className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-foreground">{t.nav.profile}</span>
-                        </Link>
+
+                        {/* ADMIN links */}
+                        {isAdmin && (
+                            <>
+                              <Link
+                                  href="/admin/orders"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.user.orders ?? "Orders"}</span>
+                              </Link>
+                              <Link
+                                  href="/admin/returns"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <RotateCcw className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.returns?.title ?? "Returns"}</span>
+                              </Link>
+                              <Link
+                                  href="/admin/users"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <Users className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.user.users ?? "Users"}</span>
+                              </Link>
+                            </>
+                        )}
+
+                        {/* OWNER links */}
+                        {isOwner && (
+                            <>
+                              <Link
+                                  href="/owner/orders"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.user.orders ?? "Orders"}</span>
+                              </Link>
+                              <Link
+                                  href="/admin/returns"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <RotateCcw className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.returns?.title ?? "Returns"}</span>
+                              </Link>
+                              <Link
+                                  href="/owner/analytics"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.user.analytics ?? "Analytics"}</span>
+                              </Link>
+                            </>
+                        )}
+
+                        {/* USER links */}
+                        {!isStaff && (
+                            <>
+                              <Link
+                                  href="/user/orders"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.nav.orders}</span>
+                              </Link>
+                              <Link
+                                  href="/user/notifications"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <Bell className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.nav.notifications}</span>
+                              </Link>
+                              <Link
+                                  href="/user/profile"
+                                  className="flex items-center gap-3 py-3 px-2 rounded-md hover:bg-secondary transition-colors"
+                                  onClick={closeMobileMenu}
+                              >
+                                <User className="h-5 w-5 text-muted-foreground" />
+                                <span className="text-foreground">{t.nav.profile}</span>
+                              </Link>
+                            </>
+                        )}
                       </div>
                     </div>
                 )}
@@ -544,7 +708,6 @@ export default function Navbar() {
                       : t.search.startTyping}
             </CommandEmpty>
 
-            {/* Search Results */}
             {searchResults.length > 0 && (
                 <CommandGroup heading={t.search.products}>
                   {searchResults.map((product) => (
@@ -557,8 +720,8 @@ export default function Navbar() {
                         <div className="flex flex-col flex-1">
                           <span className="font-medium text-foreground">{product.name}</span>
                           <span className="text-xs text-muted-foreground font-light">
-                      {formatCurrency(product.idPrice)}
-                    </span>
+                            {formatCurrency(product.idPrice)}
+                          </span>
                         </div>
                       </CommandItem>
                   ))}
@@ -573,7 +736,6 @@ export default function Navbar() {
                 </CommandGroup>
             )}
 
-            {/* Categories */}
             {!searchQuery && categories.length > 0 && (
                 <CommandGroup heading={t.nav.categories}>
                   {categories.slice(0, 5).map((category) => (
@@ -588,7 +750,6 @@ export default function Navbar() {
                 </CommandGroup>
             )}
 
-            {/* Promotions */}
             {!searchQuery && promotions.length > 0 && (
                 <CommandGroup heading={t.search.promotions}>
                   {promotions.slice(0, 3).map((promotion) => (

@@ -5,7 +5,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { OrderService } from "@/services/order.service";
+import { ReturnService } from "@/services/return.service";
 import { Order } from "@/types/order";
+import { ReturnRequest } from "@/types/return";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { OrderStatusBadge } from "@/components/order/order-status-badge";
@@ -15,6 +17,7 @@ import { OrderTimeline } from "@/components/order/order-timeline";
 import { OrderTrackingAdmin } from "@/components/admin/order/order-tracking-admin";
 import { OrderStatusUpdater } from "@/components/admin/order/order-status-updater";
 import { OrderActionsAdmin } from "@/components/admin/order/order-actions-admin";
+import { ReturnDetailAdmin } from "@/components/admin/order/return-detail-admin";
 import { Loader2, Package, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -30,11 +33,10 @@ export default function AdminOrderDetailPage() {
 
     const [order, setOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [returnRequest, setReturnRequest] = useState<ReturnRequest | null>(null);
 
     const fetchOrder = useCallback(async () => {
-        if (!orderNumber) {
-            return;
-        }
+        if (!orderNumber) return;
 
         setIsLoading(true);
         try {
@@ -48,9 +50,31 @@ export default function AdminOrderDetailPage() {
         }
     }, [orderNumber]);
 
+    //  Fetch return data for this order
+    const fetchReturn = useCallback(async () => {
+        if (!orderNumber) return;
+        try {
+            const result = await ReturnService.getReturnByOrder(orderNumber);
+            setReturnRequest(result.data);
+        } catch {
+            // 404 = no return yet, that's fine
+            setReturnRequest(null);
+        }
+    }, [orderNumber]);
+
     useEffect(() => {
         fetchOrder();
     }, [fetchOrder]);
+
+    //  Fetch return after order is loaded
+    useEffect(() => {
+        if (order) fetchReturn();
+    }, [order, fetchReturn]);
+
+    const handleUpdate = useCallback(() => {
+        fetchOrder();
+        fetchReturn();
+    }, [fetchOrder, fetchReturn]);
 
     if (isLoading) {
         return (
@@ -66,8 +90,7 @@ export default function AdminOrderDetailPage() {
                 <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
                 <p className="text-muted-foreground mb-6">
-                    The order you&apos;re looking for doesn&apos;t exist or has been
-                    deleted.
+                    The order you&apos;re looking for doesn&apos;t exist or has been deleted.
                 </p>
                 <Button onClick={() => router.push("/admin/orders")}>
                     Back to Orders
@@ -76,7 +99,6 @@ export default function AdminOrderDetailPage() {
         );
     }
 
-    // Determine payment status from order
     const paymentStatus = order.paid_at
         ? "PAID"
         : order.status === "FAILED"
@@ -150,19 +172,28 @@ export default function AdminOrderDetailPage() {
                     </div>
                 </motion.div>
 
-                {/* Main Content - Two Column Layout */}
+                {/* Main Content */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column - Order Details (2/3 width) */}
-                        <div className="lg:col-span-2">
+                        {/* Left Column (2/3) */}
+                        <div className="lg:col-span-2 space-y-6">
                             <OrderDetailAdmin order={order} />
+
+                            {/*  Return section — tampil hanya jika ada return request */}
+                            {returnRequest && (
+                                <ReturnDetailAdmin
+                                    returnRequest={returnRequest}
+                                    order={order}
+                                    onUpdate={handleUpdate}
+                                />
+                            )}
                         </div>
 
-                        {/* Right Column - Timeline & Tracking (1/3 width) */}
+                        {/* Right Column (1/3) */}
                         <div className="space-y-6">
                             {/* Order Timeline */}
                             <Card>
@@ -177,7 +208,7 @@ export default function AdminOrderDetailPage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Tracking - Show if has tracking number */}
+                            {/* Tracking */}
                             {order.tracking_number && (
                                 <OrderTrackingAdmin
                                     orderNumber={order.order_number}
@@ -187,7 +218,6 @@ export default function AdminOrderDetailPage() {
                                 />
                             )}
 
-                            {/* No tracking yet message */}
                             {!order.tracking_number && order.status !== "CANCELLED" && order.status !== "FAILED" && (
                                 <Card>
                                     <CardContent className="py-8 text-center">

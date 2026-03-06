@@ -924,4 +924,126 @@ export const en: Translation = {
         addressPlaceholder: "Street address, building number, floor, etc.",
         selectCountry: "Select country",
     },
+
+    // PATCH: locales/en.ts
+// Tambahkan di dalam object `en: Translation`, setelah section `orders`
+
+    returns: {
+        title: "Returns & Refunds",
+        requestReturn: "Request Return",
+        returnStatus: "Return Status",
+        returnDetail: "Return Detail",
+        returnWindow: "Returns can be requested within 7 days after order completion",
+        returnWindowExpired: "Return window has expired (more than 7 days)",
+        alreadyRequested: "Return request already submitted",
+        noReturn: "No return request for this order",
+        viewReturnStatus: "View Return Status",
+
+        reasons: {
+            DAMAGED_ITEM: "Damaged Item",
+            WRONG_ITEM: "Wrong Item Received",
+            NOT_AS_DESCRIBED: "Not As Described",
+            MISSING_PARTS: "Missing Parts/Accessories",
+            OTHER: "Other",
+        },
+
+        status: {
+            REQUESTED: "Awaiting Review",
+            APPROVED: "Approved",
+            REJECTED: "Rejected",
+            ITEM_SENT: "Item Sent",
+            ITEM_RECEIVED: "Item Received",
+            REFUNDED: "Refunded",
+            CANCELLED: "Cancelled",
+        },
+
+        statusDesc: {
+            REQUESTED: "Your return request is being reviewed by our team. This process takes 1-2 business days.",
+            APPROVED: "Return approved! Please ship the item back to our store and confirm below. Contact us via WhatsApp for the return shipping address.",
+            REJECTED: "We're sorry, your return request could not be processed. See admin notes below.",
+            ITEM_SENT: "Your return item is on its way. We will confirm receipt once it arrives.",
+            ITEM_RECEIVED: "We have received your return item. Refund is being processed.",
+            REFUNDED: "Your refund has been successfully sent to your account. Thank you!",
+            CANCELLED: "This return request has been cancelled.",
+        },
+
+        form: {
+            step1: "Reason & Evidence",
+            step2: "Refund Account Info",
+            reasonLabel: "Return Reason *",
+            selectReason: "Select return reason",
+            descLabel: "Detailed Description *",
+            descPlaceholder: "Describe the item condition in detail, including any damage or discrepancies found... (min. 20 characters)",
+            descMinLength: "Description must be at least 20 characters",
+            photosLabel: "Proof Photos * (min. 1, max. 5)",
+            photoUrlPlaceholder: "Proof photo URL",
+            addPhoto: "Add Photo",
+            maxPhotos: "Maximum 5 photos",
+            minPhotos: "Upload at least 1 proof photo",
+            bankLabel: "Bank Name *",
+            bankPlaceholder: "e.g.: BCA, BNI, Mandiri, GoPay",
+            accountNumLabel: "Account Number *",
+            accountNumPlaceholder: "Enter account number",
+            accountNameLabel: "Account Owner Name *",
+            accountNamePlaceholder: "As shown on bank book",
+            completeAccount: "Complete account info",
+            refundInfo: "Refund amount: {amount} (full refund). Return shipping cost covered by store.",
+            submitSuccess: "Return request submitted! We will review it within 1-2 business days.",
+            submitError: "Failed to submit return",
+        },
+
+        confirmSent: {
+            title: "Confirm Item Shipped",
+            desc: "Enter shipping information for your return item",
+            courierLabel: "Courier Name *",
+            courierPlaceholder: "e.g.: JNE, J&T, SiCepat",
+            trackingLabel: "Tracking Number *",
+            trackingPlaceholder: "Enter your tracking number",
+            submit: "Confirm Shipment",
+            submitting: "Confirming...",
+            success: "Item shipment confirmed successfully!",
+            error: "Failed to confirm shipment",
+            note: "Make sure the tracking number is correct before confirming. We will verify item arrival.",
+        },
+
+        cancel: {
+            title: "Cancel Return?",
+            desc: "Are you sure you want to cancel this return request?",
+            reasonLabel: "Reason for cancellation (optional)",
+            reasonPlaceholder: "Enter reason...",
+            confirm: "Yes, Cancel",
+            keep: "Keep Return",
+            success: "Return request cancelled",
+            error: "Failed to cancel return",
+        },
+
+        detail: {
+            reason: "Reason",
+            description: "Description",
+            proofPhotos: "Proof Photos",
+            photo: "Photo",
+            bankInfo: "Refund Account Info",
+            bank: "Bank",
+            accountNumber: "Account Number",
+            accountName: "Account Name",
+            refundAmount: "Refund Amount",
+            shippingInfo: "Return Shipping Info",
+            courier: "Courier",
+            trackingNumber: "Tracking Number",
+            sentAt: "Sent at",
+            adminNotes: "Admin Notes",
+            refundMethod: "Refund Method",
+            refundProof: "Transfer Proof",
+            viewProof: "View Transfer Proof",
+            refundedAt: "Refunded at",
+            requestedAt: "Requested at",
+        },
+
+        whatsapp: {
+            askAboutReturn: "I have a question about my return request:",
+            approvedMessage: "My return has been approved. Could you please provide the return shipping address?",
+        },
+    },
+
+
 };

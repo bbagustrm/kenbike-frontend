@@ -7,9 +7,11 @@ import Image from "next/image";
 import { OrderService } from "@/services/order.service";
 import { PaymentService } from "@/services/payment.service";
 import { ReviewService } from "@/services/review.service";
+import { ReturnService } from "@/services/return.service";
 import { Order } from "@/types/order";
 import { PaymentStatus } from "@/types/payment";
 import { PendingReviewItem } from "@/types/review";
+import { ReturnRequest, canRequestReturn } from "@/types/return";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +25,7 @@ import { OrderDetail } from "@/components/order/order-detail";
 import { OrderTimeline } from "@/components/order/order-timeline";
 import { OrderTracking } from "@/components/order/order-tracking";
 import { OrderActions } from "@/components/order/order-actions";
+import { ReturnSection } from "@/components/order/return-section";
 import { ReviewForm } from "@/components/review/review-form";
 import { formatCurrency } from "@/lib/format-currency";
 import { InvoiceDownloadButtons } from "@/components/invoice/invoice-download-buttons";
@@ -53,6 +56,8 @@ export default function OrderDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isPolling, setIsPolling] = useState(false);
 
+    const [returnRequest, setReturnRequest] = useState<ReturnRequest | null>(null);
+
     // Review states
     const [pendingReviews, setPendingReviews] = useState<PendingReviewItem[]>([]);
     const [reviewedProductIds, setReviewedProductIds] = useState<Set<string>>(new Set());
@@ -64,10 +69,20 @@ export default function OrderDetailPage() {
     const [paypalCallbackProcessed, setPaypalCallbackProcessed] = useState(false);
     const paypalCaptureAttempted = useRef(false);
 
-    // Check if URL has review param to auto-expand
     const reviewProductId = searchParams.get('review');
 
-    // Fetch order data
+    //  Fetch return for this order
+    const fetchReturn = useCallback(async () => {
+        if (!orderNumber) return;
+        try {
+            const result = await ReturnService.getReturnByOrder(orderNumber);
+            setReturnRequest(result.data);
+        } catch {
+            // 404 = no return yet, that's normal
+            setReturnRequest(null);
+        }
+    }, [orderNumber]);
+
     const fetchOrder = useCallback(async () => {
         if (!orderNumber) return;
 
@@ -76,7 +91,6 @@ export default function OrderDetailPage() {
             const response = await OrderService.getOrderDetail(orderNumber);
             setOrder(response.data);
 
-            // Set payment status based on order status
             if (response.data.status === 'PAID' || response.data.paid_at) {
                 setPaymentStatus('PAID');
             } else if (response.data.status === 'PENDING') {
@@ -85,7 +99,6 @@ export default function OrderDetailPage() {
                 setPaymentStatus('FAILED');
             }
 
-            // Fetch pending reviews if order is completed
             if (response.data.status === 'COMPLETED') {
                 fetchPendingReviews();
             }
@@ -97,17 +110,14 @@ export default function OrderDetailPage() {
         }
     }, [orderNumber, locale]);
 
-    // Fetch pending reviews for this order
     const fetchPendingReviews = async () => {
         try {
             const response = await ReviewService.getPendingReviews();
-            // Filter to only show pending reviews for this order
             const orderPending = response.data.filter(
                 (item) => item.orderNumber === orderNumber
             );
             setPendingReviews(orderPending);
 
-            // Auto-expand if URL has review param
             if (reviewProductId && orderPending.some((p) => p.product.id === reviewProductId)) {
                 setExpandedReviewForm(reviewProductId);
             }
@@ -116,7 +126,6 @@ export default function OrderDetailPage() {
         }
     };
 
-    // Poll payment status
     const pollPaymentStatus = useCallback(async () => {
         if (!order || !orderNumber) return;
 
@@ -136,7 +145,6 @@ export default function OrderDetailPage() {
         }
     }, [order, orderNumber, fetchOrder, t, locale]);
 
-    // Handle PayPal callback
     const handlePayPalCallback = useCallback(async () => {
         const payment = searchParams.get('payment');
         const token = searchParams.get('token');
@@ -182,13 +190,11 @@ export default function OrderDetailPage() {
         }
     }, [searchParams, orderNumber, fetchOrder, router, t, locale]);
 
-    // Handle review submission success
     const handleReviewSuccess = (productId: string) => {
         setReviewedProductIds((prev) => new Set([...prev, productId]));
         setPendingReviews((prev) => prev.filter((p) => p.product.id !== productId));
         setExpandedReviewForm(null);
 
-        // Get product name for toast message
         const product = pendingReviews.find(p => p.product.id === productId);
         const productName = product?.product.name || "";
 
@@ -199,19 +205,27 @@ export default function OrderDetailPage() {
         );
     };
 
-    // Initial fetch
+    // ✅ Combined refresh: order + return
+    const handleUpdate = useCallback(() => {
+        fetchOrder();
+        fetchReturn();
+    }, [fetchOrder, fetchReturn]);
+
     useEffect(() => {
         fetchOrder();
     }, [fetchOrder]);
 
-    // Handle PayPal callback after order is loaded
+    //  Fetch return after order is loaded
+    useEffect(() => {
+        if (order) fetchReturn();
+    }, [order?.order_number]); // intentionally only trigger when order number changes
+
     useEffect(() => {
         if (order && !paypalCallbackProcessed) {
             handlePayPalCallback();
         }
     }, [order, paypalCallbackProcessed, handlePayPalCallback]);
 
-    // Auto-poll payment status every 5 seconds for pending payments
     useEffect(() => {
         if (paymentStatus === "PENDING" && order && !isCapturingPayPal) {
             const interval = setInterval(() => {
@@ -222,7 +236,6 @@ export default function OrderDetailPage() {
         }
     }, [paymentStatus, order, pollPaymentStatus, isCapturingPayPal]);
 
-    // Show capturing state
     if (isCapturingPayPal) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-4">
@@ -274,6 +287,9 @@ export default function OrderDetailPage() {
 
     const showReviewForms = order.status === "COMPLETED" && pendingReviews.length > 0;
 
+    const returnEligibility = canRequestReturn(order.status, order.completed_at);
+    const hasActiveReturn = !!returnRequest;
+
     return (
         <div className="min-h-screen bg-muted/30">
             <div className="container mx-auto px-4 py-8">
@@ -300,11 +316,7 @@ export default function OrderDetailPage() {
                                     {t.orders?.placedOn || (locale === "id" ? "Dibuat pada" : "Placed on")}{" "}
                                     {new Date(order.created_at).toLocaleDateString(
                                         locale === "id" ? "id-ID" : "en-US",
-                                        {
-                                            year: "numeric",
-                                            month: "long",
-                                            day: "numeric",
-                                        }
+                                        { year: "numeric", month: "long", day: "numeric" }
                                     )}
                                 </p>
                             </div>
@@ -319,11 +331,17 @@ export default function OrderDetailPage() {
                                 />
                             </div>
                         </div>
-                        <OrderActions order={order} onUpdate={fetchOrder} />
+
+                        {/* ✅ UPDATED: pass hasActiveReturn */}
+                        <OrderActions
+                            order={order}
+                            onUpdate={handleUpdate}
+                            hasActiveReturn={hasActiveReturn}
+                        />
                     </div>
                 </ScrollReveal>
 
-                {/* Payment Section - Only show if payment pending */}
+                {/* Payment Section */}
                 {showPaymentButtons && (
                     <ScrollReveal delay={0.2}>
                         <Card className="mb-6">
@@ -339,7 +357,6 @@ export default function OrderDetailPage() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {/* Payment Amount */}
                                 <div className="bg-muted p-4 rounded-lg">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-muted-foreground">
@@ -351,19 +368,14 @@ export default function OrderDetailPage() {
                                     </div>
                                 </div>
 
-                                {/* Payment Buttons */}
                                 <div className="space-y-3">
                                     {order.currency === "IDR" && (
                                         <MidtransSnapButton
                                             orderNumber={order.order_number}
-                                            onSuccess={() => {
-                                                fetchOrder();
-                                                pollPaymentStatus();
-                                            }}
+                                            onSuccess={() => { fetchOrder(); pollPaymentStatus(); }}
                                             className="w-full"
                                         />
                                     )}
-
                                     {order.currency === "USD" && (
                                         <PayPalRedirectButton
                                             orderNumber={order.order_number}
@@ -372,7 +384,6 @@ export default function OrderDetailPage() {
                                     )}
                                 </div>
 
-                                {/* Refresh Status Button */}
                                 <div className="pt-4 border-t">
                                     <Button
                                         variant="outline"
@@ -403,7 +414,7 @@ export default function OrderDetailPage() {
                     </ScrollReveal>
                 )}
 
-                {/* Review Section - Only show if order completed and has pending reviews */}
+                {/* Review Section */}
                 {showReviewForms && (
                     <ScrollReveal delay={0.2}>
                         <Card className="mb-6">
@@ -463,12 +474,10 @@ export default function OrderDetailPage() {
 
                                                 return (
                                                     <div key={item.product.id} className="border rounded-lg overflow-hidden">
-                                                        {/* Product Header */}
                                                         <button
                                                             onClick={() => setExpandedReviewForm(isExpanded ? null : item.product.id)}
                                                             className="w-full flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors text-left"
                                                         >
-                                                            {/* Product Image */}
                                                             <div className="relative w-16 h-16 rounded-md overflow-hidden bg-muted shrink-0">
                                                                 <Image
                                                                     src={item.product.imageUrl || "/placeholder.png"}
@@ -477,34 +486,25 @@ export default function OrderDetailPage() {
                                                                     className="object-cover"
                                                                 />
                                                             </div>
-
-                                                            {/* Product Info */}
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="font-medium line-clamp-1">
-                                                                    {item.product.name}
-                                                                </p>
+                                                                <p className="font-medium line-clamp-1">{item.product.name}</p>
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {t.orders?.review?.clickToWriteReview || (locale === "id"
                                                                         ? "Klik untuk menulis ulasan"
                                                                         : "Click to write a review")}
                                                                 </p>
                                                             </div>
-
-                                                            {/* Expand Icon */}
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <Badge variant="outline" className="gap-1">
                                                                     <Star className="w-3 h-3" />
                                                                     {t.orders?.review?.writeReview || (locale === "id" ? "Tulis Ulasan" : "Write Review")}
                                                                 </Badge>
-                                                                {isExpanded ? (
-                                                                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                                                                ) : (
-                                                                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                                                )}
+                                                                {isExpanded
+                                                                    ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                                                    : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                                                             </div>
                                                         </button>
 
-                                                        {/* Review Form */}
                                                         <AnimatePresence>
                                                             {isExpanded && (
                                                                 <motion.div
@@ -537,17 +537,25 @@ export default function OrderDetailPage() {
                     </ScrollReveal>
                 )}
 
-                {/* Main Content - Two Column Layout */}
+                {/* Main Content */}
                 <ScrollReveal delay={0.3}>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column - Order Details (2/3 width) */}
-                        <div className="lg:col-span-2">
+                        {/* Left Column (2/3) */}
+                        <div className="lg:col-span-2 space-y-6">
                             <OrderDetail order={order} />
+
+                            {/*  Return Section — tampil jika ada return request aktif */}
+                            {returnRequest && (
+                                <ReturnSection
+                                    returnRequest={returnRequest}
+                                    order={order}
+                                    onUpdate={handleUpdate}
+                                />
+                            )}
                         </div>
 
-                        {/* Right Column - Timeline & Tracking (1/3 width) */}
+                        {/* Right Column (1/3) */}
                         <div className="space-y-6">
-                            {/* Order Timeline */}
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
@@ -564,7 +572,6 @@ export default function OrderDetailPage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Tracking - Only show if shipped */}
                             {order.tracking_number && (
                                 <OrderTracking
                                     orderNumber={order.order_number}
