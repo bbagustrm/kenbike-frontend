@@ -18,11 +18,11 @@ interface VariantManagerProps {
 }
 
 export function VariantManager({
-    variants,
-    onChange,
-    disabled = false,
-    isEdit = false,
-}: VariantManagerProps) {
+                                   variants,
+                                   onChange,
+                                   disabled = false,
+                                   isEdit = false,
+                               }: VariantManagerProps) {
     const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
     const addVariant = () => {
@@ -191,17 +191,19 @@ export function VariantManager({
                                                     type="number"
                                                     min="0"
                                                     placeholder="0"
-                                                    value={variant.stock === 0 ? "" : variant.stock}
+                                                    // ✅ Fix: ?? allows 0 to display as "0"
+                                                    // ✅ No `required` — browser treats 0 as falsy, use manual validation
+                                                    value={variant.stock ?? ""}
                                                     onChange={(e) => {
-                                                        const value = e.target.value;
-                                                        if (value === "") {
+                                                        const raw = e.target.value;
+                                                        if (raw === "") {
                                                             updateVariant(actualIndex, "stock", 0);
                                                         } else {
-                                                            updateVariant(actualIndex, "stock", parseInt(value) || 0);
+                                                            const parsed = parseInt(raw);
+                                                            updateVariant(actualIndex, "stock", isNaN(parsed) ? 0 : parsed);
                                                         }
                                                     }}
                                                     disabled={disabled}
-                                                    required
                                                 />
                                             </div>
 

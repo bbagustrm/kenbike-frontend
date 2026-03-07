@@ -100,6 +100,10 @@ export const metadata: Metadata = {
     title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
     description:
         "Toko online sepeda terpercaya. Temukan komponen, sparepart, dan aksesoris sepeda terbaik dengan harga bersaing di Kenbike Store!",
+    icons: {
+        icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+    },
     alternates: {
         canonical: "https://kenbike.store/",
     },
@@ -119,6 +123,14 @@ export const metadata: Metadata = {
         siteName: "Kenbike Store",
         locale: "id_ID",
         type: "website",
+        images: [
+            {
+                url: "https://kenbike.store/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Kenbike Store - Komponen & Aksesoris Sepeda Berkualitas",
+            },
+        ],
     },
     twitter: {
         card: "summary_large_image",
@@ -127,7 +139,7 @@ export const metadata: Metadata = {
         title: "Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas",
         description:
             "Temukan komponen sepeda terbaik di Kenbike Store. Belanja mudah & cepat!",
-        images: ["https://kenbike.store/og-image.jpg"],
+        images: ["https://kenbike.store/og-image.png"],
     },
 };
 
@@ -140,7 +152,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <head>
             <link rel="preconnect" href="https://api.kenbike.store" crossOrigin="" />
             <link rel="dns-prefetch" href="https://api.kenbike.store" />
-            <title>Kenbike Store | Komponen & Aksesoris Sepeda Berkualitas</title>
         </head>
         <body className="font-body text-foreground antialiased">
         <AuthProvider>

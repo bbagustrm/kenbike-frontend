@@ -1,10 +1,10 @@
 import OrdersPage from "@/components/admin/page/OrdersPage";
 
-export default function AdminOrdersPage() {
+export default function OwnerOrdersPage() {
     return (
         <OrdersPage
             customTitle="Order Management"
-            customDescription="Manage and track all customer orders"
+            customDescription="Monitor and manage your store orders"
         />
     );
 }

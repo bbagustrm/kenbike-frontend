@@ -1,4 +1,3 @@
-// File: components/products/ProductForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -77,6 +76,20 @@ const getDefaultFormData = (isEditing: boolean): CreateProductData | UpdateProdu
     ...(isEditing ? { isActive: true } : {}),
 });
 
+// Helper: safely parse int, returns 0 if empty/NaN
+const safeInt = (value: string): number => {
+    if (value === "") return 0;
+    const parsed = parseInt(value);
+    return isNaN(parsed) ? 0 : parsed;
+};
+
+// Helper: safely parse float, returns 0 if empty/NaN
+const safeFloat = (value: string): number => {
+    if (value === "") return 0;
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? 0 : parsed;
+};
+
 export default function ProductForm({
                                         userRole,
                                         initialData,
@@ -100,7 +113,7 @@ export default function ProductForm({
         initialData || getDefaultFormData(isEditing)
     );
 
-    // ✅ FIX: Sync formData when initialData changes (for edit mode)
+    // ✅ Sync formData when initialData changes (for edit mode)
     useEffect(() => {
         if (initialData) {
             setFormData(initialData);
@@ -325,7 +338,7 @@ export default function ProductForm({
                             <PriceInput
                                 label="Price (IDR)"
                                 type="IDR"
-                                value={formData.idPrice || 0}
+                                value={formData.idPrice ?? 0}
                                 onChange={(value) => handleChange("idPrice", value)}
                                 placeholder="250000"
                                 required
@@ -334,7 +347,7 @@ export default function ProductForm({
                             <PriceInput
                                 label="Price (USD)"
                                 type="USD"
-                                value={formData.enPrice || 0}
+                                value={formData.enPrice ?? 0}
                                 onChange={(value) => handleChange("enPrice", value)}
                                 placeholder="17.50"
                                 required
@@ -349,15 +362,9 @@ export default function ProductForm({
                                     min="0"
                                     max="1"
                                     placeholder="0.11"
-                                    value={formData.taxRate || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("taxRate", parseFloat(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("taxRate", parseFloat(value) || 0);
-                                        }
-                                    }}
+                                    // ✅ Fix: ?? instead of || to allow 0
+                                    value={formData.taxRate ?? ""}
+                                    onChange={(e) => handleChange("taxRate", safeFloat(e.target.value))}
                                 />
                                 <p className="text-xs text-muted-foreground">Default: 0.11 (11%)</p>
                             </div>
@@ -379,15 +386,9 @@ export default function ProductForm({
                                     type="number"
                                     min="0"
                                     placeholder="1600"
-                                    value={formData.weight || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("weight", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("weight", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    // ✅ Fix: ?? instead of || to allow 0
+                                    value={formData.weight ?? ""}
+                                    onChange={(e) => handleChange("weight", safeInt(e.target.value))}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -397,15 +398,8 @@ export default function ProductForm({
                                     type="number"
                                     min="0"
                                     placeholder="30"
-                                    value={formData.length || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("length", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("length", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.length ?? ""}
+                                    onChange={(e) => handleChange("length", safeInt(e.target.value))}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -415,15 +409,8 @@ export default function ProductForm({
                                     type="number"
                                     min="0"
                                     placeholder="21"
-                                    value={formData.width || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("width", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("width", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.width ?? ""}
+                                    onChange={(e) => handleChange("width", safeInt(e.target.value))}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -433,15 +420,8 @@ export default function ProductForm({
                                     type="number"
                                     min="0"
                                     placeholder="2"
-                                    value={formData.height || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("height", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("height", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    value={formData.height ?? ""}
+                                    onChange={(e) => handleChange("height", safeInt(e.target.value))}
                                 />
                             </div>
                         </div>
@@ -456,12 +436,18 @@ export default function ProductForm({
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="categoryId">Category</Label>
+                            {/*
+                              ✅ Fix: key={categories.length} memaksa re-render Select
+                              saat categories selesai di-load, sehingga nilai awal
+                              formData.categoryId bisa ditampilkan dengan benar
+                            */}
                             <Select
-                                value={formData.categoryId || "none"}
+                                key={`category-${categories.length}`}
+                                value={formData.categoryId ?? "none"}
                                 onValueChange={(value) => handleChange("categoryId", value === "none" ? undefined : value)}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select category" />
+                                    <SelectValue placeholder={categories.length === 0 ? "Loading..." : "Select category"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">No Category</SelectItem>
@@ -487,12 +473,14 @@ export default function ProductForm({
                         {isOwner && (
                             <div className="space-y-2">
                                 <Label htmlFor="promotionId">Promotion</Label>
+                                {/* ✅ Fix: key sama untuk Promotion */}
                                 <Select
-                                    value={formData.promotionId || "none"}
+                                    key={`promotion-${promotions.length}`}
+                                    value={formData.promotionId ?? "none"}
                                     onValueChange={(value) => handleChange("promotionId", value === "none" ? undefined : value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select promotion" />
+                                        <SelectValue placeholder={promotions.length === 0 ? "Loading..." : "Select promotion"} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">No Promotion</SelectItem>
@@ -585,15 +573,9 @@ export default function ProductForm({
                                     type="number"
                                     min="0"
                                     placeholder="7"
-                                    value={formData.preOrderDays || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === "" || (value.length > 1 && value.startsWith("0"))) {
-                                            handleChange("preOrderDays", parseInt(value.substring(1)) || 0);
-                                        } else {
-                                            handleChange("preOrderDays", parseInt(value) || 0);
-                                        }
-                                    }}
+                                    // ✅ Fix: ?? instead of || to allow 0
+                                    value={formData.preOrderDays ?? ""}
+                                    onChange={(e) => handleChange("preOrderDays", safeInt(e.target.value))}
                                 />
                                 <p className="text-xs text-muted-foreground">
                                     Number of days until product is available

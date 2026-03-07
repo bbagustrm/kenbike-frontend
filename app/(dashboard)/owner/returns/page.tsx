@@ -1,5 +1,5 @@
 import ReturnsPage from "@/components/admin/page/ReturnsPage";
 
-export default function AdminReturnsPage() {
+export default function OwnerReturnsPage() {
     return <ReturnsPage />;
 }

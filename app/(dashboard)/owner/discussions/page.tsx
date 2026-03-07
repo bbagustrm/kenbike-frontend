@@ -1,5 +1,5 @@
 import DiscussionsPage from "@/components/admin/page/DiscussionsPage";
 
-export default function AdminDiscussionsPage() {
+export default function OwnerDiscussionsPage() {
     return <DiscussionsPage />;
 }

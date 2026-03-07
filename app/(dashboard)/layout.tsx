@@ -6,160 +6,142 @@ import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { UserAvatar } from "@/components/auth/user-avatar";
 import { useAuth } from "@/contexts/auth-context";
-import { cn } from "@/lib/utils";
+import { ChevronRight, Home } from "lucide-react";
 import {
-  LayoutDashboard,
-  Users,
-  Package,
-  ShoppingCart,
-  BarChart3,
-  Settings,
-  Menu,
-  User,
-  Home,
-  Tag,
-  Folder,
-  Star,
-  MessageCircleMore,
-  Bell,
-  RotateCcw,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
+import { getSidebarNav, type NavSubItem } from "@/config/navigation";
 
-const adminNavigation = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Products", href: "/admin/products", icon: Package },
-  { name: "Categories", href: "/admin/categories", icon: Folder },
-  { name: "Tags", href: "/admin/tags", icon: Tag },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Returns", href: "/admin/returns", icon: RotateCcw },
-  { name: "Reviews", href: "/admin/reviews", icon: Star },
-  { name: "Comments", href: "/admin/discussions", icon: MessageCircleMore },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-];
-
-const ownerNavigation = [
-  { name: "Dashboard", href: "/owner/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/owner/users", icon: Users },
-  { name: "Products", href: "/owner/products", icon: Package },
-  { name: "Categories", href: "/owner/categories", icon: Folder },
-  { name: "Tags", href: "/owner/tags", icon: Tag },
-  { name: "Orders", href: "/owner/orders", icon: ShoppingCart },
-  { name: "Returns", href: "/admin/returns", icon: RotateCcw },
-  { name: "Reviews", href: "/admin/reviews", icon: Star },
-  { name: "Comments", href: "/admin/discussions", icon: MessageCircleMore },
-  { name: "Analytics", href: "/owner/analytics", icon: BarChart3 },
-  { name: "Promotions", href: "/owner/promotions", icon: Tag },
-  { name: "Settings", href: "/owner/settings", icon: Settings },
-];
-
-const userNavigation = [
-  { name: "Profile", href: "/user/profile", icon: User },
-  { name: "Orders", href: "/user/orders", icon: ShoppingCart },
-  { name: "Notification", href: "/user/notifications", icon: Bell },
-];
-
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+function AppSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const getNavigation = () => {
-    if (user?.role === "ADMIN") return adminNavigation;
-    if (user?.role === "OWNER") return ownerNavigation;
-    return userNavigation;
-  };
+  const navGroups = getSidebarNav(user?.role as "ADMIN" | "OWNER" | undefined);
 
-  const navigation = getNavigation();
+  const panelLabel =
+      user?.role === "ADMIN" ? "Admin Panel" :
+          user?.role === "OWNER" ? "Owner Panel" :
+              "My Account";
 
-  const getDashboardTitle = () => {
-    if (user?.role === "ADMIN") return "Admin Panel";
-    if (user?.role === "OWNER") return "Owner Panel";
-    return "My Account";
-  };
+  const panelInitial =
+      user?.role === "ADMIN" ? "A" :
+          user?.role === "OWNER" ? "O" : "U";
 
-  const Sidebar = () => (
-      <>
-        <div className="flex h-16 items-center gap-2 border-b px-6">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-white font-bold">
-              {user?.role === "ADMIN" ? "A" : user?.role === "OWNER" ? "O" : "U"}
-            </span>
-            </div>
-            <span className="font-semibold text-lg">{getDashboardTitle()}</span>
-          </div>
-        </div>
-        <div className="border-b px-3 py-2">
-          <Link
-              href="/"
-              className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  "text-muted-foreground hover:bg-secondary"
-              )}
-          >
-            <Home className="h-5 w-5" />
-            Back to Home
-          </Link>
-        </div>
-        <nav className="flex-1 space-y-2 px-3 py-4">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-                <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                        "flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium transition-colors",
-                        isActive
-                            ? "bg-accent"
-                            : "text-primary hover:bg-accent"
-                    )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.name}
-                </Link>
-            );
-          })}
-        </nav>
-      </>
-  );
+  const isGroupActive = (children: NavSubItem[]) =>
+      children.some((c) => pathname === c.href || pathname.startsWith(c.href + "/"));
 
   return (
-      <ProtectedRoute>
-        <div className="flex h-screen bg-secondary overflow-hidden">
-          {/* Desktop Sidebar */}
-          <aside className="hidden md:flex md:w-64 md:flex-col border-r bg-secondary">
-            <Sidebar />
-          </aside>
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center gap-2 px-2 py-3">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">{panelInitial}</span>
+            </div>
+            <span className="font-semibold text-base truncate">{panelLabel}</span>
+          </div>
+          <div className="px-2 pb-2">
+            <Link href="/" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
+              <Home className="h-4 w-4 shrink-0" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </SidebarHeader>
 
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            {/* Header */}
-            <header className="flex h-16 items-center justify-between border-b bg-secondary px-6">
-              <div className="flex items-center gap-4">
-                {/* Mobile Menu */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="md:hidden">
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-64 p-0">
-                    <Sidebar />
-                  </SheetContent>
-                </Sheet>
-              </div>
+        <SidebarContent className="px-2">
+          {navGroups.map((group) => (
+              <SidebarGroup key={group.label}>
+                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    if (item.children) {
+                      const isActive = isGroupActive(item.children);
+                      return (
+                          <Collapsible key={item.name} defaultOpen={true} asChild className="group/collapsible">
+                            <SidebarMenuItem>
+                              <CollapsibleTrigger asChild className="cursor-pointer">
+                                <SidebarMenuButton tooltip={item.name} isActive={isActive}>
+                                  <item.icon />
+                                  <span>{item.name}</span>
+                                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                </SidebarMenuButton>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                <SidebarMenuSub>
+                                  {item.children.map((child) => {
+                                    const isChildActive = pathname === child.href || pathname.startsWith(child.href + "/");
+                                    return (
+                                        <SidebarMenuSubItem key={child.name}>
+                                          <SidebarMenuSubButton asChild isActive={isChildActive}>
+                                            <Link href={child.href}>{child.name}</Link>
+                                          </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                    );
+                                  })}
+                                </SidebarMenuSub>
+                              </CollapsibleContent>
+                            </SidebarMenuItem>
+                          </Collapsible>
+                      );
+                    }
+
+                    const isActive = pathname === item.href || (item.href ? pathname.startsWith(item.href + "/") : false);
+                    return (
+                        <SidebarMenuItem key={item.name}>
+                          <SidebarMenuButton asChild tooltip={item.name} isActive={isActive}>
+                            <Link href={item.href!}>
+                              <item.icon />
+                              <span>{item.name}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroup>
+          ))}
+        </SidebarContent>
+
+        <SidebarFooter>
+          <div className="px-2 py-2 text-xs text-muted-foreground text-center">Kenbike Store</div>
+        </SidebarFooter>
+      </Sidebar>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
+  return (
+      <ProtectedRoute>
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+            <header className="flex h-16 items-center justify-between border-b px-4 md:px-6 shrink-0">
+              <SidebarTrigger className={cn("h-8 w-8")} />
               <UserAvatar />
             </header>
-
-            {/* Page Content */}
-            <main className="flex-1 overflow-y-auto md:px-8 flex flex-col">
+            <main className="flex-1 overflow-y-auto px-4 md:px-8 flex flex-col bg-background">
               {children}
             </main>
           </div>
-        </div>
+        </SidebarProvider>
       </ProtectedRoute>
   );
 }
