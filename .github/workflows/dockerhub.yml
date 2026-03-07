@@ -45,6 +45,7 @@ jobs:
             NEXT_PUBLIC_APP_URL=${{ secrets.PROD_APP_URL }}
             NEXT_PUBLIC_IMAGE_BASE_URL=${{ secrets.PROD_IMAGE_BASE_URL }}
             NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=${{ secrets.PROD_MIDTRANS_CLIENT_KEY }}
+            NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION=${{ secrets.PROD_MIDTRANS_IS_PRODUCTION }}
             NEXT_PUBLIC_PAYPAL_CLIENT_ID=${{ secrets.PROD_PAYPAL_CLIENT_ID }}
             NEXT_PUBLIC_PAYPAL_MODE=${{ secrets.PROD_PAYPAL_MODE }}
           cache-from: type=gha

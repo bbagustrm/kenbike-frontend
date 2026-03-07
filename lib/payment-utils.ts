@@ -45,7 +45,7 @@ export const loadMidtransSnap = (): Promise<MidtransSnap> => {
         }
 
         // Use sandbox or production URL based on env
-        const isProduction = process.env.NODE_ENV === 'production';
+        const isProduction = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true';
         script.src = isProduction
             ? 'https://app.midtrans.com/snap/snap.js'
             : 'https://app.sandbox.midtrans.com/snap/snap.js';
