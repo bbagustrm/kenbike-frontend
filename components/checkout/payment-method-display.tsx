@@ -20,12 +20,12 @@ export function PaymentMethodDisplay({ currency }: PaymentMethodDisplayProps) {
         IDR: {
             name: "Midtrans",
             description: t.checkout?.paymentInfo?.midtrans || "Bank transfer, e-wallet, kartu kredit, dan lainnya",
-            logo: "/images/payments/midtrans.webp",
+            logo: "/payments/midtrans.webp",
         },
         USD: {
             name: "PayPal",
             description: t.checkout?.paymentInfo?.paypal || "Pay securely with PayPal or credit/debit card",
-            logo: "/images/payments/paypal.webp",
+            logo: "/payments/paypal.webp",
         },
     };
 
