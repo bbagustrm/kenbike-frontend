@@ -93,7 +93,7 @@ export default function UserNotificationsPage() {
     }
 
     return (
-        <div className="container mx-auto py-8 px-4 max-w-3xl">
+        <div className="container mx-auto py-8 px-4">
 
             {/* ── Header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">

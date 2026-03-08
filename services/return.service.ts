@@ -20,11 +20,31 @@ export class ReturnService {
     // ============================================
 
     /**
-     * Create a return request
+     * Create a return request with image files (multipart/form-data)
      */
-    static async createReturn(dto: CreateReturnDto): Promise<{ message: string; data: ReturnRequest }> {
+    static async createReturn(
+        dto: CreateReturnDto,
+        imageFiles: File[],
+    ): Promise<{ message: string; data: ReturnRequest }> {
         try {
-            const response = await apiClient.post('/returns', dto);
+            const formData = new FormData();
+
+            // Append text fields
+            formData.append('order_number', dto.order_number);
+            formData.append('reason', dto.reason);
+            formData.append('description', dto.description);
+            formData.append('refund_bank_name', dto.refund_bank_name);
+            formData.append('refund_account_number', dto.refund_account_number);
+            formData.append('refund_account_name', dto.refund_account_name);
+
+            // Append image files (field name: 'images', matches FilesInterceptor)
+            imageFiles.forEach((file) => {
+                formData.append('images', file);
+            });
+
+            const response = await apiClient.post('/returns', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
             return response.data;
         } catch (error) {
             throw handleApiError(error);
@@ -94,9 +114,6 @@ export class ReturnService {
     // ADMIN METHODS
     // ============================================
 
-    /**
-     * Get all returns (Admin)
-     */
     static async getAllReturns(params?: QueryReturnsParams): Promise<{
         data: ReturnRequest[];
         meta: PaginationMeta;
@@ -109,9 +126,6 @@ export class ReturnService {
         }
     }
 
-    /**
-     * Get return detail (Admin)
-     */
     static async getReturnDetail(returnId: string): Promise<{ data: ReturnRequest }> {
         try {
             const response = await apiClient.get(`/admin/returns/${returnId}`);
@@ -121,9 +135,6 @@ export class ReturnService {
         }
     }
 
-    /**
-     * Approve return
-     */
     static async approveReturn(
         returnId: string,
         dto?: ApproveReturnDto,
@@ -136,9 +147,6 @@ export class ReturnService {
         }
     }
 
-    /**
-     * Reject return
-     */
     static async rejectReturn(
         returnId: string,
         dto: RejectReturnDto,
@@ -151,9 +159,6 @@ export class ReturnService {
         }
     }
 
-    /**
-     * Mark item as received
-     */
     static async markItemReceived(
         returnId: string,
         dto?: MarkItemReceivedDto,
@@ -166,9 +171,6 @@ export class ReturnService {
         }
     }
 
-    /**
-     * Mark as refunded (manual transfer done)
-     */
     static async markRefunded(
         returnId: string,
         dto: MarkRefundedDto,

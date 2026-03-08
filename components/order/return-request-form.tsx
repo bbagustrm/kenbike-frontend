@@ -1,7 +1,7 @@
 // components/order/return-request-form.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Order } from "@/types/order";
 import { ReturnService } from "@/services/return.service";
 import { ReturnReason } from "@/types/return";
@@ -11,23 +11,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
+    Dialog, DialogContent, DialogHeader,
+    DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+    Select, SelectContent, SelectItem,
+    SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { RotateCcw, Loader2, Plus, X, AlertCircle } from "lucide-react";
+import { RotateCcw, Loader2, Upload, X, AlertCircle, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format-currency";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface ReturnRequestFormProps {
     order: Order;
@@ -42,40 +37,90 @@ const RETURN_REASONS: ReturnReason[] = [
     "OTHER",
 ];
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_PHOTOS = 5;
+
+interface PreviewFile {
+    file: File;
+    previewUrl: string;
+}
+
 export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) {
     const { t, locale } = useTranslation();
     const tr = t.returns;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isOpen, setIsOpen] = useState(false);
     const [step, setStep] = useState<1 | 2>(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     // Step 1
     const [reason, setReason] = useState<ReturnReason | "">("");
     const [description, setDescription] = useState("");
-    const [photoUrls, setPhotoUrls] = useState<string[]>([""]);
+    const [photos, setPhotos] = useState<PreviewFile[]>([]);
 
     // Step 2
     const [bankName, setBankName] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
     const [accountName, setAccountName] = useState("");
 
-    const handleAddPhoto = () => {
-        if (photoUrls.length >= 5) {
-            toast.error(tr?.form.maxPhotos ?? (locale === "id" ? "Maksimal 5 foto" : "Maximum 5 photos"));
+    const addFiles = useCallback((files: FileList | File[]) => {
+        const fileArray = Array.from(files);
+        const remaining = MAX_PHOTOS - photos.length;
+
+        if (remaining <= 0) {
+            toast.error(locale === "id" ? "Maksimal 5 foto" : "Maximum 5 photos");
             return;
         }
-        setPhotoUrls([...photoUrls, ""]);
+
+        const toAdd = fileArray.slice(0, remaining);
+        const invalid: string[] = [];
+
+        const newPreviews: PreviewFile[] = [];
+        for (const file of toAdd) {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                invalid.push(`${file.name}: format tidak didukung`);
+                continue;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                invalid.push(`${file.name}: ukuran melebihi 2MB`);
+                continue;
+            }
+            newPreviews.push({ file, previewUrl: URL.createObjectURL(file) });
+        }
+
+        if (invalid.length > 0) {
+            toast.error(invalid.join("\n"));
+        }
+
+        if (newPreviews.length > 0) {
+            setPhotos((prev) => [...prev, ...newPreviews]);
+        }
+    }, [photos.length, locale]);
+
+    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            addFiles(e.target.files);
+        }
+        // Reset input so same file can be re-selected
+        e.target.value = "";
     };
 
-    const handleRemovePhoto = (index: number) => {
-        setPhotoUrls(photoUrls.filter((_, i) => i !== index));
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files.length > 0) {
+            addFiles(e.dataTransfer.files);
+        }
     };
 
-    const handlePhotoChange = (index: number, value: string) => {
-        const updated = [...photoUrls];
-        updated[index] = value;
-        setPhotoUrls(updated);
+    const removePhoto = (index: number) => {
+        setPhotos((prev) => {
+            URL.revokeObjectURL(prev[index].previewUrl);
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const handleNextStep = () => {
@@ -87,8 +132,7 @@ export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) 
             toast.error(tr?.form.descMinLength ?? (locale === "id" ? "Deskripsi minimal 20 karakter" : "Description must be at least 20 characters"));
             return;
         }
-        const validUrls = photoUrls.filter((u) => u.trim());
-        if (validUrls.length === 0) {
+        if (photos.length === 0) {
             toast.error(tr?.form.minPhotos ?? (locale === "id" ? "Upload minimal 1 foto bukti" : "Upload at least 1 proof photo"));
             return;
         }
@@ -101,19 +145,19 @@ export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) 
             return;
         }
 
-        const validUrls = photoUrls.filter((u) => u.trim());
-
         setIsSubmitting(true);
         try {
-            await ReturnService.createReturn({
-                order_number: order.order_number,
-                reason: reason as ReturnReason,
-                description,
-                refund_bank_name: bankName,
-                refund_account_number: accountNumber,
-                refund_account_name: accountName,
-                image_urls: validUrls,
-            });
+            await ReturnService.createReturn(
+                {
+                    order_number: order.order_number,
+                    reason: reason as ReturnReason,
+                    description,
+                    refund_bank_name: bankName,
+                    refund_account_number: accountNumber,
+                    refund_account_name: accountName,
+                },
+                photos.map((p) => p.file),
+            );
 
             toast.success(tr?.form.submitSuccess ?? (locale === "id" ? "Permintaan retur berhasil diajukan!" : "Return request submitted!"));
             handleClose();
@@ -127,11 +171,13 @@ export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) 
     };
 
     const handleClose = () => {
+        // Revoke all preview URLs to avoid memory leaks
+        photos.forEach((p) => URL.revokeObjectURL(p.previewUrl));
         setIsOpen(false);
         setStep(1);
         setReason("");
         setDescription("");
-        setPhotoUrls([""]);
+        setPhotos([]);
         setBankName("");
         setAccountNumber("");
         setAccountName("");
@@ -172,7 +218,7 @@ export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) 
                         </div>
                     </div>
 
-                    {/* STEP 1 */}
+                    {/* ── STEP 1 ── */}
                     {step === 1 && (
                         <div className="space-y-4">
                             {/* Reason */}
@@ -199,7 +245,7 @@ export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) 
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder={tr?.form.descPlaceholder ?? ""}
-                                    rows={4}
+                                    rows={3}
                                     maxLength={1000}
                                 />
                                 <p className={`text-xs ${description.length < 20 ? "text-muted-foreground" : "text-green-600"}`}>
@@ -207,46 +253,91 @@ export function ReturnRequestForm({ order, onSuccess }: ReturnRequestFormProps) 
                                 </p>
                             </div>
 
-                            {/* Photos */}
+                            {/* ── Photo Upload ── */}
                             <div className="space-y-2">
-                                <Label>{tr?.form.photosLabel ?? (locale === "id" ? "Foto Bukti * (min. 1, maks. 5)" : "Proof Photos * (min. 1, max. 5)")}</Label>
-                                {photoUrls.map((url, index) => (
-                                    <div key={index} className="flex gap-2">
-                                        <Input
-                                            value={url}
-                                            onChange={(e) => handlePhotoChange(index, e.target.value)}
-                                            placeholder={tr?.form.photoUrlPlaceholder ?? "URL foto bukti"}
-                                            className="flex-1"
+                                <Label>
+                                    {tr?.form.photosLabel ?? (locale === "id" ? "Foto Bukti * (min. 1, maks. 5)" : "Proof Photos * (min. 1, max. 5)")}
+                                </Label>
+
+                                {/* Drop Zone — only show when under limit */}
+                                {photos.length < MAX_PHOTOS && (
+                                    <div
+                                        className={cn(
+                                            "border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
+                                            isDragging
+                                                ? "border-primary bg-primary/5"
+                                                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                        )}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                        onDragLeave={() => setIsDragging(false)}
+                                        onDrop={handleDrop}
+                                    >
+                                        <Upload className="h-7 w-7 mx-auto text-gray-400 mb-1.5" />
+                                        <p className="text-sm text-gray-600 font-medium">
+                                            {locale === "id" ? "Klik atau seret foto ke sini" : "Click or drag photos here"}
+                                        </p>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {locale === "id"
+                                                ? `JPEG, PNG, WEBP · maks. 2MB per file · ${photos.length}/${MAX_PHOTOS} foto`
+                                                : `JPEG, PNG, WEBP · max 2MB each · ${photos.length}/${MAX_PHOTOS} photos`}
+                                        </p>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                                            multiple
+                                            className="hidden"
+                                            onChange={handleFileInput}
                                         />
-                                        {photoUrls.length > 1 && (
-                                            <Button
+                                    </div>
+                                )}
+
+                                {/* Previews */}
+                                {photos.length > 0 && (
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {photos.map((photo, index) => (
+                                            <div key={index} className="relative aspect-square rounded-md overflow-hidden border border-gray-200 group">
+                                                <Image
+                                                    src={photo.previewUrl}
+                                                    alt={`Proof ${index + 1}`}
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized // local blob URL
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removePhoto(index)}
+                                                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X className="h-3 w-3 text-white" />
+                                                </button>
+                                                <div className="absolute bottom-0.5 left-0.5 bg-black/50 rounded text-[9px] text-white px-1">
+                                                    {index + 1}
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Add more slot */}
+                                        {photos.length < MAX_PHOTOS && (
+                                            <button
                                                 type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleRemovePhoto(index)}
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="aspect-square rounded-md border-2 border-dashed border-gray-200 hover:border-gray-300 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-gray-500 transition-colors"
                                             >
-                                                <X className="h-4 w-4" />
-                                            </Button>
+                                                <ImageIcon className="h-4 w-4" />
+                                                <span className="text-[10px]">
+                                                    {locale === "id" ? "Tambah" : "Add"}
+                                                </span>
+                                            </button>
                                         )}
                                     </div>
-                                ))}
-                                {photoUrls.length < 5 && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleAddPhoto}
-                                        className="gap-1 text-xs"
-                                    >
-                                        <Plus className="h-3 w-3" />
-                                        {tr?.form.addPhoto ?? (locale === "id" ? "Tambah Foto" : "Add Photo")}
-                                    </Button>
                                 )}
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 2 */}
+                    {/* ── STEP 2 ── */}
                     {step === 2 && (
                         <div className="space-y-4">
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 flex gap-2">
