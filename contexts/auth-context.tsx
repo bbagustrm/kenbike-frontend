@@ -1,16 +1,16 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from "react";
+import {
+    createContext, useContext, useState, useEffect,
+    useCallback, ReactNode, useRef
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { AuthService } from "@/services/auth.service";
 import { handleApiError } from "@/lib/api-client";
 import {
-    User,
-    LoginCredentials,
-    RegisterData,
-    UpdateProfileData,
-    UpdatePasswordData,
+    User, LoginCredentials, RegisterData,
+    UpdateProfileData, UpdatePasswordData,
 } from "@/types/auth";
 
 interface AuthContextType {
@@ -41,19 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const hasInitialized = useRef(false);
 
     const isAuthenticated = !!user;
-
     const isProfileComplete = user?.is_profile_complete ?? true;
 
+    // ✅ Single logout function — used both internally and by api:logout event
     const logout = useCallback(async () => {
         try {
             await AuthService.logout();
-        } catch (error) {
-            console.error("Logout error:", error);
+        } catch {
+            // ignore logout API error
         } finally {
             Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
             setUser(null);
             hasInitialized.current = false;
-
             console.log("👋 Logged out successfully");
 
             const currentPath = pathname || "/";
@@ -63,71 +62,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [pathname, router]);
 
+    // ✅ Listen to auth:logout event dispatched by api-client interceptor
+    // This way ONLY ONE logout happens — api-client fires event, auth-context handles it
+    useEffect(() => {
+        const handleForceLogout = () => {
+            console.log("🔔 auth:logout event received");
+            Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
+            setUser(null);
+            hasInitialized.current = false;
+
+            const currentPath = window.location.pathname;
+            if (!currentPath.startsWith("/login")) {
+                router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+            }
+        };
+
+        window.addEventListener("auth:logout", handleForceLogout);
+        return () => window.removeEventListener("auth:logout", handleForceLogout);
+    }, [router]);
+
+    // ✅ Initial load — only runs once
     useEffect(() => {
         async function loadUser() {
-            if (isLoadingUser.current || hasInitialized.current) {
-                return;
-            }
-
+            if (isLoadingUser.current || hasInitialized.current) return;
             isLoadingUser.current = true;
 
             try {
                 const userCookie = Cookies.get("user");
 
-                console.log("🔍 Loading user...", {
-                    hasCookie: !!userCookie
-                });
-
                 if (!userCookie) {
                     console.log("⚠️ No user cookie found");
-                    setIsLoading(false);
-                    hasInitialized.current = true;
-                    isLoadingUser.current = false;
                     return;
                 }
 
+                // Set from cookie immediately for fast UI
                 try {
                     const cachedUser = JSON.parse(userCookie);
                     setUser(cachedUser);
                     console.log("✅ User loaded from cookie:", cachedUser.email);
-                } catch (error) {
-                    console.error("Error parsing user cookie:", error);
+                } catch {
+                    console.error("Error parsing user cookie");
+                    Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
+                    return;
                 }
 
+                // Verify with API — interceptor handles refresh automatically
+                // ✅ Do NOT catch 401 here — interceptor will:
+                //    - Try refresh → if success, retries /auth/me → returns fresh user
+                //    - If refresh fails → fires auth:logout event → handled above
                 try {
                     const response = await AuthService.getCurrentUser();
                     const freshUser = response.data;
-
                     if (freshUser) {
                         setUser(freshUser);
-
                         Cookies.set("user", JSON.stringify(freshUser), {
                             expires: 7,
                             sameSite: "lax",
                             ...(COOKIE_DOMAIN && { domain: COOKIE_DOMAIN }),
                         });
-
                         console.log("✅ User verified from API:", freshUser.email);
                     }
                 } catch (apiError) {
-                    console.error("Failed to verify user from API:", apiError);
-
-                    if (
-                        apiError &&
-                        typeof apiError === 'object' &&
-                        'response' in apiError &&
-                        apiError.response &&
-                        typeof apiError.response === 'object' &&
-                        'status' in apiError.response &&
-                        apiError.response.status === 401
-                    ) {
-                        console.log("⚠️ Token invalid, logging out...");
-                        Cookies.remove("user", COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {});
-                        setUser(null);
-                    }
+                    // ✅ Only non-401 errors land here (network error, 500, etc.)
+                    // 401 is fully handled by interceptor + auth:logout event
+                    console.error("API error verifying user (non-auth):", apiError);
+                    // Keep user from cookie — don't force logout on network error
                 }
-            } catch (error) {
-                console.error("Failed to load user:", error);
             } finally {
                 setIsLoading(false);
                 hasInitialized.current = true;
@@ -138,34 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loadUser();
     }, []);
 
-    useEffect(() => {
-        if (!isAuthenticated || !hasInitialized.current) return;
-
-        async function checkUserSession() {
-            try {
-                await AuthService.getCurrentUser();
-            } catch (error) {
-                if (
-                    error &&
-                    typeof error === 'object' &&
-                    'response' in error &&
-                    error.response &&
-                    typeof error.response === 'object' &&
-                    'status' in error.response &&
-                    error.response.status === 401
-                ) {
-                    console.log("⚠️ Session expired, logging out...");
-                    await logout();
-                }
-            }
-        }
-
-        const interval = setInterval(() => {
-            checkUserSession();
-        }, 10 * 60 * 1000);
-
-        return () => clearInterval(interval);
-    }, [isAuthenticated, logout]);
+    // ✅ REMOVED: session check interval — completely unnecessary.
+    // Every API request already goes through the interceptor which auto-refreshes.
+    // The interval was causing extra /auth/me calls that triggered double logout.
 
     const login = useCallback(async (credentials: LoginCredentials) => {
         try {
@@ -180,7 +155,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             console.log("✅ Login successful");
-
             hasInitialized.current = true;
 
             const searchParams = new URLSearchParams(window.location.search);
@@ -195,16 +169,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } else {
                 router.push("/");
             }
-        } catch (error: any) {
-            // 👇 Handle email not verified error
-            const errorResponse = error?.response?.data;
-
+        } catch (error: unknown) {
+            const errorResponse = (error as { response?: { data?: { requires_verification?: boolean; email?: string } } })?.response?.data;
             if (errorResponse?.requires_verification && errorResponse?.email) {
-                // Redirect to verify email page
                 router.push(`/verify-email?email=${encodeURIComponent(errorResponse.email)}`);
                 throw new Error("Please verify your email first");
             }
-
             const apiError = handleApiError(error);
             const errorWithFields = new Error(apiError.message) as Error & { fieldErrors?: Record<string, string> };
             errorWithFields.fieldErrors = apiError.fieldErrors;
@@ -215,12 +185,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = useCallback(async (data: RegisterData) => {
         try {
             const response = await AuthService.register(data);
-
-            // 👇 Redirect to verify-email with email param
             if (response.data?.requires_verification || response.data?.email) {
                 router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
             } else {
-                // Fallback for backward compatibility
                 router.push("/login?registered=true");
             }
         } catch (error) {
@@ -234,10 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const updateProfile = useCallback(async (data: UpdateProfileData) => {
         try {
             const response = await AuthService.updateProfile(data);
-
             setUser((prevUser) => {
                 if (!prevUser || !response.data) return prevUser;
-
                 const updatedUser = { ...prevUser, ...response.data };
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
@@ -262,10 +227,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const deleteProfileImage = useCallback(async () => {
         try {
             await AuthService.deleteProfileImage();
-
             setUser((prevUser) => {
                 if (!prevUser) return prevUser;
-
                 const updatedUser = { ...prevUser, profile_image: undefined };
                 Cookies.set("user", JSON.stringify(updatedUser), {
                     expires: 7,
@@ -283,7 +246,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const response = await AuthService.getCurrentUser();
             const updatedUser = response.data;
-
             if (updatedUser) {
                 setUser(updatedUser);
                 Cookies.set("user", JSON.stringify(updatedUser), {
@@ -300,17 +262,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (
         <AuthContext.Provider
             value={{
-                user,
-                isLoading,
-                isAuthenticated,
-                isProfileComplete,
-                login,
-                register,
-                logout,
-                updateProfile,
-                updatePassword,
-                deleteProfileImage,
-                refreshUser,
+                user, isLoading, isAuthenticated, isProfileComplete,
+                login, register, logout,
+                updateProfile, updatePassword, deleteProfileImage, refreshUser,
             }}
         >
             {children}
