@@ -4,29 +4,26 @@
 import { useRouter } from "next/navigation";
 import { OrderListItem } from "@/types/order";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell, TableHead,
+    TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order/order-status-badge";
 import { formatCurrency } from "@/lib/format-currency";
-import { Eye } from "lucide-react";
+import { Eye, PackageOpen } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { PackageOpen } from "lucide-react";
 
 interface OrderManagementTableProps {
     orders: OrderListItem[];
     isLoading?: boolean;
+    basePath?: string;
 }
 
 export function OrderManagementTable({
                                          orders,
                                          isLoading,
+                                         basePath = "/admin/orders",
                                      }: OrderManagementTableProps) {
     const router = useRouter();
 
@@ -76,73 +73,52 @@ export function OrderManagementTable({
                         <TableRow
                             key={order.id}
                             className="cursor-pointer hover:bg-muted/50"
-                            onClick={() =>
-                                router.push(`/admin/orders/${order.order_number}`)
-                            }
+                            onClick={() => router.push(`${basePath}/${order.order_number}`)}
                         >
-                            {/* Order Number - snake_case */}
                             <TableCell className="font-mono text-sm font-medium">
                                 #{order.order_number}
                             </TableCell>
 
-                            {/* Customer - snake_case nested */}
                             <TableCell>
                                 <div>
-                                    <p className="font-medium text-sm">
-                                        {order.shipping.recipient_name}
-                                    </p>
+                                    <p className="font-medium text-sm">{order.shipping.recipient_name}</p>
                                     <p className="text-xs text-muted-foreground">
                                         {order.shipping.city}, {order.shipping.country}
                                     </p>
                                 </div>
                             </TableCell>
 
-                            {/* Date - snake_case */}
                             <TableCell>
                                 <div className="text-sm">
                                     <p>
                                         {new Date(order.created_at).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
+                                            month: "short", day: "numeric", year: "numeric",
                                         })}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {new Date(order.created_at).toLocaleTimeString("en-US", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
+                                            hour: "2-digit", minute: "2-digit",
                                         })}
                                     </p>
                                 </div>
                             </TableCell>
 
-                            {/* Items - snake_case */}
                             <TableCell>
                                 <Badge variant="secondary">{order.items_count} items</Badge>
                             </TableCell>
 
-                            {/* Shipping - snake_case nested */}
                             <TableCell>
                                 <div className="text-sm">
-                                    <p className="font-medium capitalize">
-                                        {order.shipping.type.toLowerCase()}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground line-clamp-1">
-                                        {order.shipping.method}
-                                    </p>
+                                    <p className="font-medium capitalize">{order.shipping.type.toLowerCase()}</p>
+                                    <p className="text-xs text-muted-foreground line-clamp-1">{order.shipping.method}</p>
                                     {order.tracking_number && (
-                                        <p className="text-xs text-muted-foreground font-mono">
-                                            {order.tracking_number}
-                                        </p>
+                                        <p className="text-xs text-muted-foreground font-mono">{order.tracking_number}</p>
                                     )}
                                 </div>
                             </TableCell>
 
-                            {/* Total */}
                             <TableCell>
-                                <p className="font-semibold">
-                                    {formatCurrency(order.total, order.currency)}
-                                </p>
+                                <p className="font-semibold">{formatCurrency(order.total, order.currency)}</p>
                                 {order.discount > 0 && (
                                     <p className="text-xs text-green-600">
                                         -{formatCurrency(order.discount, order.currency)} saved
@@ -150,19 +126,17 @@ export function OrderManagementTable({
                                 )}
                             </TableCell>
 
-                            {/* Status */}
                             <TableCell>
                                 <OrderStatusBadge status={order.status} />
                             </TableCell>
 
-                            {/* Actions - snake_case */}
                             <TableCell className="text-right">
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        router.push(`/admin/orders/${order.order_number}`);
+                                        router.push(`${basePath}/${order.order_number}`);
                                     }}
                                 >
                                     <Eye className="h-4 w-4 mr-1" />

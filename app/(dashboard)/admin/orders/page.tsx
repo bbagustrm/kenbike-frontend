@@ -5,6 +5,7 @@ export default function AdminOrdersPage() {
         <OrdersPage
             customTitle="Order Management"
             customDescription="Manage and track all customer orders"
+            basePath="/admin/orders"
         />
     );
 }

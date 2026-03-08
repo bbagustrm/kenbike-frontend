@@ -5,6 +5,7 @@ export default function OwnerOrdersPage() {
         <OrdersPage
             customTitle="Order Management"
             customDescription="Monitor and manage your store orders"
+            basePath="/owner/orders"
         />
     );
 }

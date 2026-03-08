@@ -1,3 +1,4 @@
+// components/admin/page/OrdersPage.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,11 +15,13 @@ import { toast } from "sonner";
 interface OrdersPageProps {
     customTitle?: string;
     customDescription?: string;
+    basePath?: string; // ✅ "/admin/orders" | "/owner/orders"
 }
 
 export default function OrdersPage({
                                        customTitle = "Order Management",
                                        customDescription = "Manage and track all customer orders",
+                                       basePath = "/admin/orders",
                                    }: OrdersPageProps) {
     const [orders, setOrders] = useState<OrderListItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -103,13 +106,20 @@ export default function OrdersPage({
 
             {/* Table */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-                <OrderManagementTable orders={orders} isLoading={isLoading} />
+                <OrderManagementTable
+                    orders={orders}
+                    isLoading={isLoading}
+                    basePath={basePath} // ✅ pass basePath
+                />
             </motion.div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}
-                            className="flex justify-center items-center gap-2">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="flex justify-center items-center gap-2"
+                >
                     <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1 || isLoading}>
                         <ChevronLeft className="h-4 w-4 mr-1" />Previous
                     </Button>
@@ -117,8 +127,12 @@ export default function OrdersPage({
                         {[...Array(totalPages)].map((_, i) => {
                             const pageNum = i + 1;
                             if (pageNum === 1 || pageNum === totalPages || (pageNum >= page - 1 && pageNum <= page + 1)) {
-                                return <Button key={pageNum} variant={page === pageNum ? "default" : "outline"} size="sm"
-                                               onClick={() => setPage(pageNum)} disabled={isLoading} className="w-10">{pageNum}</Button>;
+                                return (
+                                    <Button key={pageNum} variant={page === pageNum ? "default" : "outline"}
+                                            size="sm" onClick={() => setPage(pageNum)} disabled={isLoading} className="w-10">
+                                        {pageNum}
+                                    </Button>
+                                );
                             } else if (pageNum === page - 2 || pageNum === page + 2) {
                                 return <span key={pageNum} className="px-2">...</span>;
                             }
