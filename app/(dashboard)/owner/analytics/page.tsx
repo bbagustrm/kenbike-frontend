@@ -338,7 +338,7 @@ export default function OwnerAnalyticsPage() {
                                                         )}
                                                     </div>
                                                     <Link
-                                                        href={`/admin/products/${product.id}/edit`}
+                                                        href={`/owner/products/${product.id}/edit`}
                                                         className="font-medium hover:underline"
                                                     >
                                                         {product.name}

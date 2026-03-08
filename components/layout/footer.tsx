@@ -56,20 +56,20 @@ export default function Footer() {
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
                   <span className="text-muted-foreground">
                   {locale === "id"
-                      ? "Jl. Contoh No. 123, Jakarta Selatan, Indonesia 12345"
-                      : "Jl. Contoh No. 123, South Jakarta, Indonesia 12345"}
+                      ? "Jl. Mangkudipuro No. 269 Ds Growong Kidul RT.2 RW.2 Kecamatan Juwana, Kab Pati, Jawa Tengah, Indonesia 59185"
+                      : "Mangkudipuro Street no.269 Growong Kidul Village Juwana Subdistric, Pati Regency, Central Java, Indonesia 59185"}
                 </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
                   <a href="tel:+6281234567890" className="text-muted-foreground hover:text-primary transition-colors">
-                    +62 812-3456-7890
+                    +62 852-9076-5050
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
-                  <a href="mailto:info@kenbike.com" className="text-muted-foreground hover:text-primary transition-colors">
-                    info@kenbike.com
+                  <a href="kenbikeindo@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
+                    kenbikeindo@gmail.com
                   </a>
                 </div>
               </div>

@@ -298,7 +298,7 @@ export default function OwnerDashboardPage() {
                     {/* Recent Orders */}
                     <RecentOrdersTable
                         data={recentOrders}
-                        basePath="/admin/orders"
+                        basePath="/owner/orders"
                     />
 
                     {/* Low Stock Alert */}

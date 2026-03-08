@@ -108,6 +108,7 @@ export interface AiInsight {
     suggestions?: string[];
     generated_at?: string;
     error?: string;
+    retry_after?: number; // detik — ada saat error === "RATE_LIMITED"
 }
 
 export interface AiSummary {
