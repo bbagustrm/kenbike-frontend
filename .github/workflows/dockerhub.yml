@@ -62,23 +62,20 @@ jobs:
           script_stop: true
           script: |
             echo "🚀 Deploying KenBike Frontend..."
-
+            
             cd /var/www/kenbike
-
+            
             # Pull latest image
             docker compose pull frontend
-
-            docker compose stop frontend
-            docker compose rm -f frontend
-
-            # Start container baru
+            
+            # Restart frontend container only
             docker compose up -d frontend
-
+            
             # Clean up old images
             docker image prune -f
-
+            
             # Health check
-            sleep 15
+            sleep 10
             if curl -s -o /dev/null -w "%{http_code}" http://localhost:3001 | grep -q "200\|301\|302"; then
               echo "✅ Frontend deployment successful!"
             else
@@ -92,4 +89,4 @@ jobs:
           echo "- **Image:** ${{ env.DOCKER_IMAGE }}:latest" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** https://kenbike.store" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://kenbikestore.com" >> $GITHUB_STEP_SUMMARY
