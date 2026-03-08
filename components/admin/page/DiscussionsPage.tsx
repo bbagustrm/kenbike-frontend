@@ -154,7 +154,7 @@ export default function DiscussionsPage({
             {/* Filters */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
                 <Card>
-                    <CardContent className="pt-6">
+                    <CardContent >
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
