@@ -1,16 +1,15 @@
 // components/checkout/shipping-option-card.tsx
 "use client";
 
+import Image from "next/image";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShippingOption } from "@/types/shipping";
 import { Currency } from "@/types/payment";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format-currency";
-import { ShippingService } from "@/services/shipping.service";
-import { Truck, Globe, CheckCircle2, Clock } from "lucide-react";
-import { useTranslation } from "@/hooks/use-translation";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, Clock, Globe, Truck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ShippingOptionCardProps {
     option: ShippingOption;
@@ -20,87 +19,148 @@ interface ShippingOptionCardProps {
     disabled?: boolean;
 }
 
+// ── Courier logo mapping ────────────────────────────────────────────────────
+// Images stored in public/ekspedisi/*.webp
+// Fallback to courier name initials if image not found
+const COURIER_LOGOS: Record<string, string> = {
+    // Domestic (Biteship)
+    jne:        "/ekspedisi/jne.webp",
+    jnt:        "/ekspedisi/jnt.webp",
+    "j&t":      "/ekspedisi/jnt.webp",
+    sicepat:    "/ekspedisi/sicepat.webp",
+    anteraja:   "/ekspedisi/anteraja.webp",
+    lion:       "/ekspedisi/lion.webp",
+    "lion parcel": "/ekspedisi/lion.webp",
+    sap:        "/ekspedisi/sap.webp",
+    ninja:      "/ekspedisi/ninja.webp",
+    "ninja xpress": "/ekspedisi/ninja.webp",
+    tiki:       "/ekspedisi/tiki.webp",
+    pos:        "/ekspedisi/pos.webp",
+    "pos indonesia": "/ekspedisi/pos.webp",
+    rpx:        "/ekspedisi/rpx.webp",
+    gosend:     "/ekspedisi/gosend.webp",
+    grab:       "/ekspedisi/grab.webp",
+    "grab express": "/ekspedisi/grab.webp",
+    paxel:      "/ekspedisi/paxel.webp",
+    ide:        "/ekspedisi/ide.webp",
+    "id express": "/ekspedisi/ide.webp",
+    // International
+    dhl:        "/ekspedisi/dhl.webp",
+    fedex:      "/ekspedisi/fedex.webp",
+    ups:        "/ekspedisi/ups.webp",
+    tnt:        "/ekspedisi/tnt.webp",
+};
+
+const getCourierLogo = (courierName: string): string | null => {
+    const key = courierName.toLowerCase();
+    // Exact match first
+    if (COURIER_LOGOS[key]) return COURIER_LOGOS[key];
+    // Partial match
+    for (const [k, v] of Object.entries(COURIER_LOGOS)) {
+        if (key.includes(k) || k.includes(key)) return v;
+    }
+    return null;
+};
+
+// Courier display name cleanup
+const formatCourierName = (courier: string): string => {
+    return courier
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+};
+
+// Estimate display — uses estimatedDays: { min, max }
+const formatEta = (estimatedDays: ShippingOption["estimatedDays"] | undefined): string | null => {
+    if (!estimatedDays) return null;
+    const { min, max } = estimatedDays;
+    if (min === max) return `${min} day${min === 1 ? "" : "s"}`;
+    return `${min}–${max} days`;
+};
+
 export function ShippingOptionCard({
-    option,
-    currency,
-    selected,
-    onSelect,
-    disabled = false,
-}: ShippingOptionCardProps) {
-    const { locale } = useTranslation();
+                                       option,
+                                       currency,
+                                       selected,
+                                       onSelect,
+                                       disabled = false,
+                                   }: ShippingOptionCardProps) {
+    const courierKey = option.courier?.toLowerCase() || "";
+    const logoSrc = getCourierLogo(courierKey);
+    const displayName = option.courier ? formatCourierName(option.courier) : "International";
+    const serviceName = option.service || option.zoneName || "";
+    const eta = formatEta(option.estimatedDays);
+    const isInternational = option.type === "INTERNATIONAL";
 
-    // Get icon based on shipping type
-    const Icon = option.type === "DOMESTIC" ? Truck : Globe;
-
-    // Format estimate
-    const estimate = ShippingService.formatEstimate(
-        option.estimatedDays.min,
-        option.estimatedDays.max,
-        locale
-    );
+    // Track image load error to show fallback icon
+    const [imgError, setImgError] = useState(false);
 
     return (
-        <motion.div
-            whileHover={{ scale: disabled ? 1 : 1.02 }}
-            whileTap={{ scale: disabled ? 1 : 0.98 }}
+        <motion.button
+            type="button"
+            onClick={onSelect}
+            disabled={disabled}
+            whileTap={disabled ? undefined : { scale: 0.98 }}
+            className={cn(
+                "w-full text-left rounded-lg border-2 px-3 py-2.5 transition-all cursor-pointer",
+                "flex items-center gap-3",
+                selected
+                    ? "border-2 border-border bg-primary/5"
+                    : "border-none bg-background",
+                disabled && "opacity-50 cursor-not-allowed"
+            )}
         >
-            <Card
-                className={cn(
-                    "cursor-pointer transition-all border-2 h-full",
-                    selected && "border-primary ring-2 ring-primary ring-offset-2",
-                    !selected && "hover:border-primary/50",
-                    disabled && "opacity-50 cursor-not-allowed"
-                )}
-                onClick={() => !disabled && onSelect()}
-            >
-                <CardContent className="p-4">
-                    {/* Header: Icon + Name + Price */}
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                        <div className="flex items-center gap-2">
-                            <div
-                                className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                                    selected ? "bg-primary text-primary-foreground" : "bg-muted"
-                                )}
-                            >
-                                <Icon className="h-4 w-4" />
-                            </div>
-                            <div>
-                                <h4 className="font-semibold text-sm line-clamp-1">
-                                    {option.serviceName}
-                                </h4>
-                                {option.type === "DOMESTIC" && option.courier && (
-                                    <p className="text-xs text-muted-foreground uppercase">
-                                        {option.courier}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {selected && (
-                            <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                        )}
+            {/* Logo / Icon */}
+            <div className="shrink-0 w-12 h-8 flex items-center justify-center">
+                {logoSrc && !imgError ? (
+                    <Image
+                        src={logoSrc}
+                        alt={displayName}
+                        width={48}
+                        height={32}
+                        className="w-full h-full object-contain"
+                        onError={() => setImgError(true)}
+                    />
+                ) : (
+                    <div className="w-10 h-7 rounded bg-muted flex items-center justify-center">
+                        {isInternational
+                            ? <Globe className="h-4 w-4 text-muted-foreground" />
+                            : <Truck className="h-4 w-4 text-muted-foreground" />
+                        }
                     </div>
+                )}
+            </div>
 
-                    {/* Price */}
-                    <p className="font-bold text-lg mb-2">
-                        {formatCurrency(option.cost, currency)}
-                    </p>
-
-                    {/* Estimate Badge */}
-                    <Badge variant="secondary" className="gap-1">
-                        <Clock className="h-3 w-3" />
-                        {estimate}
-                    </Badge>
-
-                    {/* Description (truncated) */}
-                    {option.description && (
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                            {option.description}
-                        </p>
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-sm font-semibold truncate">{displayName}</span>
+                    {serviceName && (
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">
+                            {serviceName}
+                        </Badge>
                     )}
-                </CardContent>
-            </Card>
-        </motion.div>
+                </div>
+                {eta && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Clock className="h-3 w-3" />
+                        {eta}
+                    </p>
+                )}
+            </div>
+
+            {/* Price + check */}
+            <div className="shrink-0 text-right flex flex-col items-end gap-1">
+                <span className={cn(
+                    "text-sm font-bold",
+                    selected ? "text-primary" : "text-foreground"
+                )}>
+                    {formatCurrency(option.cost, currency)}
+                </span>
+                {selected && (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                )}
+            </div>
+        </motion.button>
     );
 }

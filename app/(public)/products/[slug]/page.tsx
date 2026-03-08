@@ -43,27 +43,35 @@ import { DiscussionList } from "@/components/discussion/discussion-list";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { CarouselApi } from "@/components/ui/carousel";
 
+// ✅ Colors sampled from bolt image — same palette as product-card.tsx
 const COLOR_MAP: Record<string, string> = {
-    black: "#000000",
-    white: "#FFFFFF",
-    chrome: "#C0C0C0",
-    silver: "#C0C0C0",
-    gold: "#FFD700",
-    red: "#FF0000",
-    blue: "#0000FF",
-    green: "#00FF00",
-    yellow: "#FFFF00",
-    orange: "#FFA500",
-    purple: "#800080",
-    pink: "#FFC0CB",
-    brown: "#8B4513",
-    gray: "#808080",
-    grey: "#808080",
+    black:    "#18181b",   // zinc-900
+    white:    "#fafafa",   // zinc-50
+    silver:   "#d4d4d8",   // zinc-300
+    chrome:   "#e4e4e7",
+    gray:     "#a1a1aa",   // zinc-400
+    grey:     "#a1a1aa",
+    titanium: "#71717a",   // zinc-500
+    satin:    "#a1a1aa",
+    polished: "#e4e4e7",
+    orange:   "#E8640A",
+    red:      "#D42B1E",
+    gold:     "#C89B1A",
+    yellow:   "#D4A817",
+    green:    "#2DAB3A",
+    blue:     "#1A6FD4",
+    purple:   "#9B2EC8",
+    pink:     "#D42BA0",
+    rose:     "#C82B6A",
+    brown:    "#92400e",   // amber-800
 };
 
 const getColorFromVariantName = (variantName: string): string => {
-    const firstWord = variantName.toLowerCase().split(" ")[0];
-    return COLOR_MAP[firstWord] || "#CCCCCC";
+    const name = variantName.toLowerCase();
+    for (const [key, value] of Object.entries(COLOR_MAP)) {
+        if (name.includes(key)) return value;
+    }
+    return "#a1a1aa";
 };
 
 interface ProductImage {
@@ -163,7 +171,6 @@ export default function ProductDetailPage() {
     const finalPrice = basePrice ? basePrice * (1 - discount) : 0;
     const isPreOrder = !!product?.isPreOrder;
 
-    // Stock status helpers
     const currentStock = selectedVariant?.stock || 0;
     const isOutOfStock = currentStock === 0;
     const isLowStock = currentStock > 0 && currentStock <= 10;
@@ -249,7 +256,7 @@ export default function ProductDetailPage() {
                     {/* Main Image Gallery */}
                     <ScrollReveal direction="up">
                         <div className="flex flex-col lg:flex-row gap-4">
-                            {/* Desktop: Vertical Thumbnail Images */}
+                            {/* Desktop: Vertical Thumbnails */}
                             <ScrollArea className="bg-accent hidden lg:flex max-h-[500px] p-2 rounded-md">
                                 <div className="flex flex-col gap-2">
                                     {allImages.map((image, index) => (
@@ -280,7 +287,7 @@ export default function ProductDetailPage() {
                                 </div>
                             </ScrollArea>
 
-                            {/* Main Image Container */}
+                            {/* Main Carousel */}
                             <div className="flex-1 space-y-4">
                                 <Carousel
                                     className="bg-white relative aspect-square rounded-xl w-full max-w-[500px] mx-auto"
@@ -301,7 +308,6 @@ export default function ProductDetailPage() {
                                                         priority={index === 0}
                                                         className="object-contain"
                                                     />
-
                                                     {selectedVariant &&
                                                         index >= getVariantImageStartIndex() && (
                                                             <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -312,7 +318,6 @@ export default function ProductDetailPage() {
                                             </CarouselItem>
                                         ))}
                                     </CarouselContent>
-
                                     {allImages.length > 1 && (
                                         <>
                                             <CarouselPrevious />
@@ -322,8 +327,7 @@ export default function ProductDetailPage() {
                                 </Carousel>
                             </div>
 
-
-                            {/* Mobile: Horizontal Thumbnail Images */}
+                            {/* Mobile: Horizontal Thumbnails */}
                             <div className="lg:hidden flex gap-2 overflow-x-auto overflow-y-hidden pb-2 px-1">
                                 {allImages.map((image, index) => (
                                     <motion.button
@@ -371,11 +375,7 @@ export default function ProductDetailPage() {
                                                     {t.productDetail?.validUntil || (locale === "id" ? "Berlaku hingga" : "Valid until")}{" "}
                                                     {new Date(product.promotion.endDate).toLocaleDateString(
                                                         locale === "id" ? "id-ID" : "en-US",
-                                                        {
-                                                            day: 'numeric',
-                                                            month: 'long',
-                                                            year: 'numeric'
-                                                        }
+                                                        { day: 'numeric', month: 'long', year: 'numeric' }
                                                     )}
                                                 </p>
                                             </div>
@@ -387,7 +387,7 @@ export default function ProductDetailPage() {
                         </ScrollReveal>
                     )}
 
-                    {/* Variant Selection */}
+                    {/* Mobile: Variant Selection */}
                     {product.variants && product.variants.length > 0 && (
                         <div className="space-y-3 md:hidden">
                             <div className="flex gap-2 flex-wrap">
@@ -404,12 +404,12 @@ export default function ProductDetailPage() {
                                                 selectedVariant?.id === variant.id && "border-accent"
                                             )}
                                         >
-                                        <span
-                                            className="w-6 h-6 rounded-full"
-                                            style={{ backgroundColor: getColorFromVariantName(variant.variantName) }}
-                                            title={variant.variantName}
-                                            aria-label={variant.variantName}
-                                        />
+                                            <span
+                                                className="w-6 h-6 rounded-full"
+                                                style={{ backgroundColor: getColorFromVariantName(variant.variantName) }}
+                                                title={variant.variantName}
+                                                aria-label={variant.variantName}
+                                            />
                                             <span className="text-sm">{variant.variantName}</span>
                                         </motion.button>
                                     ))}
@@ -420,7 +420,6 @@ export default function ProductDetailPage() {
                     {/* Product Details Accordion */}
                     <ScrollReveal direction="up" delay={0.3}>
                         <Accordion type="multiple" defaultValue={["communityGallery","reviews"]} className="w-full">
-                            {/* Community Gallery */}
                             <AccordionItem value="communityGallery">
                                 <AccordionTrigger className="text-xl font-bold">
                                     {t.productDetail.communityGallery}
@@ -445,17 +444,14 @@ export default function ProductDetailPage() {
                                                                 fill
                                                                 className="object-cover"
                                                             />
-
                                                             <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                                                                 <span className="text-white font-semibold text-sm">
-                                                                  {t.productDetail.communityGallery}
+                                                                    {t.productDetail.communityGallery}
                                                                 </span>
                                                             </div>
                                                         </motion.div>
                                                     ))}
                                                 </div>
-
-                                                {/* Scrollbar horizontal */}
                                                 <ScrollBar orientation="horizontal" />
                                             </ScrollArea>
                                         </ScrollReveal>
@@ -463,7 +459,6 @@ export default function ProductDetailPage() {
                                 </AccordionContent>
                             </AccordionItem>
 
-                            {/* Description */}
                             <AccordionItem value="description">
                                 <AccordionTrigger className="text-xl font-bold">
                                     {t.productDetail.description}
@@ -478,7 +473,6 @@ export default function ProductDetailPage() {
                                 </AccordionContent>
                             </AccordionItem>
 
-                            {/* Reviews - Using ReviewList Component */}
                             <AccordionItem value="reviews">
                                 <AccordionTrigger className="text-xl font-bold">
                                     <div className="flex items-center gap-2">
@@ -490,7 +484,6 @@ export default function ProductDetailPage() {
                                 </AccordionContent>
                             </AccordionItem>
 
-                            {/* Q&A / Discussions - Using DiscussionList Component */}
                             <AccordionItem value="discussions">
                                 <AccordionTrigger className="text-xl font-bold">
                                     {t.productDetail?.qna || (locale === "id" ? "Tanya Jawab" : "Q&A")}
@@ -503,7 +496,7 @@ export default function ProductDetailPage() {
                     </ScrollReveal>
                 </div>
 
-                {/* RIGHT COLUMN: Sticky Product Info Card */}
+                {/* RIGHT COLUMN: Sticky Product Info */}
                 <div className="lg:col-span-3 hidden lg:block">
                     <ScrollReveal direction="left" delay={0.2} className="sticky top-24">
                         <Card className="bg-transparent p-0">
@@ -547,21 +540,18 @@ export default function ProductDetailPage() {
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm text-muted-foreground">{t.productDetail.stock}:</span>
-
                                         {isOutOfStock && (
                                             <Badge variant="destructive" className="gap-1.5">
                                                 <AlertTriangle className="w-3.5 h-3.5" />
                                                 {t.products.outOfStock}
                                             </Badge>
                                         )}
-
                                         {isLowStock && (
                                             <Badge variant="destructive" className="gap-1.5">
                                                 <AlertTriangle className="w-3.5 h-3.5" />
                                                 {t.productDetail.onlyLeftInStock.replace("{count}", currentStock.toString())}
                                             </Badge>
                                         )}
-
                                         {isAvailable && (
                                             <Badge variant="outline" className="gap-1.5">
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -589,7 +579,9 @@ export default function ProductDetailPage() {
                                                         whileTap={{ scale: 0.9 }}
                                                         className={cn(
                                                             "w-8 h-8 rounded-full border-2 transition-all",
-                                                            selectedVariant?.id === variant.id && "ring-2 ring-accent ring-offset-2"
+                                                            selectedVariant?.id === variant.id
+                                                                ? "ring-2 ring-accent ring-offset-2"
+                                                                : "border-transparent"
                                                         )}
                                                         style={{ backgroundColor: getColorFromVariantName(variant.variantName) }}
                                                         title={variant.variantName}
@@ -636,10 +628,7 @@ export default function ProductDetailPage() {
                                             {formatCurrency(finalPrice * quantity, locale === "id" ? "IDR" : "USD")}
                                         </span>
                                     </div>
-                                    <motion.div
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
+                                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                         <Button
                                             onClick={handleAddToCart}
                                             size="lg"
@@ -678,6 +667,7 @@ export default function ProductDetailPage() {
                     </div>
                 </ScrollReveal>
             )}
+
             <ProductInfoDrawer
                 product={product}
                 selectedVariant={selectedVariant}

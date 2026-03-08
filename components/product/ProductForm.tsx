@@ -436,13 +436,8 @@ export default function ProductForm({
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="categoryId">Category</Label>
-                            {/*
-                              ✅ Fix: key={categories.length} memaksa re-render Select
-                              saat categories selesai di-load, sehingga nilai awal
-                              formData.categoryId bisa ditampilkan dengan benar
-                            */}
                             <Select
-                                key={`category-${categories.length}`}
+                                key={`category-${categories.length}-${formData.categoryId ?? "none"}`}
                                 value={formData.categoryId ?? "none"}
                                 onValueChange={(value) => handleChange("categoryId", value === "none" ? undefined : value)}
                             >
@@ -475,7 +470,7 @@ export default function ProductForm({
                                 <Label htmlFor="promotionId">Promotion</Label>
                                 {/* ✅ Fix: key sama untuk Promotion */}
                                 <Select
-                                    key={`promotion-${promotions.length}`}
+                                    key={`promotion-${promotions.length}-${formData.promotionId ?? "none"}`}
                                     value={formData.promotionId ?? "none"}
                                     onValueChange={(value) => handleChange("promotionId", value === "none" ? undefined : value)}
                                 >

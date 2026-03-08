@@ -4,12 +4,10 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useTranslation } from "@/hooks/use-translation";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Phone, MapPin, Edit, AlertCircle } from "lucide-react";
+import { MapPin, Edit, AlertCircle, Phone, User } from "lucide-react";
 import { isIndonesia } from "@/lib/countries";
 
 interface ShippingAddressDisplayProps {
@@ -21,117 +19,31 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
     const { user } = useAuth();
     const { t, locale } = useTranslation();
 
-    // Check if address is complete
-    const isAddressComplete = Boolean(
-        user?.address &&
-        user?.city &&
-        user?.postal_code &&
-        user?.country
-    );
-
-    // For Indonesia, province is also required
     const isDomestic = isIndonesia(user?.country || "");
+    const isAddressComplete = Boolean(
+        user?.address && user?.city && user?.postal_code && user?.country
+    );
     const needsProvince = isDomestic && !user?.province;
-
     const isComplete = isAddressComplete && !needsProvince;
 
-    // Format full address
-    const formatAddress = () => {
-        const parts = [
-            user?.address,
-            user?.district,
-            user?.city,
-            user?.province,
-            user?.postal_code,
-            user?.country,
-        ].filter(Boolean);
-        return parts.join(", ");
-    };
-
-    // Format recipient name
     const recipientName = user ? `${user.first_name} ${user.last_name}`.trim() : "";
+
+    const addressLine = [
+        user?.address,
+        user?.district,
+        user?.city,
+        user?.province,
+        user?.postal_code,
+    ].filter(Boolean).join(", ");
 
     if (!isComplete) {
         return (
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="flex items-center justify-between">
-                    <span>
-                        {t.checkout?.addressIncomplete?.description || "Please complete your shipping address to continue"}
+                <AlertDescription className="flex items-center justify-between gap-3">
+                    <span className="text-sm">
+                        {t.checkout?.addressIncomplete?.description || "Please complete your shipping address"}
                     </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push("/user/profile?tab=address")}
-                        disabled={disabled}
-                    >
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t.checkout?.addressIncomplete?.completeButton || "Complete Address"}
-                    </Button>
-                </AlertDescription>
-            </Alert>
-        );
-    }
-
-    return (
-        <Card>
-            <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                        {/* Recipient Name */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                <User className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">
-                                    {t.checkout?.recipient || "Recipient"}
-                                </p>
-                                <p className="font-semibold">
-                                    {recipientName || (t.checkout?.notSet || "Not set")}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Phone */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Phone className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">
-                                    {t.checkout?.phoneNumber || "Phone Number"}
-                                </p>
-                                <p className="font-semibold">
-                                    {user?.phone_number || (t.checkout?.notSet || "Not set")}
-                                </p>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Address */}
-                        <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                <MapPin className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <p className="text-xs text-muted-foreground">
-                                        {t.checkout?.address || "Shipping Address"}
-                                    </p>
-                                    <Badge variant="outline" className="text-xs">
-                                        {isDomestic
-                                            ? (t.checkout?.domestic || "Domestic")
-                                            : (t.checkout?.international || "International")}
-                                    </Badge>
-                                </div>
-                                <p className="text-sm">{formatAddress()}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Edit Button */}
                     <Button
                         variant="outline"
                         size="sm"
@@ -139,11 +51,56 @@ export function ShippingAddressDisplay({ disabled = false }: ShippingAddressDisp
                         disabled={disabled}
                         className="shrink-0"
                     >
-                        <Edit className="h-4 w-4 mr-2" />
-                        {t.checkout?.edit || t.common.edit}
+                        <Edit className="h-3.5 w-3.5 mr-1.5" />
+                        {t.checkout?.addressIncomplete?.completeButton || "Complete"}
                     </Button>
+                </AlertDescription>
+            </Alert>
+        );
+    }
+
+    return (
+        <div className="flex items-start justify-between gap-4 p-3 rounded-lg border border-border bg-muted/30">
+            {/* Left: icon */}
+            <div className="mt-0.5 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="h-4 w-4 text-primary" />
+            </div>
+
+            {/* Center: address info */}
+            <div className="flex-1 min-w-0 space-y-0.5">
+                {/* Recipient + badge */}
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm">{recipientName}</span>
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                        {isDomestic
+                            ? (t.checkout?.domestic || "Domestic")
+                            : (t.checkout?.international || "International")}
+                    </Badge>
                 </div>
-            </CardContent>
-        </Card>
+
+                {/* Phone */}
+                {user?.phone_number && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {user.phone_number}
+                    </p>
+                )}
+
+                {/* Address */}
+                <p className="text-xs text-muted-foreground line-clamp-2">{addressLine}</p>
+            </div>
+
+            {/* Right: edit button */}
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push("/user/profile?tab=address")}
+                disabled={disabled}
+                className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+                title={t.checkout?.edit || "Edit"}
+            >
+                <Edit className="h-3.5 w-3.5" />
+            </Button>
+        </div>
     );
 }

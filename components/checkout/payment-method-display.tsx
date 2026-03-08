@@ -1,10 +1,10 @@
 // components/checkout/payment-method-display.tsx
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Currency } from "@/types/payment";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, CreditCard } from "lucide-react";
 import Image from "next/image";
 import { useTranslation } from "@/hooks/use-translation";
 
@@ -14,62 +14,59 @@ interface PaymentMethodDisplayProps {
 
 export function PaymentMethodDisplay({ currency }: PaymentMethodDisplayProps) {
     const { t } = useTranslation();
+    const [imgError, setImgError] = useState(false);
 
     const paymentMethods = {
         IDR: {
-            id: "MIDTRANS_SNAP",
             name: "Midtrans",
-            description: t.checkout?.paymentInfo?.midtrans || "Pay with bank transfer, e-wallet, credit card, and more",
-            logo: "/images/payments/midtrans.png",
+            description: t.checkout?.paymentInfo?.midtrans || "Bank transfer, e-wallet, kartu kredit, dan lainnya",
+            logo: "/images/payments/midtrans.webp",
         },
         USD: {
-            id: "PAYPAL",
             name: "PayPal",
             description: t.checkout?.paymentInfo?.paypal || "Pay securely with PayPal or credit/debit card",
-            logo: "/images/payments/paypal.png",
+            logo: "/images/payments/paypal.webp",
         },
     };
 
     const method = paymentMethods[currency];
 
     return (
-        <Card className="border-2 border-primary ring-2 ring-primary ring-offset-2">
-            <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                    {/* Logo */}
-                    <div className="relative w-16 h-10 shrink-0 bg-white rounded p-1">
+        <div className="space-y-2">
+            {/* Method row */}
+            <div className="flex items-center gap-3 p-3 rounded-lg border-2 border-border bg-primary/5 cursor-pointer">
+                {/* Logo */}
+                <div className="shrink-0 w-12 h-8 bg-white rounded flex items-center justify-center p-1">
+                    {!imgError ? (
                         <Image
                             src={method.logo}
                             alt={method.name}
-                            fill
-                            className="object-contain"
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                            }}
+                            width={48}
+                            height={32}
+                            className="w-full h-full object-contain"
+                            onError={() => setImgError(true)}
                         />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            <p className="font-semibold">{method.name}</p>
-                            <Badge variant="secondary" className="text-xs">
-                                {currency}
-                            </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            {method.description}
-                        </p>
-                    </div>
-
-                    {/* Check Icon */}
-                    <CheckCircle2 className="h-6 w-6 text-primary shrink-0" />
+                    ) : (
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    )}
                 </div>
 
-                <p className="text-xs text-muted-foreground mt-3 pl-20">
-                    💡 {t.checkout?.paymentInfo?.autoSelected || "Payment method is automatically selected based on your shipping destination"}
-                </p>
-            </CardContent>
-        </Card>
+                {/* Name + currency */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold">{method.name}</span>
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{currency}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{method.description}</p>
+                </div>
+
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+            </div>
+
+            {/* Auto-select note */}
+            <p className="text-xs text-muted-foreground px-1">
+                💡 {t.checkout?.paymentInfo?.autoSelected || "Automatically selected based on your shipping destination"}
+            </p>
+        </div>
     );
 }
