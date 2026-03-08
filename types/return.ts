@@ -95,7 +95,6 @@ export interface CreateReturnDto {
     refund_bank_name: string;
     refund_account_number: string;
     refund_account_name: string;
-    image_urls: string[];
 }
 
 // ============================================
