@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-2xl font-bold">
-                        Selamat Datang, {user?.first_name || user?.username}!
+                        Selamat Datang, {user?.first_name || user?.username}
                     </h1>
                     <p className="text-muted-foreground">
                         Dashboard Admin - Pantau aktivitas toko
