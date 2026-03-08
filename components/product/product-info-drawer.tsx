@@ -72,7 +72,7 @@ export function ProductInfoDrawer({
                     <div className="flex items-center justify-between gap-3">
                         {/* Price */}
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground">{t.productDetail.subtotal}</p>
+                            <p className="text-xs text-[#f15228]">{t.productDetail.subtotal}</p>
                             <p className="text-lg font-bold text-accent truncate">
                                 {formatCurrency(finalPrice * quantity, locale === "id" ? "IDR" : "USD")}
                             </p>
@@ -154,7 +154,7 @@ export function ProductInfoDrawer({
 
                         {/* Price */}
                         <div className="flex items-baseline gap-3">
-                            <span className="text-2xl font-bold text-accent">
+                            <span className="text-2xl font-bold text-[#f15228]">
                                 {formatCurrency(finalPrice, locale === "id" ? "IDR" : "USD")}
                             </span>
                         </div>
